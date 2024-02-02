@@ -25,7 +25,6 @@ chrome.storage.onChanged.addListener((changes) => {
     Object.keys(changes).forEach((key) => {
         var {newValue} = changes[key];
         if (newValue === undefined) {
-            easyStorage.proxies.splice(easyStorage.proxies.indexOf(key), 1);
             delete easyStorage[key];
             return;
         }
