@@ -22,6 +22,11 @@ chrome.action.onClicked.addListener((tab) => {
     chrome.runtime.openOptionsPage();
 });
 
+chrome.webRequest.onErrorOccurred.addListener((details) => {
+    var {host} = new URL(details.url);
+    console.log(`Error occurred: ${host}\n${details.error}`);
+}, {urls: ["http://*/*", "https://*/*"]});
+
 chrome.storage.sync.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
     setNewProxy(convertJsonToPAC(easyStorage));
