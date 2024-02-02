@@ -1,6 +1,6 @@
 {
     "name": "Easy Proxy",
-    "description": "An ease to use auto-proxy extension",
+    "description": "An ease to use auto-proxy browser extension",
     "version": "0.1.0",
     "manifest_version": 3,
     "permissions": [
