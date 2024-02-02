@@ -18,17 +18,7 @@ function setNewProxy(data) {
 
 chrome.storage.sync.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
-    setNewProxy(convertRules(easyStorage));
-})
-
-chrome.storage.onChanged.addListener((changes) => {
-    Object.keys(changes).forEach((key) => {
-        var {newValue} = changes[key];
-        if (newValue === undefined) {
-            delete easyStorage[key];
-            return;
-        }
-        easyStorage[key] = newValue;
-    });
-    setNewProxy(convertRules(easyStorage));
+    setNewProxy(convertJsonToPAC(easyStorage));
 });
+
+chrome.runtime.onMessage.addListener(setNewProx);

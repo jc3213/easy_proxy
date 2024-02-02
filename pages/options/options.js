@@ -4,6 +4,7 @@ var easyProfile = {};
 var easyDefault = {
     proxies: []
 };
+var easyPAC;
 var newProfile;
 
 document.addEventListener('keydown', (event) => {
@@ -17,6 +18,7 @@ document.addEventListener('click', (event) => {
     switch (event.target.dataset.bid) {
         case 'new_btn':
             profileNew();
+            break;
         case 'save_btn':
             optionsSave();
             break;
@@ -30,13 +32,15 @@ document.addEventListener('click', (event) => {
 });
 
 function optionsSave() {
-    chrome.storage.sync.set(easyStorage);
     saveBtn.disabled = true;
+    easyPAC = convertJsonToPAC(easyStorage);
+    chrome.storage.sync.set(easyStorage);
+    chrome.runtime.sendMessage(easyPAC);
 }
 
 function optionsExport() {
     var time = new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_');
-    var blob = new Blob([convertRules(easyStorage)], {type: 'application/x-ns-proxy-autoconfig; charset=utf-8'});
+    var blob = new Blob([easyPAC], {type: 'application/x-ns-proxy-autoconfig; charset=utf-8'});
     exporter.href = URL.createObjectURL(blob);
     exporter.download = `easy_proxy-${time}.pac`;
     exporter.click();
@@ -83,6 +87,7 @@ document.addEventListener('change', (event) => {
 
 chrome.storage.sync.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
+    easyPAC = convertJsonToPAC(easyStorage);
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
         profile.value = json[proxy];
