@@ -16,9 +16,13 @@ function setNewProxy(data) {
     });
 }
 
+chrome.runtime.onMessage.addListener(setNewProxy);
+
+chrome.action.onClicked.addListener((tab) => {
+    chrome.runtime.openOptionsPage();
+});
+
 chrome.storage.sync.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
     setNewProxy(convertJsonToPAC(easyStorage));
 });
-
-chrome.runtime.onMessage.addListener(setNewProx);
