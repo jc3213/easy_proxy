@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title i18n>extension_options</title>
+        <link rel="stylesheet" href="options.css">
+    </head>
+    <body>
+        <div id="menu" class="flex">
+            <select id="scheme">
+                <option value="PROXY" selected>PROXY</option>
+                <option value="HTTP">HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+                <option value="SOCKS">SOCKS</option>
+                <option value="SOCKS4">SOCKS4</option>
+                <option value="SOCKS5">SOCKS5</option>
+            </select>
+            <input id="proxy" type="url">
+            <button data-bid="new_btn" disabled i18n>common_new</button>
+            <button data-bid="save_btn" disabled i18n>common_save</button>
+            <button data-bid="export_btn" i18n>option_export</button>
+            <a></a>
+        </div>
+        <hr>
+        <div class="template">
+            <div class="profile">
+                <div class="proxy"></div>
+                <button data-bid="remove_btn">❌</button>
+                <textarea class="hosts" rows="4"></textarea>
+            </div>
+        </div>
+        <div id="options"></div>
+        <script src="/libs/converter.js"></script>
+        <script src="options.js"></script>
+    </body>
+</html>
