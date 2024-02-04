@@ -29,17 +29,21 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
+    if (error === 'net::ERR_BLOCKED_BY_CLIENT') {
+        return;
+    }
     var {host} = new URL(url);
     if (!easyStorage.fallback) {
         return console.log(`Error occurred: ${host}\n${error}`);
     }
-    if (easyFallback.includes(host)) {
+    if (error === 'net::ERR_FAILED' || easyFallback.includes(host)) {
         return;
     }
     easyFallback += ` ${host}`;
     setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
     console.log(`Proxy fallback: ${host}`);
-}, {urls: ["http://*/*", "https://*/*"]});
+    chrome.tabs.reload(tabId);
+}, {urls: ["<all_urls>"]});
 
 init((storage, pac) => {
     setEasyProxy(pac);
