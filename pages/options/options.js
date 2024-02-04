@@ -1,10 +1,7 @@
 var [scheme, proxy, newBtn, saveBtn, exportBtn, exporter, options] = document.querySelectorAll('#menu > *, #options');
 var profileLET = document.querySelector('.template > .profile');
 var easyProfile = {};
-var easyDefault = {
-    proxies: []
-};
-var easyPAC;
+var easyFallback;
 var newProfile;
 
 document.addEventListener('keydown', (event) => {
@@ -27,6 +24,9 @@ document.addEventListener('click', (event) => {
             break;
         case 'remove_btn':
             profileRemove(event.target.dataset.pid);
+            break;
+        case 'default_btn':
+            profileFallback(event.target.dataset.pid, event.target);
             break;
     }
 });
@@ -55,20 +55,33 @@ function profileNew() {
 }
 
 function profileRemove(id) {
-    easyProfile[id].remove();
     saveBtn.disabled = false;
+    easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
     delete easyProfile[id];
     delete easyStorage[id];
 }
 
+function profileFallback(id, fallback) {
+    saveBtn.disabled = false;
+    easyFallback?.classList.remove('checked');
+    if (easyFallback === fallback) {
+        easyStorage.fallback = easyFallback = null;
+        return;
+    }
+    easyStorage.fallback = id;
+    easyFallback = fallback;
+    fallback.classList.add('checked');
+}
+
 function profileCreate(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, remove, hosts] = profile.querySelectorAll('*');
-    easyProfile[id] = profile;
-    proxy.textContent = remove.dataset.pid = hosts.dataset.pid = id;
+    var [proxy, fallback, remove, hosts] = profile.querySelectorAll('.proxy, button, textarea');
+    Object.assign(profile, {proxy, fallback, remove, hosts});
+    proxy.textContent = remove.dataset.pid = fallback.dataset.pid = hosts.dataset.pid = id;
     options.append(profile);
-    return hosts;
+    easyProfile[id] = profile;
+    return profile;
 }
 
 document.addEventListener('change', (event) => {
@@ -85,11 +98,13 @@ document.addEventListener('change', (event) => {
     }
 });
 
-chrome.storage.sync.get(null, (json) => {
-    easyStorage = {...easyDefault, ...json};
-    easyPAC = convertJsonToPAC(easyStorage);
+init((storage, pac) => {
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
-        profile.value = json[proxy];
+        profile.hosts.value = storage[proxy];
+        if (storage.fallback === proxy) {
+            easyFallback = profile.fallback;
+            profile.fallback.classList.add('checked');
+        }
     });
 });

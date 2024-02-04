@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title i18n>extension_options</title>
+        <title i18n="options_title">Easy Proxy Options</title>
         <link rel="stylesheet" href="options.css">
     </head>
     <body>
@@ -16,21 +16,24 @@
                 <option value="SOCKS5">SOCKS5</option>
             </select>
             <input id="proxy" type="url">
-            <button data-bid="new_btn" disabled i18n>common_new</button>
-            <button data-bid="save_btn" disabled i18n>common_save</button>
-            <button data-bid="export_btn" i18n>option_export</button>
+            <button data-bid="new_btn" disabled i18n="new_profile">New Profile</button>
+            <button data-bid="save_btn" disabled i18n="save_changes">Save</button>
+            <button data-bid="export_btn" i18n="export_pac">Export PAC</button>
             <a></a>
         </div>
         <hr>
         <div class="template">
             <div class="profile">
-                <div class="proxy"></div>
-                <button data-bid="remove_btn">❌</button>
+                <div>
+                    <div class="proxy"></div>
+                    <button data-bid="default_btn" i18n="set_default">Default</button>
+                    <button data-bid="remove_btn">❌</button>
+                </div>
                 <textarea class="hosts" rows="4"></textarea>
             </div>
         </div>
         <div id="options"></div>
-        <script src="/libs/converter.js"></script>
+        <script src="/libs/core.js"></script>
         <script src="options.js"></script>
     </body>
 </html>
