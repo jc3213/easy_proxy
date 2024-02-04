@@ -20,21 +20,8 @@ chrome.action.onClicked.addListener((tab) => {
     chrome.runtime.openOptionsPage();
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-    delete easyTabLog[tabId];
-    delete easyNetwork[tabId];
-});
-
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
-    if (easyTabLog[tabId] !== url) {
-        easyTabLog[tabId] = url;
-        easyNetwork[tabId] = [];
-    }
     var {host} = new URL(url);
-    var fallback = easyNetwork[tabId];
-    if (!fallback.includes(host)) {
-        fallback.push(host);
-    }
     if (!easyStorage.fallback) {
         return console.log(`Error occurred: ${host}\n${error}`);
     }

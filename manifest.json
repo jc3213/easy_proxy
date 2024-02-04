@@ -6,8 +6,7 @@
     "permissions": [
         "proxy",
         "storage",
-        "webRequest",
-        "tabs"
+        "webRequest"
     ],
     "host_permissions": [
         "<all_urls>"
