@@ -11,8 +11,6 @@ function setEasyProxy(data) {
             pacScript: {data}
         },
         scope: 'regular'
-    }, () => {
-        console.debug(data);
     });
 }
 
