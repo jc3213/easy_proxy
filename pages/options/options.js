@@ -32,10 +32,9 @@ document.addEventListener('click', (event) => {
 });
 
 function optionsSave() {
-    saveBtn.disabled = true;
     easyPAC = convertJsonToPAC(easyStorage);
     chrome.storage.sync.set(easyStorage);
-    chrome.runtime.sendMessage(easyPAC);
+    saveBtn.disabled = true;
 }
 
 function optionsExport() {
@@ -47,24 +46,24 @@ function optionsExport() {
 }
 
 function profileNew() {
-    newBtn.disabled = true;
-    saveBtn.disabled = false;
     profileCreate(newProfile);
     easyStorage[newProfile] = '';
     easyStorage.proxies.push(newProfile);
+    newBtn.disabled = true;
+    saveBtn.disabled = false;
 }
 
 function profileRemove(id) {
-    saveBtn.disabled = false;
     easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
     delete easyProfile[id];
     delete easyStorage[id];
+    saveBtn.disabled = false;
 }
 
 function profileFallback(id, fallback) {
-    saveBtn.disabled = false;
     easyFallback?.classList.remove('checked');
+    saveBtn.disabled = false;
     if (easyFallback === fallback) {
         easyStorage.fallback = easyFallback = null;
         return;

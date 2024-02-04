@@ -18,6 +18,16 @@ chrome.action.onClicked.addListener((tab) => {
     chrome.runtime.openOptionsPage();
 });
 
+chrome.storage.onChanged.addListener((changes) => {
+    Object.keys(changes).forEach((key) => {
+        var {newValue} = changes[key];
+        if (newValue !== undefined) {
+            easyStorage[key] = newValue;
+        }
+    });
+    setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
+});
+
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     var {host} = new URL(url);
     if (!easyStorage.fallback) {
@@ -30,8 +40,6 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
     console.log(`Proxy fallback: ${host}`);
 }, {urls: ["http://*/*", "https://*/*"]});
-
-chrome.runtime.onMessage.addListener(setEasyProxy);
 
 init((storage, pac) => {
     setEasyProxy(pac);

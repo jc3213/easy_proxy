@@ -12,11 +12,12 @@ async function init(callback) {
     callback(easyStorage, easyPAC);
 }
 
-function convertJsonToPAC(json, fallback) {
-    var pacscript = '';
+function convertJsonToPAC(json, fallback, pacscript = '') {
     json.proxies.forEach((proxy) => {
-        var regexp = convertRegexp(json[proxy]);
-        pacscript += ` if (/${regexp}/i.test(host)) { return "${proxy}"; }`;
+        if (json[proxy] !== '') {
+            var regexp = convertRegexp(json[proxy]);
+            pacscript += ` if (/${regexp}/i.test(host)) { return "${proxy}"; }`;
+        }
     });
     if (fallback) {
         pacscript += ` if (/^(${convertRegexp(fallback)})$/.test(host)) { return "${json.fallback}"; }`
