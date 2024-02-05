@@ -1,17 +1,3 @@
-var easyPAC;
-var easyStorage;
-var easyDefault = {
-    proxies: [],
-    fallback: null
-};
-
-async function init(callback) {
-    var json = await chrome.storage.sync.get(null);
-    easyStorage = {...easyDefault, ...json};
-    easyPAC = convertJsonToPAC(easyStorage);
-    callback(easyStorage, easyPAC);
-}
-
 function convertJsonToPAC(json, fallback, pacscript = '') {
     json.proxies.forEach((proxy) => {
         if (json[proxy] !== '') {
