@@ -100,13 +100,12 @@ document.addEventListener('change', (event) => {
     }
 });
 
-chrome.runtime.sendMessage({action: 'storage_onstartup'}, ({storage, pacScript}) => {
-    easyStorage = storage;
-    easyPAC = pacScript;
+chrome.storage.sync.get(null, (json) => {
+    easyProxyStorage(json);
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
-        profile.hosts.value = storage[proxy];
-        if (storage.fallback === proxy) {
+        profile.hosts.value = easyStorage[proxy];
+        if (easyStorage.fallback === proxy) {
             easyFallback = profile.fallback;
             profile.fallback.classList.add('checked');
         }

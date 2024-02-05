@@ -1,11 +1,5 @@
 importScripts('/libs/core.js');
 
-var easyStorage;
-var easyPAC;
-var easyDefault = {
-    proxies: [],
-    fallback: null
-};
 var easyFallback = '';
 
 function setEasyProxy(data) {
@@ -52,7 +46,6 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
 }, {urls: ["<all_urls>"]});
 
 chrome.storage.sync.get(null, (json) => {
-    easyStorage = {...easyDefault, ...json};
-    easyPAC = convertJsonToPAC(easyStorage);
+    easyProxyStorage(json);
     setEasyProxy(easyPAC);
 });

@@ -1,3 +1,15 @@
+var easyStorage;
+var easyPAC;
+var easyDefault = {
+    proxies: [],
+    fallback: null
+};
+
+function easyProxyStorage(json) {
+    easyStorage = {...easyDefault, ...json};
+    easyPAC = convertJsonToPAC(easyStorage);
+}
+
 function convertJsonToPAC(json, fallback, pacscript = '') {
     json.proxies.forEach((proxy) => {
         if (json[proxy] !== '') {
