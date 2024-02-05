@@ -14,17 +14,20 @@ function setEasyProxy(data) {
     });
 }
 
+chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
+    switch (action) {
+        case 'options_onchange':
+            easyStorage = params;
+            setEasyProxy(convertJsonToPAC(params, easyFallback));
+            break;
+    }
+});
+
 chrome.action.onClicked.addListener((tab) => {
     chrome.runtime.openOptionsPage();
 });
 
 chrome.storage.onChanged.addListener((changes) => {
-    Object.keys(changes).forEach((key) => {
-        var {newValue} = changes[key];
-        if (newValue !== undefined) {
-            easyStorage[key] = newValue;
-        }
-    });
     setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
 });
 

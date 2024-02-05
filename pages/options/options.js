@@ -31,10 +31,11 @@ document.addEventListener('click', (event) => {
     }
 });
 
-function optionsSave() {
+async function optionsSave() {
     saveBtn.disabled = true;
     easyPAC = convertJsonToPAC(easyStorage);
-    chrome.storage.sync.set(easyStorage);
+    await chrome.runtime.sendMessage({action: 'options_onchange', params: easyStorage});
+    await chrome.storage.sync.set(easyStorage);
 }
 
 function optionsExport() {
@@ -57,6 +58,7 @@ function profileRemove(id) {
     saveBtn.disabled = false;
     easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
+    easyStorage.fallback = easyStorage.fallback === id ? null : easyStorage.fallback;
     delete easyProfile[id];
     delete easyStorage[id];
 }
@@ -75,9 +77,9 @@ function profileFallback(id, fallback) {
 
 function profileCreate(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, fallback, remove, hosts] = profile.querySelectorAll('.proxy, button, textarea');
-    Object.assign(profile, {proxy, fallback, remove, hosts});
-    proxy.textContent = remove.dataset.pid = fallback.dataset.pid = hosts.dataset.pid = id;
+    var [proxy, fallback, erase, hosts] = profile.querySelectorAll('.proxy, button, textarea');
+    Object.assign(profile, {proxy, fallback, erase, hosts});
+    proxy.textContent = erase.dataset.pid = fallback.dataset.pid = hosts.dataset.pid = id;
     options.append(profile);
     easyProfile[id] = profile;
     return profile;
