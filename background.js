@@ -14,9 +14,6 @@ function setEasyProxy(data) {
 
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
-        case 'options_onstartup':
-            response({storage: easyStorage, pasScript: easyPAC});
-            break;
         case 'options_onchange':
             easyStorage = params;
             setEasyProxy(convertJsonToPAC(params, easyFallback));
