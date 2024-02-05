@@ -1,7 +1,11 @@
 importScripts('/libs/core.js');
 
-var easyTabLog = {};
-var easyNetwork = {};
+var easyStorage;
+var easyPAC;
+var easyDefault = {
+    proxies: [],
+    fallback: null
+};
 var easyFallback = '';
 
 function setEasyProxy(data) {
@@ -16,6 +20,9 @@ function setEasyProxy(data) {
 
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
+        case 'options_onstartup':
+            response({storage: easyStorage, pasScript: easyPAC});
+            break;
         case 'options_onchange':
             easyStorage = params;
             setEasyProxy(convertJsonToPAC(params, easyFallback));
@@ -25,10 +32,6 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
 
 chrome.action.onClicked.addListener((tab) => {
     chrome.runtime.openOptionsPage();
-});
-
-chrome.storage.onChanged.addListener((changes) => {
-    setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
 });
 
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
@@ -48,6 +51,8 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     chrome.tabs.reload(tabId);
 }, {urls: ["<all_urls>"]});
 
-init((storage, pac) => {
-    setEasyProxy(pac);
+chrome.storage.sync.get(null, (json) => {
+    easyStorage = {...easyDefault, ...json};
+    easyPAC = convertJsonToPAC(easyStorage);
+    setEasyProxy(easyPAC);
 });

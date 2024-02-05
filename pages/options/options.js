@@ -56,6 +56,7 @@ function profileNew() {
 
 function profileRemove(id) {
     saveBtn.disabled = false;
+    chrome.storage.sync.remove(id);
     easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
     easyStorage.fallback = easyStorage.fallback === id ? null : easyStorage.fallback;
@@ -99,7 +100,9 @@ document.addEventListener('change', (event) => {
     }
 });
 
-init((storage, pac) => {
+chrome.runtime.sendMessage({action: 'storage_onstartup'}, ({storage, pacScript}) => {
+    easyStorage = storage;
+    easyPAC = pacScript;
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
         profile.hosts.value = storage[proxy];
