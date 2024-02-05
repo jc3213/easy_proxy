@@ -42,7 +42,6 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     easyFallback += ` ${host}`;
     setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
     console.log(`Proxy fallback: ${host}`);
-    chrome.tabs.reload(tabId);
 }, {urls: ["<all_urls>"]});
 
 chrome.storage.sync.get(null, (json) => {
