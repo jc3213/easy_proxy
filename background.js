@@ -1,6 +1,7 @@
 importScripts('/libs/core.js');
 
 var easyFallback = '';
+var easyHistory = {};
 
 function setEasyProxy(data) {
     chrome.proxy.settings.set({
@@ -33,10 +34,11 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     if (!easyStorage.fallback) {
         return console.log(`Error occurred: ${host}\n${error}`);
     }
-    if (error === 'net::ERR_FAILED' || easyFallback.includes(host)) {
+    if (error === 'net::ERR_FAILED' || host in easyHistory) {
         return;
     }
     easyFallback += ` ${host}`;
+    easyHistory[host] = host;
     setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
     console.log(`Proxy fallback: ${host}`);
 }, {urls: ["<all_urls>"]});

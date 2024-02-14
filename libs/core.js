@@ -24,5 +24,5 @@ function convertJsonToPAC(json, fallback, pacscript = '') {
 }
 
 function convertRegexp(string) {
-    return string.replace(/[\s;\n]+/g, '|').replace(/\./g, '\\.').replace(/\*\\\./g, '.*');
+    return string.replace(/[\s;\n]+/g, '|').replace(/\./g, '\\.').replace(/\*/g, '.*');
 }
