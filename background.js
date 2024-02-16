@@ -69,10 +69,12 @@ function setEasyProxy(data) {
     });
 }
 
-function easyOptionChanges({storage, removed}) {
+function easyOptionChanges({storage, removed = []}) {
     easyStorage = storage;
     easyPAC = convertJsonToPAC(storage);
     setEasyProxy(convertJsonToPAC(storage, easyFallback));
     chrome.storage.sync.set(storage);
-    chrome.storage.sync.remove(removed);
+    if (removed.length !== 0) {
+        chrome.storage.sync.remove(removed);
+    }
 }

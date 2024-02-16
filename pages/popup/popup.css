@@ -1,0 +1,36 @@
+body {
+    min-width: 180px;
+    margin: 8px;
+}
+
+select {
+    width: 100%;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    transform: scale(1.5);
+    accent-color: #006cbe;
+}
+
+#menu {
+    display: flex;
+    gap: 3px;
+}
+
+#menu > *  {
+    display: block;
+    flex: 1;
+}
+
+.host {
+    display: flex;
+    padding: 3px;
+}
+
+.host > label {
+    flex-grow: 1;
+    text-align: center;
+    margin-left: 5px;
+    letter-spacing: 1px;
+}

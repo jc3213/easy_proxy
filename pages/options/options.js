@@ -34,8 +34,8 @@ document.addEventListener('click', (event) => {
 
 async function optionsSave() {
     saveBtn.disabled = true;
-    var response = await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}});
-    easyPAC = response.pac_script;
+    var {pac_script} = await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}});
+    easyPAC = pac_script;
 }
 
 function optionsExport() {
