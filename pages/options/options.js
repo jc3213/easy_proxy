@@ -90,10 +90,10 @@ function profileCreate(id) {
 }
 
 document.addEventListener('change', (event) => {
-    var {id, dataset: {pid}, value} = event.target;
-    if (id && proxy.value) {
+    var {dataset: {nid, pid}, value} = event.target;
+    if (nid && proxy.value) {
         newProfile = scheme.value + ' ' + proxy.value;
-        newBtn.disabled = newProfile in easyStorage ? true : false;
+        newBtn.disabled = newProfile in easyStorage || !/(\w+\.)+\w+(:\d+)?/.test(proxy.value) ? true : false;
         return;
     }
     if (pid) {

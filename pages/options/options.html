@@ -7,7 +7,7 @@
     </head>
     <body>
         <div id="menu" class="flex">
-            <select id="scheme">
+            <select data-nid="scheme">
                 <option value="PROXY" selected>PROXY</option>
                 <option value="HTTP">HTTP</option>
                 <option value="HTTPS">HTTPS</option>
@@ -15,7 +15,7 @@
                 <option value="SOCKS4">SOCKS4</option>
                 <option value="SOCKS5">SOCKS5</option>
             </select>
-            <input id="proxy" type="url">
+            <input data-nid="proxy" type="url">
             <button data-bid="new_btn" disabled i18n="new_profile">New Profile</button>
             <button data-bid="save_btn" disabled i18n="save_changes">Save</button>
             <button data-bid="export_btn" i18n="export_pac">Export PAC</button>
