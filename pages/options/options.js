@@ -1,6 +1,7 @@
 var [scheme, proxy, newBtn, saveBtn, exportBtn, exporter, options] = document.querySelectorAll('#menu > *, #options');
 var profileLET = document.querySelector('.template > .profile');
 var easyProfile = {};
+var removed = [];
 var easyFallback;
 var newProfile;
 
@@ -33,16 +34,15 @@ document.addEventListener('click', (event) => {
 
 async function optionsSave() {
     saveBtn.disabled = true;
-    easyPAC = convertJsonToPAC(easyStorage);
-    await chrome.runtime.sendMessage({action: 'options_onchange', params: easyStorage});
-    await chrome.storage.sync.set(easyStorage);
+    var response = await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}});
+    easyPAC = response.pac_script;
 }
 
 function optionsExport() {
     var time = new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_');
     var blob = new Blob([easyPAC], {type: 'application/x-ns-proxy-autoconfig; charset=utf-8'});
     exporter.href = URL.createObjectURL(blob);
-    exporter.download = `easy_proxy-${time}.pac`;
+    exporter.download = 'easy_proxy-' + time + '.pac';
     exporter.click();
 }
 
@@ -56,11 +56,14 @@ function profileNew() {
 
 function profileRemove(id) {
     saveBtn.disabled = false;
-    chrome.storage.sync.remove(id);
     easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
-    easyStorage.fallback = easyStorage.fallback === id ? null : easyStorage.fallback;
-    delete easyProfile[id];
+    if (easyStorage.fallback === id) {
+        easyStorage.fallback === null;
+    }
+    if (!removed.includes(id)) {
+        removed.push(id);
+    }
     delete easyStorage[id];
 }
 
@@ -88,8 +91,8 @@ function profileCreate(id) {
 
 document.addEventListener('change', (event) => {
     var {id, dataset: {pid}, value} = event.target;
-    if (id) {
-        newProfile = `${scheme.value} ${proxy.value}`;
+    if (id && proxy.value) {
+        newProfile = scheme.value + ' ' + proxy.value;
         newBtn.disabled = newProfile in easyStorage ? true : false;
         return;
     }
@@ -100,8 +103,9 @@ document.addEventListener('change', (event) => {
     }
 });
 
-chrome.storage.sync.get(null, (json) => {
-    easyProxyStorage(json);
+chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pacscript}) => {
+    easyStorage = storage;
+    easyPAC = pacscript;
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
         profile.hosts.value = easyStorage[proxy];
