@@ -6,6 +6,7 @@ var easyStorage;
 var easyPAC;
 var easyFallback = '';
 var easyHistory = {};
+
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
         case 'options_plugins':
@@ -16,10 +17,6 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
             response({pac_script: easyPAC});
             break;
     }
-});
-
-chrome.action.onClicked.addListener((tab) => {
-    chrome.runtime.openOptionsPage();
 });
 
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
