@@ -97,7 +97,7 @@ document.addEventListener('change', (event) => {
         return;
     }
     if (pid) {
-        easyStorage[pid] = value;
+        easyStorage[pid] = value.split(' ');
         saveBtn.disabled = false;
         return;
     }
@@ -108,7 +108,7 @@ chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) 
     easyPAC = pac_script;
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
-        profile.hosts.value = easyStorage[proxy];
+        profile.hosts.value = easyStorage[proxy].join(' ');
         if (easyStorage.fallback === proxy) {
             easyFallback = profile.fallback;
             profile.fallback.classList.add('checked');
