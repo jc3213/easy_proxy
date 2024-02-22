@@ -103,9 +103,9 @@ document.addEventListener('change', (event) => {
     }
 });
 
-chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pacscript}) => {
+chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) => {
     easyStorage = storage;
-    easyPAC = pacscript;
+    easyPAC = pac_script;
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
         profile.hosts.value = easyStorage[proxy];
