@@ -1,20 +1,12 @@
-var history = {};
-var result = [];
-var inspector = true;
-
 chrome.runtime.onMessage.addListener(({query}, sender, response) => {
     switch (query) {
         case 'easyproxy_inspect':
-            inspectProxyItems();
-            response({result});
+            response({result: inspectProxyItems()});
             break;
     }
 });
 
-function inspectProxyItems() {
-    if (!inspector) {
-        return;
-    }
+function inspectProxyItems(archive = {}, result = []) {
     [location, ...document.querySelectorAll('[href], [src]')].forEach((link) => {
         var url = link.href || link.src;
         if (!url) {
@@ -31,5 +23,6 @@ function inspectProxyItems() {
         }
         result.push(hostname);
     });
-    inspector = false;
+    result.sort();
+    return result;
 }
