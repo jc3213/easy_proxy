@@ -1,5 +1,6 @@
 var [output, query, proxy, submitBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
+var easyId;
 
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
@@ -25,21 +26,20 @@ document.addEventListener('click', (event) => {
 async function proxyQuery() {
     output.innerHTML = '';
     var tabs = await chrome.tabs.query({active: true, currentWindow: true});
-    var params = await chrome.tabs.sendMessage(tabs[0].id, {query: 'easyproxy_inspect'});
+    easyId = tabs[0].id;
+    var params = await chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'});
     params.result.forEach(hostCreate);
 }
 
 async function proxySubmit() {
     var storage = easyStorage[proxy.value];
-    var host = '';
     document.querySelectorAll('input:checked').forEach(({value}) => {
         if (!storage.includes(value)) {
-            host += ' ' + value;
+            storage.push(value);
         }
     });
-    easyStorage[proxy.value] += host;
     await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
-    chrome.tabs.reload(easyTabId);
+    chrome.tabs.reload(easyId);
 }
 
 function hostCreate(proxy, id) {
