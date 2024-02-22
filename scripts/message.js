@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener(({query}, sender, response) => {
     switch (query) {
         case 'easyproxy_inspect':
-            response({result: inspectProxyItems()});
+            response(inspectProxyItems());
             break;
     }
 });
@@ -24,5 +24,5 @@ function inspectProxyItems(archive = {}, result = []) {
         result.push(hostname);
     });
     result.sort();
-    return result;
+    return {result};
 }
