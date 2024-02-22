@@ -1,4 +1,4 @@
-var [result, proxy, submitBtn] = document.querySelectorAll('#result, select, button');
+var [output, query, proxy, submitBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 
 document.addEventListener('keydown', (event) => {
@@ -10,6 +10,9 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('click', (event) => {
     switch (event.target.dataset.bid) {
+        case 'query_btn':
+            proxyQuery();
+            break;
         case 'submit_btn':
             proxySubmit();
             break;
@@ -19,10 +22,11 @@ document.addEventListener('click', (event) => {
     }
 });
 
-function proxyCreate(result) {
-    var menu = document.createElement('option');
-    menu.textContent = menu.title = menu.value = result;
-    proxy.append(menu);
+async function proxyQuery() {
+    output.innerHTML = '';
+    var tabs = await chrome.tabs.query({active: true, currentWindow: true});
+    var params = await chrome.tabs.sendMessage(tabs[0].id, {query: 'easyproxy_inspect'});
+    params.result.forEach(hostCreate);
 }
 
 async function proxySubmit() {
@@ -44,16 +48,20 @@ function hostCreate(proxy, id) {
     check.id = 'easyproxy_' + id;
     label.setAttribute('for', 'easyproxy_' + id);
     label.textContent = check.value = proxy;
-    result.append(host);
+    output.append(host);
 }
 
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pacscript}) => {
     easyStorage = storage;
+    if (storage.proxies.length === 0) {
+        proxy.disabled = submitBtn.disabled = true;
+        return;
+    }
     storage.proxies.forEach(proxyCreate);
 });
 
-chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
-    easyTabId = tabs[0].id;
-    var {result} = await chrome.tabs.sendMessage(easyTabId, {query: 'easyproxy_inspect'});
-    result.forEach(hostCreate);
-});
+function proxyCreate(result) {
+    var menu = document.createElement('option');
+    menu.textContent = menu.title = menu.value = result;
+    proxy.append(menu);
+}

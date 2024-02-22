@@ -1,5 +1,5 @@
 body {
-    min-width: 180px;
+    min-width: 200px;
     margin: 8px;
 }
 
@@ -11,6 +11,10 @@ input[type="checkbox"] {
     width: auto;
     transform: scale(1.5);
     accent-color: #006cbe;
+}
+
+button {
+    width: 100%;
 }
 
 #menu {
