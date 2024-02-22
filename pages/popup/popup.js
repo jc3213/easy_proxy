@@ -28,7 +28,7 @@ async function proxyQuery() {
     var tabs = await chrome.tabs.query({active: true, currentWindow: true});
     easyId = tabs[0].id;
     var params = await chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'});
-    params.result.forEach(hostCreate);
+    [new URL(tabs[0].url).hostname, ...params.result].forEach(hostCreate);
 }
 
 async function proxySubmit() {
