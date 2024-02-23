@@ -6,6 +6,7 @@ var easyStorage;
 var easyPAC;
 var easyHistory = {};
 var easyFallback = [];
+var easyMatches = [];
 
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
@@ -15,18 +16,27 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
         case 'options_onchange':
             easyOptionChanges(params, response);
             break;
+        case 'options_runonce':
+            easyRunOnceProxy(params);
+            break;
     }
 });
 
 function easyOptionChanges({storage, removed = []}, response) {
     easyStorage = storage;
-    easyPAC = convertJsonToPAC(storage);
+    easyPAC = convertJsonToPAC();
     response({pac_script: easyPAC});
-    setEasyProxy(convertJsonToPAC(storage, easyFallback));
+    setEasyProxy(convertJsonToPAC({proxy: storage.fallback, matches: easyFallback}));
     chrome.storage.local.set(storage);
     if (removed.length !== 0) {
         chrome.storage.local.remove(removed);
     }
+}
+
+function easyRunOnceProxy({proxy, matches}) {
+    easyMatches.push(...matches);
+    console.log(proxy, matches, convertJsonToPAC({proxy, matches}));
+    setEasyProxy(convertJsonToPAC({proxy, matches}));
 }
 
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
@@ -42,7 +52,7 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     }
     easyHistory[host] = host;
     easyFallback.push(host);
-    setEasyProxy(convertJsonToPAC(easyStorage, easyFallback));
+    setEasyProxy(convertJsonToPAC(easyStorage, {proxy: easyStorage.fallback, matches: easyFallback}));
     console.log('Proxy fallback: ' + host);
 }, {urls: ["<all_urls>"]});
 
@@ -58,20 +68,20 @@ function setEasyProxy(data) {
 
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
-    easyPAC = convertJsonToPAC(easyStorage);
+    easyPAC = convertJsonToPAC();
     setEasyProxy(easyPAC);
 });
 
-function convertJsonToPAC(json, fallback, pac = '') {
-    json.proxies.forEach((proxy) => {
-        if (json[proxy] !== '') {
-            pac += ' if (/' + convertRegexp(json[proxy]) + '/i.test(host)) { return "' + proxy + '"; }';
+function convertJsonToPAC(extra, pac_script = '') {
+    easyStorage.proxies.forEach((proxy) => {
+        if (easyStorage[proxy].length !== 0) {
+            pac_script += ' if (/' + convertRegexp(easyStorage[proxy]) + '/i.test(host)) { return "' + proxy + '"; }';
         }
     });
-    if (fallback) {
-        pac += ' if (/^(' + convertRegexp(fallback) + ')$/.test(host)) { return "' + json.fallback + '; }';
+    if (extra) {
+        pac_script += ' if (/' + convertRegexp(extra.matches) + '/i.test(host)) { return "' + extra.proxy + '"; }';
     }
-    return 'function FindProxyForURL(url, host) {' + pac + ' return "DIRECT"; }';
+    return 'function FindProxyForURL(url, host) {' + pac_script + ' return "DIRECT"; }';
 }
 
 function convertRegexp(array) {
@@ -83,8 +93,8 @@ chrome.runtime.onInstalled.addListener(async ({previousVersion}) => {
         var json = await chrome.storage.sync.get(null);
         json.proxies.forEach((proxy) => json[proxy] = json[proxy].split(' '));
         easyStorage = json;
-        easyPAC = convertJsonToPAC(storage);
-        setEasyProxy(convertJsonToPAC(storage, easyFallback));
+        easyPAC = convertJsonToPAC();
+        setEasyProxy(convertJsonToPAC({proxy: json.fallback, matches: easyFallback}));
         chrome.storage.local.set(easyStorage);
         chrome.storage.sync.clear();
     }

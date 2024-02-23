@@ -1,4 +1,4 @@
-var [output, query, proxy, submitBtn] = document.querySelectorAll('#output, select, button');
+var [output, queryBtn, proxies, submitBtn, onceBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 var easyId;
 
@@ -17,6 +17,9 @@ document.addEventListener('click', (event) => {
         case 'submit_btn':
             proxySubmit();
             break;
+        case 'runonce_btn':
+            proxySubmit(true);
+            break;
         case 'options_btn':
             chrome.runtime.openOptionsPage();
             break;
@@ -24,24 +27,31 @@ document.addEventListener('click', (event) => {
 });
 
 async function proxyQuery() {
-    output.innerHTML = '';
+    queryBtn.style.display = 'none';
     var [{id, url}] = await chrome.tabs.query({active: true, currentWindow: true});
     easyId = id;
     chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'}).then(({result}) => {
-        params.result.forEach(hostCreate);
+        result.forEach(hostCreate);
     }).catch((error) => {
         hostCreate(new URL(url).hostname, 0);
     });
 }
 
-async function proxySubmit() {
-    var storage = easyStorage[proxy.value];
+async function proxySubmit(runOnce) {
+    var proxy = proxies.value;
+    var matches = [];
     document.querySelectorAll('input:checked').forEach(({value}) => {
-        if (!storage.includes(value)) {
-            storage.push(value);
+        if (!matches.includes(value)) {
+            matches.push(value);
         }
     });
-    await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
+    if (runOnce) {
+        await chrome.runtime.sendMessage({action: 'options_runonce', params: {proxy, matches}});
+    }
+    else {
+        easyStorage[proxy].push(...matches);
+        await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
+    }
     chrome.tabs.reload(easyId);
 }
 
@@ -57,7 +67,7 @@ function hostCreate(proxy, id) {
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pacscript}) => {
     easyStorage = storage;
     if (storage.proxies.length === 0) {
-        proxy.disabled = submitBtn.disabled = true;
+        proxies.disabled = submitBtn.disabled = onceBtn.disabled = true;
         return;
     }
     storage.proxies.forEach(proxyCreate);
@@ -66,5 +76,5 @@ chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pacscript}) =
 function proxyCreate(result) {
     var menu = document.createElement('option');
     menu.textContent = menu.title = menu.value = result;
-    proxy.append(menu);
+    proxies.append(menu);
 }
