@@ -1,9 +1,12 @@
-var [scheme, proxy, newBtn, saveBtn, exportBtn, exporter, options] = document.querySelectorAll('#menu > *, #options');
+var [scheme, proxy, newBtn, saveBtn, importBtn, exportBtn, importer, exporter, profiles] = document.querySelectorAll('#menu > *, #profile');
 var profileLET = document.querySelector('.template > .profile');
 var easyProfile = {};
-var removed = [];
 var easyFallback;
-var newProfile;
+var newProfile = {
+    scheme: 'HTTP',
+    proxy: ''
+};
+var removed = [];
 
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
@@ -18,31 +21,48 @@ document.addEventListener('click', (event) => {
             profileNew();
             break;
         case 'save_btn':
-            optionsSave();
+            optionsSaved();
+            break;
+        case 'import_btn':
+            importer.click();
             break;
         case 'export_btn':
-            optionsExport();
+            optionsExport(event.altKey && event.shiftKey);
+            break;
+        case 'fallback_btn':
+            profileFallback(event.target.dataset.pid);
+            break;
+        case 'resort_btn':
+            profileResort(event.target.dataset.pid);
             break;
         case 'remove_btn':
             profileRemove(event.target.dataset.pid);
             break;
-        case 'default_btn':
-            profileFallback(event.target.dataset.pid, event.target);
-            break;
     }
 });
 
-async function optionsSave() {
+async function optionsSaved() {
     saveBtn.disabled = true;
     var {pac_script} = await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}});
     easyPAC = pac_script;
+    removed = [];
 }
 
-function optionsExport() {
+function optionsExport(pacScript) {
+    if (pacScript) {
+        var data = easyPAC;
+        var type = 'application/x-ns-proxy-autoconfig;charset=utf-8;';
+        var ext = '.pac';
+    }
+    else {
+        data = JSON.stringify(easyStorage, null, 4);
+        type = 'application/json;charset=utf-8;';
+        ext = '.json';
+    }
     var time = new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_');
-    var blob = new Blob([easyPAC], {type: 'application/x-ns-proxy-autoconfig; charset=utf-8'});
+    var blob = new Blob([data], {type});
     exporter.href = URL.createObjectURL(blob);
-    exporter.download = 'easy_proxy-' + time + '.pac';
+    exporter.download = 'easy_proxy-' + time + ext;
     exporter.click();
 }
 
@@ -67,8 +87,16 @@ function profileRemove(id) {
     delete easyStorage[id];
 }
 
-function profileFallback(id, fallback) {
+function profileResort(id) {
     saveBtn.disabled = false;
+    var {matches} = easyProfile[id];
+    easyStorage[id] = matches.value.split(' ').sort();
+    matches.value = easyStorage[id].join(' ');
+}
+
+function profileFallback(id) {
+    saveBtn.disabled = false;
+    var {fallback} = easyProfile[id];
     easyFallback?.classList.remove('checked');
     if (easyFallback === fallback) {
         easyStorage.fallback = easyFallback = null;
@@ -81,19 +109,19 @@ function profileFallback(id, fallback) {
 
 function profileCreate(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, fallback, erase, hosts] = profile.querySelectorAll('.proxy, button, textarea');
-    Object.assign(profile, {proxy, fallback, erase, hosts});
-    proxy.textContent = erase.dataset.pid = fallback.dataset.pid = hosts.dataset.pid = id;
-    options.append(profile);
+    var [proxy, resort, fallback, erase, matches] = profile.querySelectorAll('.proxy, button, textarea');
+    Object.assign(profile, {proxy, fallback, resort, erase, matches});
+    proxy.textContent = erase.dataset.pid = fallback.dataset.pid = resort.dataset.pid = matches.dataset.pid = id;
+    profiles.append(profile);
     easyProfile[id] = profile;
     return profile;
 }
 
 document.addEventListener('change', (event) => {
-    var {dataset: {nid, pid}, value} = event.target;
-    if (nid && proxy.value) {
-        newProfile = scheme.value + ' ' + proxy.value;
-        newBtn.disabled = newProfile in easyStorage || !/(\w+\.)+\w+(:\d+)?/.test(proxy.value) ? true : false;
+    var {dataset: {nid, pid}, value, files} = event.target;
+    if (nid) {
+        newProfile[nid] = value;
+        profileAvail();
         return;
     }
     if (pid) {
@@ -101,14 +129,34 @@ document.addEventListener('change', (event) => {
         saveBtn.disabled = false;
         return;
     }
+    if (files) {
+        optionsImport(files[0]);
+    }
 });
+
+function profileAvail() {
+    var {scheme, proxy} = newProfile;
+    var profile = scheme + ' ' + proxy;
+    newBtn.disabled = profile in easyStorage || !/([\w-]+\.)+\w+(:\d+)?/.test(proxy) ? true : false;
+}
+
+function optionsImport(file) {
+    var fileReader = new FileReader();
+    fileReader.onload = async (event) => {
+        var json = JSON.parse(event.target.result);
+        removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
+        easyStorage = json;
+        optionsSaved();
+    };
+    fileReader.readAsText(file);
+}
 
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) => {
     easyStorage = storage;
     easyPAC = pac_script;
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
-        profile.hosts.value = easyStorage[proxy].join(' ');
+        profile.matches.value = easyStorage[proxy].join(' ');
         if (easyStorage.fallback === proxy) {
             easyFallback = profile.fallback;
             profile.fallback.classList.add('checked');

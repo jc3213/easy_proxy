@@ -19,7 +19,9 @@
             <input data-nid="proxy" type="url">
             <button data-bid="new_btn" disabled i18n="options_new">New Profile</button>
             <button data-bid="save_btn" disabled i18n="options_save">Save</button>
-            <button data-bid="export_btn" i18n="options_export">Export PAC</button>
+            <button data-bid="import_btn" i18n="options_import">Import</button>
+            <button data-bid="export_btn" i18n="options_export">Export</button>
+            <input type="file" accept=".json">
             <a></a>
         </div>
         <hr>
@@ -27,13 +29,14 @@
             <div class="profile">
                 <div>
                     <div class="proxy"></div>
-                    <button data-bid="default_btn" i18n="options_fallback">Fallback</button>
+                    <button data-bid="resort_btn" i18n="options_resort">Sort</button>
+                    <button data-bid="fallback_btn" i18n="options_fallback">Fallback</button>
                     <button data-bid="remove_btn">❌</button>
                 </div>
                 <textarea class="hosts" rows="4"></textarea>
             </div>
         </div>
-        <div id="options"></div>
+        <div id="profile"></div>
         <script src="options.js"></script>
     </body>
 </html>

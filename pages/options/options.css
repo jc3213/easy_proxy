@@ -2,6 +2,10 @@ body {
     width: 680px;
 }
 
+input[type="file"], a {
+    display: none;
+}
+
 #menu {
     display: flex;
     gap: 3px;
