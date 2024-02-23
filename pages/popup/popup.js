@@ -64,13 +64,12 @@ function hostCreate(proxy, id) {
     output.append(host);
 }
 
-chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pacscript}) => {
+chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) => {
     easyStorage = storage;
-    if (storage.proxies.length === 0) {
-        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
-        return;
+    if (storage.proxies.length !== 0) {
+        return storage.proxies.forEach(proxyCreate);
     }
-    storage.proxies.forEach(proxyCreate);
+    proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
 });
 
 function proxyCreate(result) {
