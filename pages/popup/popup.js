@@ -18,7 +18,7 @@ document.addEventListener('click', (event) => {
             proxySubmit();
             break;
         case 'tempo_btn':
-            proxySubmit(true);
+            proxyTempo();
             break;
         case 'options_btn':
             chrome.runtime.openOptionsPage();
@@ -37,7 +37,18 @@ async function proxyQuery() {
     });
 }
 
-async function proxySubmit(runOnce) {
+async function proxySubmit() {
+    var profile = easyStorage[proxies.value];
+    document.querySelectorAll('input:checked').forEach(({value}) => {
+        if (!profile.includes(value)) {
+            profile.push(value);
+        }
+    });
+    await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
+    chrome.tabs.reload(easyId);
+}
+
+async function proxyTempo() {
     var proxy = proxies.value;
     var matches = [];
     document.querySelectorAll('input:checked').forEach(({value}) => {
@@ -45,13 +56,7 @@ async function proxySubmit(runOnce) {
             matches.push(value);
         }
     });
-    if (runOnce) {
-        await chrome.runtime.sendMessage({action: 'easyproxy_temporary', params: {proxy, matches}});
-    }
-    else {
-        easyStorage[proxy].push(...matches);
-        await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
-    }
+    await chrome.runtime.sendMessage({action: 'easyproxy_temporary', params: {proxy, matches}});
     chrome.tabs.reload(easyId);
 }
 
