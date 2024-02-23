@@ -16,8 +16,8 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
         case 'options_onchange':
             easyOptionChanges(params, response);
             break;
-        case 'options_runonce':
-            easyRunOnceProxy(params);
+        case 'easyproxy_temporary':
+            easyTempoProxy(params);
             break;
     }
 });
@@ -33,9 +33,9 @@ function easyOptionChanges({storage, removed = []}, response) {
     }
 }
 
-function easyRunOnceProxy({proxy, matches}) {
+function easyTempoProxy({proxy, matches}) {
     easyMatches.push(...matches);
-    console.log(proxy, matches, convertJsonToPAC({proxy, matches}));
+    console.log('Proxy server:\n' + proxy + '\nTempo:\n' + matches.join('\n'));
     setEasyProxy(convertJsonToPAC({proxy, matches}));
 }
 

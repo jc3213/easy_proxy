@@ -1,4 +1,4 @@
-var [output, queryBtn, proxies, submitBtn, onceBtn] = document.querySelectorAll('#output, select, button');
+var [output, queryBtn, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 var easyId;
 
@@ -17,7 +17,7 @@ document.addEventListener('click', (event) => {
         case 'submit_btn':
             proxySubmit();
             break;
-        case 'runonce_btn':
+        case 'tempo_btn':
             proxySubmit(true);
             break;
         case 'options_btn':
@@ -46,7 +46,7 @@ async function proxySubmit(runOnce) {
         }
     });
     if (runOnce) {
-        await chrome.runtime.sendMessage({action: 'options_runonce', params: {proxy, matches}});
+        await chrome.runtime.sendMessage({action: 'easyproxy_temporary', params: {proxy, matches}});
     }
     else {
         easyStorage[proxy].push(...matches);
@@ -67,7 +67,7 @@ function hostCreate(proxy, id) {
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pacscript}) => {
     easyStorage = storage;
     if (storage.proxies.length === 0) {
-        proxies.disabled = submitBtn.disabled = onceBtn.disabled = true;
+        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
         return;
     }
     storage.proxies.forEach(proxyCreate);
