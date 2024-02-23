@@ -25,10 +25,13 @@ document.addEventListener('click', (event) => {
 
 async function proxyQuery() {
     output.innerHTML = '';
-    var tabs = await chrome.tabs.query({active: true, currentWindow: true});
-    easyId = tabs[0].id;
-    var params = await chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'});
-    [new URL(tabs[0].url).hostname, ...params.result].forEach(hostCreate);
+    var [{id, url}] = await chrome.tabs.query({active: true, currentWindow: true});
+    easyId = id;
+    chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'}).then(({result}) => {
+        params.result.forEach(hostCreate);
+    }).catch((error) => {
+        hostCreate(new URL(url).hostname, 0);
+    });
 }
 
 async function proxySubmit() {
