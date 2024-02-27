@@ -2,9 +2,9 @@ var easyDefault = {
     proxies: [],
     fallback: null
 };
-var easyStorage;
-var easyPAC;
-var neoPAC;
+var easyStorage = {};
+var easyPAC = '';
+var neoPAC = '';
 var easyProxy;
 var easyHistory = {};
 var easyFallback = [];
@@ -13,10 +13,10 @@ var easyMatches = [];
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
         case 'options_plugins':
-            response({storage: easyStorage, pac_script: easyPAC});
+            response({storage: {...easyDefault, ...easyStorage}, pac_script: easyPAC});
             break;
         case 'options_onchange':
-            easyOptionChanges(params, response);
+            easyOptionsChanges(params, response);
             break;
         case 'easyproxy_temporary':
             easyTempoProxy(params);
@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     }
 });
 
-function easyOptionChanges({storage, removed = []}, response) {
+function easyOptionsChanges({storage, removed = []}, response) {
     easyStorage = storage;
     easyProxy = storage.fallback;
     pacScriptConverter();

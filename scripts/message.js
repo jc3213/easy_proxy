@@ -24,5 +24,6 @@ function inspectProxyItems(archive = {}, result = []) {
         result.push(hostname);
     });
     result.sort();
+    result.unshift(location.hostname, '*.' + location.hostname);
     return {result};
 }
