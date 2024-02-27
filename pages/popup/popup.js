@@ -18,7 +18,7 @@ document.addEventListener('click', (event) => {
             proxySubmit();
             break;
         case 'tempo_btn':
-            proxyTempo();
+            proxyTempo(event.ctrlKey && event.altKey);
             break;
         case 'options_btn':
             chrome.runtime.openOptionsPage();
@@ -48,7 +48,10 @@ async function proxySubmit() {
     chrome.tabs.reload(easyId);
 }
 
-async function proxyTempo() {
+async function proxyTempo(remove) {
+    if (remove) {
+        return chrome.runtime.sendMessage({action: 'easyproxy_purgetempo'});
+    }
     var proxy = proxies.value;
     var matches = [];
     document.querySelectorAll('input:checked').forEach(({value}) => {
@@ -56,7 +59,7 @@ async function proxyTempo() {
             matches.push(value);
         }
     });
-    await chrome.runtime.sendMessage({action: 'easyproxy_temporary', params: {proxy, matches}});
+    await chrome.runtime.sendMessage({action: 'easyproxy_newtempo', params: {proxy, matches}});
     chrome.tabs.reload(easyId);
 }
 
@@ -71,7 +74,7 @@ function hostCreate(proxy, id) {
 
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) => {
     easyStorage = storage;
-    if (storage.proxies.length !== 0) {
+    if (storage.proxies.length > 0) {
         return storage.proxies.forEach(proxyCreate);
     }
     proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;

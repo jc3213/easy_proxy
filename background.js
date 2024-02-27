@@ -6,9 +6,10 @@ var easyStorage = {};
 var easyPAC = '';
 var neoPAC = '';
 var easyProxy;
-var easyHistory = {};
 var easyFallback = [];
-var easyMatches = [];
+var easyFallbackLogs = {};
+var easyTempo = {};
+var easyTempoLogs = {};
 
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
@@ -18,29 +19,49 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
         case 'options_onchange':
             easyOptionsChanges(params, response);
             break;
-        case 'easyproxy_temporary':
+        case 'easyproxy_newtempo':
             easyTempoProxy(params);
             break;
+        case 'easyproxy_purgetempo':
+            easyTempoPurge();
     }
 });
 
-function easyOptionsChanges({storage, removed = []}, response) {
+function easyOptionsChanges({storage, removed}, response) {
     easyStorage = storage;
     easyProxy = storage.fallback;
     pacScriptConverter();
     response({pac_script: easyPAC});
     setEasyProxy(neoPAC);
     chrome.storage.local.set(storage);
-    if (removed.length !== 0) {
+    if (removed?.length > 0) {
         chrome.storage.local.remove(removed);
     }
 }
 
 function easyTempoProxy({proxy, matches}) {
-    easyMatches.push({proxy, matches});
-    console.log('Proxy server: ' + proxy + '\nTempo: ' + matches.join(' '));
+    if (easyTempo[proxy] === undefined) {
+        easyTempo[proxy] = [];
+        easyTempoLogs[proxy] = {};
+    }
+    var tempo = easyTempo[proxy];
+    var logs = easyTempoLogs[proxy];
+    var result = [];
+    matches.forEach((rule) => {
+        if (logs[rule] === undefined) {
+            logs[rule] = true;
+            result.push(rule);
+        }
+    });
+    console.log('Proxy server: ' + proxy + '\nTempo: ' + result.join(' '));
+    tempo.push(...result);
     pacScriptConverter();
     setEasyProxy(neoPAC);
+}
+
+function easyTempoPurge() {
+    easyTempo = {};
+    easyTempoLogs = {};
 }
 
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
@@ -51,10 +72,10 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     if (!easyProxy) {
         return console.log('Error occurred: ' + host + '\n' + error);
     }
-    if (error === 'net::ERR_FAILED' || host in easyHistory) {
+    if (error === 'net::ERR_FAILED' || easyFallbackLogs[host]) {
         return;
     }
-    easyHistory[host] = host;
+    easyFallbackLogs[host] = true;
     easyFallback.push(host);
     pacScriptConverter();
     setEasyProxy(neoPAC);
@@ -78,24 +99,28 @@ chrome.storage.local.get(null, (json) => {
     setEasyProxy(easyPAC);
 });
 
-function pacScriptConverter(pac_script = '') {
+function pacScriptConverter(pac_script = '', tempo = '') {
     easyStorage.proxies.forEach((proxy) => {
-        if (easyStorage[proxy].length !== 0) {
-            pac_script += ' if (/' + convertRegexp(easyStorage[proxy]) + '/i.test(host)) { return "' + proxy + '"; }';
+        if (easyStorage[proxy].length > 0) {
+            pac_script += convertRegexp(proxy, easyStorage[proxy]);
+        }
+        if (easyTempo[proxy]?.length > 0) {
+            tempo += convertRegexp(proxy, easyTempo[proxy]);
         }
     });
-    easyPAC = 'function FindProxyForURL(url, host) {' + pac_script + ' return "DIRECT"; }';
-    easyMatches.forEach(({proxy, matches}) => {
-        pac_script += ' if (/' + convertRegexp(matches) + '/i.test(host)) { return "' + proxy + '"; }';
-    });
-    if (easyProxy && easyFallback.length !== 0) {
-        pac_script += ' if (/' + convertRegexp(easyFallback) + '/i.test(host)) { return "' + easyStorage.fallback + '"; }';
+    easyPAC = convertPacScript(pac_script);
+    if (easyProxy && easyFallback.length > 0) {
+        tempo += convertRegexp(easyProxy, easyFallback);
     }
-    neoPAC = 'function FindProxyForURL(url, host) {' + pac_script + ' return "DIRECT"; }';
+    neoPAC = convertPacScript(pac_script + tempo);
 }
 
-function convertRegexp(array) {
-    return '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*/g, '.*') + ')$';
+function convertRegexp(proxy, matches) {
+    return '\n    if (/^(' + matches.join('|').replace(/\./g, '\\.').replace(/\*/g, '.*') + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
+}
+
+function convertPacScript(pac_script) {
+    return 'function FindProxyForURL(url, host) {' + pac_script + '\n    return "DIRECT";\n}';
 }
 
 chrome.runtime.onInstalled.addListener(async ({previousVersion}) => {

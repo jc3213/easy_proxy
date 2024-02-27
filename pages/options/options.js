@@ -27,7 +27,7 @@ document.addEventListener('click', (event) => {
             importer.click();
             break;
         case 'export_btn':
-            optionsExport(event.altKey && event.shiftKey);
+            optionsExport(event.ctrlKey && event.altKey);
             break;
         case 'fallback_btn':
             profileFallback(event.target.dataset.pid);
