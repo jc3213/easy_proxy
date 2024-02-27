@@ -17,14 +17,19 @@ function inspectProxyItems(archive = {}, result = []) {
             return;
         }
         archive[hostname] = hostname.indexOf('.');
-        if (archive[hostname] === hostname.lastIndexOf('.')) {
-            return result.push(hostname);
+        if (archive[hostname] !== hostname.lastIndexOf('.')) {
+            var domain = '*.' + hostname.slice(archive[hostname] + 1);
+            if (archive[domain] !== undefined) {
+                return;
+            }
+            archive[domain] = true;
+            return result.push(domain);
         }
-        result.push('*.' + hostname.slice(archive[hostname] + 1));
+        result.push(hostname);
     });
     var {hostname} = location;
     if (archive[hostname] === undefined) {
-        result = [...result, hostname.indexOf('.') === hostname.lastIndexOf('.') ? hostname : '*.' + hostname].sort();
+        result = [...result, hostname].sort();
     }
     return {result};
 }
