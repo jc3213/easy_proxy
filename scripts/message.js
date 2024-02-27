@@ -22,6 +22,9 @@ function inspectProxyItems(archive = {}, result = []) {
         }
         result.push('*.' + hostname.slice(archive[hostname] + 1));
     });
-    result.sort().unshift(location.hostname, '*.' + location.hostname);
-    return {result: [...new Set(result)]};
+    var {hostname} = location;
+    if (archive[hostname] === undefined) {
+        result = [...result, hostname.indexOf('.') === hostname.lastIndexOf('.') ? hostname : '*.' + hostname].sort();
+    }
+    return {result};
 }
