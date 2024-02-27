@@ -13,17 +13,15 @@ function inspectProxyItems(archive = {}, result = []) {
             return;
         }
         var {hostname} = new URL(url);
-        var domain = hostname.slice(hostname.indexOf('.') + 1);
-        if (!domain || domain in archive) {
+        if (hostname === '' || archive[hostname]) {
             return;
         }
-        archive[domain] = true;
-        if (domain.includes('.')) {
-            return result.push('*.' + domain);
+        archive[hostname] = hostname.indexOf('.');
+        if (archive[hostname] === hostname.lastIndexOf('.')) {
+            return result.push(hostname);
         }
-        result.push(hostname);
+        result.push('*.' + hostname.slice(archive[hostname] + 1));
     });
-    result.sort();
-    result.unshift(location.hostname, '*.' + location.hostname);
-    return {result};
+    result.sort().unshift(location.hostname, '*.' + location.hostname);
+    return {result: [...new Set(result)]};
 }
