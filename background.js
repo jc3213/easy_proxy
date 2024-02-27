@@ -62,6 +62,8 @@ function easyTempoProxy({proxy, matches}) {
 function easyTempoPurge() {
     easyTempo = {};
     easyTempoLogs = {};
+    pacScriptConverter();
+    setEasyProxy(neoPAC);
 }
 
 chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
