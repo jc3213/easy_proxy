@@ -124,3 +124,15 @@ function convertRegexp(proxy, matches) {
 function convertPacScript(pac_script) {
     return 'function FindProxyForURL(url, host) {' + pac_script + '\n    return "DIRECT";\n}';
 }
+
+chrome.runtime.onInstalled.addListener(async ({previousVersion}) => {
+    if (previousVersion <= '0.2.0') {
+        var json = await chrome.storage.sync.get(null);
+        json.proxies.forEach((proxy) => json[proxy] = json[proxy].split(' '));
+        easyStorage = json;
+        pacScriptConverter();
+        setEasyProxy(neoPAC);
+        chrome.storage.local.set(easyStorage);
+        chrome.storage.sync.clear();
+    }
+});
