@@ -7,9 +7,9 @@ var easyPAC = '';
 var neoPAC = '';
 var easyProxy;
 var easyFallback = [];
-var easyFallbackLogs = {};
+var easyFallbackLog = {};
 var easyTempo = {};
-var easyTempoLogs = {};
+var easyTempoLog = {};
 
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
@@ -42,14 +42,14 @@ function easyOptionsChanges({storage, removed}, response) {
 function easyTempoProxy({proxy, matches}) {
     if (easyTempo[proxy] === undefined) {
         easyTempo[proxy] = [];
-        easyTempoLogs[proxy] = {};
+        easyTempoLog[proxy] = {};
     }
     var tempo = easyTempo[proxy];
-    var logs = easyTempoLogs[proxy];
+    var Log = easyTempoLog[proxy];
     var result = [];
     matches.forEach((rule) => {
-        if (logs[rule] === undefined) {
-            logs[rule] = true;
+        if (Log[rule] === undefined) {
+            Log[rule] = true;
             result.push(rule);
         }
     });
@@ -61,7 +61,7 @@ function easyTempoProxy({proxy, matches}) {
 
 function easyTempoPurge() {
     easyTempo = {};
-    easyTempoLogs = {};
+    easyTempoLog = {};
     pacScriptConverter();
     setEasyProxy(neoPAC);
 }
@@ -74,10 +74,10 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
     if (!easyProxy) {
         return console.log('Error occurred: ' + host + '\n' + error);
     }
-    if (error === 'net::ERR_FAILED' || easyFallbackLogs[host]) {
+    if (error === 'net::ERR_FAILED' || easyFallbackLog[host]) {
         return;
     }
-    easyFallbackLogs[host] = true;
+    easyFallbackLog[host] = true;
     easyFallback.push(host);
     pacScriptConverter();
     setEasyProxy(neoPAC);

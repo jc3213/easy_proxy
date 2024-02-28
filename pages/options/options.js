@@ -1,12 +1,13 @@
-var [scheme, proxy, newBtn, saveBtn, importBtn, exportBtn, importer, exporter, profiles] = document.querySelectorAll('#menu > *, #profile');
-var profileLET = document.querySelector('.template > .profile');
 var easyProfile = {};
 var easyFallback;
+var easyProxy;
 var newProfile = {
-    scheme: 'HTTP',
+    scheme: 'PROXY',
     proxy: ''
 };
 var removed = [];
+var [scheme, proxy, newBtn, saveBtn, importBtn, exportBtn, importer, exporter, profiles] = document.querySelectorAll('#menu > *, #profile');
+var profileLET = document.querySelector('.template > .profile');
 
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
@@ -69,9 +70,9 @@ function optionsExport(pacScript) {
 function profileNew() {
     newBtn.disabled = true;
     saveBtn.disabled = false;
-    profileCreate(newProfile);
-    easyStorage[newProfile] = '';
-    easyStorage.proxies.push(newProfile);
+    profileCreate(easyProxy);
+    easyStorage[easyProxy] = [];
+    easyStorage.proxies.push(easyProxy);
 }
 
 function profileRemove(id) {
@@ -121,7 +122,7 @@ document.addEventListener('change', (event) => {
     var {dataset: {nid, pid}, value, files} = event.target;
     if (nid) {
         newProfile[nid] = value;
-        profileAvail();
+        profileCheck();
         return;
     }
     if (pid) {
@@ -134,18 +135,20 @@ document.addEventListener('change', (event) => {
     }
 });
 
-function profileAvail() {
+function profileCheck() {
     var {scheme, proxy} = newProfile;
-    var profile = scheme + ' ' + proxy;
+    easyProxy = scheme + ' ' + proxy;
     newBtn.disabled = profile in easyStorage || !/([\w-]+\.)+\w+(:\d+)?/.test(proxy) ? true : false;
 }
 
 function optionsImport(file) {
+    saveBtn.disabled = true;
     var fileReader = new FileReader();
-    fileReader.onload = async (event) => {
+    fileReader.onload = (event) => {
         var json = JSON.parse(event.target.result);
         removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
         easyStorage = json;
+        easyOptionsSetUp();
         optionsSaved();
     };
     fileReader.readAsText(file);
@@ -154,6 +157,10 @@ function optionsImport(file) {
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) => {
     easyStorage = storage;
     easyPAC = pac_script;
+    easyOptionsSetUp();
+});
+
+function easyOptionsSetUp() {
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
         profile.matches.value = easyStorage[proxy].join(' ');
@@ -162,4 +169,4 @@ chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) 
             profile.fallback.classList.add('checked');
         }
     });
-});
+}
