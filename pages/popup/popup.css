@@ -1,5 +1,4 @@
 body {
-    min-width: 180px;
     margin: 8px;
 }
 
@@ -15,6 +14,10 @@ input[type="checkbox"] {
 
 button {
     width: 100%;
+}
+
+#output:empty + hr {
+    display: none;
 }
 
 #menu {

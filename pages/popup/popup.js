@@ -2,7 +2,7 @@ var easyMatch = {};
 var easyProxy;
 var easyQuery = false;
 var easyId;
-var [output, queryBtn, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
+var [output, proxies, queryBtn, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 
 document.addEventListener('keydown', (event) => {
@@ -37,7 +37,7 @@ document.addEventListener('change', (event) => {
 
 async function proxyQuery() {
     easyQuery = true;
-    queryBtn.style.display = 'none';
+    output.innerHTML = '';
     var [{id, url}] = await chrome.tabs.query({active: true, currentWindow: true});
     easyId = id;
     chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'}).then(({result}) => {

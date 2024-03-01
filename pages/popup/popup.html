@@ -7,22 +7,21 @@
         <link rel="stylesheet" href="popup.css">
     </head>
     <body>
-        <div id="output">
+        <div id="output"></div>
+        <hr>
+        <select id="proxy"></select>
+        <hr>
+        <div id="menu" class="flex">
             <button data-bid="query_btn" i18n="popup_query">Query</button>
+            <button data-bid="submit_btn" i18n="popup_submit">Submit</button>
+            <button data-bid="tempo_btn" i18n="popup_tempo">Tempo</button>
+            <button data-bid="options_btn" i18n="popup_options">Options</button>
         </div>
         <div class="template">
             <div class="host">
                 <input type="checkbox" id="">
                 <label for=""></label>
             </div>
-        </div>
-        <hr>
-        <select id="proxy"></select>
-        <hr>
-        <div id="menu" class="flex">
-            <button data-bid="submit_btn" i18n="popup_submit">Submit</button>
-            <button data-bid="tempo_btn" i18n="popup_tempo">Tempo</button>
-            <button data-bid="options_btn" i18n="popup_options">Options</button>
         </div>
         <script src="popup.js"></script>
     </body>

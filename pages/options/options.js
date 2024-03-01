@@ -90,9 +90,7 @@ function profileRemove(id) {
 
 function profileResort(id) {
     saveBtn.disabled = false;
-    var {matches} = easyProfile[id];
-    easyStorage[id] = matches.value.split(' ').sort();
-    matches.value = easyStorage[id].join(' ');
+    easyProfile[id].matches.value = easyStorage[id].sort().join(' ');
 }
 
 function profileFallback(id) {
@@ -110,9 +108,8 @@ function profileFallback(id) {
 
 function profileCreate(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, resort, fallback, erase, matches] = profile.querySelectorAll('.proxy, button, textarea');
-    Object.assign(profile, {proxy, fallback, resort, erase, matches});
-    proxy.textContent = erase.dataset.pid = fallback.dataset.pid = resort.dataset.pid = matches.dataset.pid = id;
+    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
+    profile.proxy.textContent = profile.discard.dataset.pid = profile.fallback.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
     profiles.append(profile);
     easyProfile[id] = profile;
     return profile;
