@@ -16,10 +16,6 @@ button {
     width: 100%;
 }
 
-#output:empty + hr {
-    display: none;
-}
-
 #menu {
     display: flex;
     gap: 3px;

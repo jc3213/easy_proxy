@@ -37,9 +37,10 @@ document.addEventListener('change', (event) => {
 
 async function proxyQuery() {
     easyQuery = true;
-    output.innerHTML = '';
     var [{id, url}] = await chrome.tabs.query({active: true, currentWindow: true});
     easyId = id;
+    output.innerHTML = '';
+    queryBtn.style.display = 'none';
     chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'}).then(({result}) => {
         result.forEach(matchCreate);
     }).catch((error) => {
