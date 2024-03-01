@@ -2,7 +2,7 @@ var easyMatch = {};
 var easyProxy;
 var easyQuery = false;
 var easyId;
-var [output, proxies, queryBtn, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
+var [queryBtn, output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 
 document.addEventListener('keydown', (event) => {
