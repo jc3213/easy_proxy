@@ -12,15 +12,21 @@
         "tabs"
     ],
     "host_permissions": [
-        "<all_urls>"
+        "http://*/*",
+        "https://*/*"
     ],
     "background": {
         "service_worker": "background.js"
     },
     "content_scripts": [
         {
-            "matches": ["<all_urls>"],
-            "js": ["scripts/message.js"],
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "scripts/message.js"
+            ],
             "run_at": "document_idle"
         }
     ],
