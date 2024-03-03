@@ -1,7 +1,9 @@
 var easyMatch = {};
+var easyMatchTempo = {};
 var easyProxy;
 var easyQuery = false;
 var easyId;
+var easyHosts = [];
 var [queryBtn, output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 
@@ -49,9 +51,10 @@ async function proxyQuery() {
 
 async function proxySubmit() {
     var profile = easyStorage[proxies.value];
-    document.querySelectorAll('input:not(:disabled):checked').forEach(({value}) => {
-        if (!profile.includes(value)) {
-            profile.push(value);
+    document.querySelectorAll('input:not(:disabled):checked').forEach((match) => {
+        if (!profile.includes(match.value)) {
+            profile.push(match.value);
+            match.disabled = true;
         }
     });
     await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
@@ -63,7 +66,10 @@ async function proxyTempo(remove) {
         return chrome.runtime.sendMessage({action: 'easyproxy_purgetempo'});
     }
     var proxy = proxies.value;
-    var matches = [];
+    if (easyTempo[proxy] === undefined) {
+        easyTempo[proxy] = [];
+    }
+    var matches = easyTempo[proxy];
     document.querySelectorAll('input:not(:disabled):checked').forEach(({value}) => {
         if (!matches.includes(value)) {
             matches.push(value);
@@ -82,25 +88,32 @@ function matchCreate(match, id) {
     if (easyMatch[match] === easyProxy) {
         check.checked = check.disabled = true;
     }
+    if (easyMatchTempo[match] === easyProxy) {
+        check.checked = true;
+    }
+    easyHosts.push(check);
     output.append(host);
 }
 
 function matchUpdate(proxy) {
     easyProxy = proxy;
     if (easyQuery) {
-        document.querySelectorAll('input').forEach((match) => {
-            match.checked = easyMatch[match.value] === proxy ? true : false;
+        easyHosts.forEach((match) => {
+            match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
         });
     }
 }
 
-chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) => {
-    easyStorage = storage;
+chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo, fallback}) => {
     easyProxy = storage.proxies[0];
-    if (storage.proxies.length > 0) {
-        return storage.proxies.forEach(proxyCreate);
+    if (easyProxy === undefined) {
+        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = queryBtn.disabled = true;
+        return;
     }
-    proxies.disabled = submitBtn.disabled = tempoBtn.disabled = queryBtn.disabled = true;
+    easyStorage = storage;
+    easyTempo = tempo;
+    storage.proxies.forEach(proxyCreate);
+    fallback.matches.forEach((match) => easyMatchTempo[match] = fallback.proxy);
 });
 
 function proxyCreate(proxy) {
@@ -108,4 +121,5 @@ function proxyCreate(proxy) {
     menu.textContent = menu.title = menu.value = proxy;
     proxies.append(menu);
     easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
+    easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
 }

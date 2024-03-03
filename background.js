@@ -5,16 +5,16 @@ var easyDefault = {
 var easyStorage = {};
 var easyPAC = '';
 var neoPAC = '';
-var easyProxy;
-var easyFallback = [];
-var easyFallbackLog = {};
+var easyFallback;
+var easyMatch = [];
+var easyMatchLog = {};
 var easyTempo = {};
 var easyTempoLog = {};
 
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
         case 'options_plugins':
-            response({storage: {...easyDefault, ...easyStorage}, pac_script: easyPAC});
+            response(easyPluginInit());
             break;
         case 'options_onchange':
             easyOptionsChanges(params, response);
@@ -27,9 +27,18 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     }
 });
 
+function easyPluginInit() {
+    return {
+        storage: {...easyDefault, ...easyStorage},
+        tempo: easyTempo,
+        fallback: {proxy: easyFallback, matches: easyMatch},
+        pac_script: easyPAC
+    };
+}
+
 function easyOptionsChanges({storage, removed}, response) {
     easyStorage = storage;
-    easyProxy = storage.fallback;
+    easyFallback = storage.fallback;
     pacScriptConverter();
     response({pac_script: easyPAC});
     setEasyProxy(neoPAC);
@@ -71,14 +80,14 @@ chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
         return;
     }
     var {host} = new URL(url);
-    if (!easyProxy) {
+    if (!easyFallback) {
         return console.log('Error occurred: ' + host + '\n' + error);
     }
-    if (error === 'net::ERR_FAILED' || easyFallbackLog[host]) {
+    if (error === 'net::ERR_FAILED' || easyMatchLog[host]) {
         return;
     }
-    easyFallbackLog[host] = true;
-    easyFallback.push(host);
+    easyMatchLog[host] = true;
+    easyMatch.push(host);
     pacScriptConverter();
     setEasyProxy(neoPAC);
     console.log('Proxy fallback: ' + host);
@@ -96,7 +105,7 @@ function setEasyProxy(data) {
 
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
-    easyProxy = easyStorage.fallback;
+    easyFallback = easyStorage.fallback;
     pacScriptConverter();
     setEasyProxy(easyPAC);
 });
@@ -111,8 +120,8 @@ function pacScriptConverter(pac_script = '', tempo = '') {
         }
     });
     easyPAC = convertPacScript(pac_script);
-    if (easyProxy && easyFallback.length > 0) {
-        tempo += convertRegexp(easyProxy, easyFallback);
+    if (easyFallback && easyMatch.length > 0) {
+        tempo += convertRegexp(easyFallback, easyMatch);
     }
     neoPAC = convertPacScript(pac_script + tempo);
 }
@@ -124,15 +133,3 @@ function convertRegexp(proxy, matches) {
 function convertPacScript(pac_script) {
     return 'function FindProxyForURL(url, host) {' + pac_script + '\n    return "DIRECT";\n}';
 }
-
-chrome.runtime.onInstalled.addListener(async ({previousVersion}) => {
-    if (previousVersion <= '0.2.0') {
-        var json = await chrome.storage.sync.get(null);
-        json.proxies.forEach((proxy) => json[proxy] = json[proxy].split(' '));
-        easyStorage = json;
-        pacScriptConverter();
-        setEasyProxy(neoPAC);
-        chrome.storage.local.set(easyStorage);
-        chrome.storage.sync.clear();
-    }
-});
