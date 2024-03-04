@@ -35,6 +35,9 @@ document.addEventListener('change', (event) => {
     if (event.target.id === 'proxy') {
         return matchUpdate(event.target.value);
     }
+    if (!event.target.checked && easyMatch[event.target.value] !== undefined) {
+        event.target.checked = true;
+    }
 });
 
 async function proxyQuery() {
@@ -50,10 +53,13 @@ async function proxyQuery() {
 }
 
 async function proxySubmit() {
-    var profile = easyStorage[proxies.value];
+    var proxy = proxies.value;
+    var matches = easyStorage[proxies.value];
     document.querySelectorAll('input:not(:disabled):checked').forEach((match) => {
-        if (!profile.includes(match.value)) {
-            profile.push(match.value);
+        var {value} = match;
+        if (easyMatch[value] === undefined) {
+            easyMatch[value] = proxy;
+            matches.push(value);
             match.disabled = true;
         }
     });
@@ -71,7 +77,8 @@ async function proxyTempo(remove) {
     }
     var matches = easyTempo[proxy];
     document.querySelectorAll('input:not(:disabled):checked').forEach(({value}) => {
-        if (!matches.includes(value)) {
+        if (easyMatch[value] === undefined) {
+            easyMatch[value] = proxy;
             matches.push(value);
         }
     });
