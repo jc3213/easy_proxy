@@ -35,9 +35,6 @@ document.addEventListener('change', (event) => {
     if (event.target.id === 'proxy') {
         return matchUpdate(event.target.value);
     }
-    if (!event.target.checked && easyMatch[event.target.value] !== undefined) {
-        event.target.checked = true;
-    }
 });
 
 async function proxyQuery() {
@@ -76,10 +73,12 @@ async function proxyTempo(remove) {
         easyTempo[proxy] = [];
     }
     var matches = easyTempo[proxy];
-    document.querySelectorAll('input:not(:disabled):checked').forEach(({value}) => {
+    document.querySelectorAll('input:not(:disabled):checked').forEach((match) => {
+        var {value} = match;
         if (easyMatch[value] === undefined) {
             easyMatch[value] = proxy;
             matches.push(value);
+            match.parentNode.classList.add('tempo');
         }
     });
     await chrome.runtime.sendMessage({action: 'easyproxy_newtempo', params: {proxy, matches}});
@@ -97,6 +96,7 @@ function matchCreate(match, id) {
     }
     if (easyMatchTempo[match] === easyProxy) {
         check.checked = true;
+        host.classList.add('tempo');
     }
     easyHosts.push(check);
     output.append(host);

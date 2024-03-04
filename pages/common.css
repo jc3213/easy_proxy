@@ -75,14 +75,14 @@ button:enabled:active {
     border-style: inset;
 }
 
-button.checked {
-    border-style: inset;
-}
-
 :disabled {
     filter: contrast(25%);
 }
 
 .template {
     display: none;
+}
+
+.tempo {
+    pointer-events: none;
 }
