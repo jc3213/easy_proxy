@@ -14,7 +14,7 @@ var easyTempoLog = {};
 chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     switch (action) {
         case 'options_plugins':
-            response(easyPluginInit());
+            easyPluginInit(response);
             break;
         case 'options_onchange':
             easyOptionsChanges(params, response);
@@ -27,13 +27,13 @@ chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
     }
 });
 
-function easyPluginInit() {
-    return {
+function easyPluginInit(response) {
+    response({
         storage: {...easyDefault, ...easyStorage},
         tempo: easyTempo,
         fallback: {proxy: easyFallback, matches: easyMatch},
         pac_script: easyPAC
-    };
+    });
 }
 
 function easyOptionsChanges({storage, removed}, response) {
