@@ -11,7 +11,7 @@ var easyMatchLog = {};
 var easyTempo = {};
 var easyTempoLog = {};
 
-chrome.runtime.onMessage.addListener(({action, params}, {tab}, response) => {
+chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     switch (action) {
         case 'options_plugins':
             easyPluginInit(response);
