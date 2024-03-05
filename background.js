@@ -19,7 +19,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
         case 'options_onchange':
             easyOptionsChanges(params, response);
             break;
-        case 'easyproxy_newtempo':
+        case 'easyproxy_changetempo':
             easyTempoProxy(params);
             break;
         case 'easyproxy_purgetempo':
@@ -48,7 +48,7 @@ function easyOptionsChanges({storage, removed}, response) {
     }
 }
 
-function easyTempoProxy({proxy, matches}) {
+function easyTempoProxy({proxy, include, exclude}) {
     if (easyTempo[proxy] === undefined) {
         easyTempo[proxy] = [];
         easyTempoLog[proxy] = {};
@@ -56,13 +56,15 @@ function easyTempoProxy({proxy, matches}) {
     var tempo = easyTempo[proxy];
     var Log = easyTempoLog[proxy];
     var result = [];
-    matches.forEach((rule) => {
-        if (Log[rule] === undefined) {
-            Log[rule] = true;
-            result.push(rule);
-        }
+    include.forEach((rule) => {
+        Log[rule] = true;
+        result.push(rule);
     });
-    console.log('Proxy server: ' + proxy + '\nTempo: ' + result.join(' '));
+    exclude.forEach((rule) => {
+        delete Log[rule];
+        tempo.splice(tempo.indexOf(rule), 1);
+    });
+    console.log('Proxy Server: ' + proxy + '\nAdded Tempo: ' + result.join(' ') + '\nRemoved Tempo: ' + exclude.join(' '));
     tempo.push(...result);
     pacScriptConverter();
     setEasyProxy(neoPAC);
