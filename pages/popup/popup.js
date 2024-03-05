@@ -131,13 +131,14 @@ function matchCreate(match, id) {
     check.id = 'easyproxy_' + id;
     label.setAttribute('for', 'easyproxy_' + id);
     label.textContent = check.value = match;
-    if (easyMatch[match] === easyProxy) {
-        check.checked = true;
+    if (easyMatch[match] !== undefined) {
         host.classList.add('match');
     }
-    if (easyMatchTempo[match] === easyProxy) {
-        check.checked = true;
+    if (easyMatchTempo[match] !== undefined) {
         host.classList.add('tempo');
+    }
+    if (easyMatch[match] === easyProxy || easyMatchTempo[match] === easyProxy) {
+        check.checked = true;
     }
     easyHosts.push(check);
     output.append(host);
