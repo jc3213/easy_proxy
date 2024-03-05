@@ -82,15 +82,3 @@ button:enabled:active {
 .template {
     display: none;
 }
-
-.match {
-    pointer-events: none;
-}
-
-.match > * {
-    filter: contrast(25%);
-}
-
-.tempo {
-    color: #7cfc00;
-}

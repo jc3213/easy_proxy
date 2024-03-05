@@ -37,3 +37,15 @@ button {
     margin-left: 5px;
     letter-spacing: 1px;
 }
+
+.match {
+    pointer-events: none;
+}
+
+.match > * {
+    filter: contrast(25%);
+}
+
+.tempo {
+    color: #7cfc00;
+}
