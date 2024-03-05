@@ -53,15 +53,27 @@ async function proxySubmit() {
 }
 
 async function proxyTempo(remove) {
-    if (remove) {
-        return chrome.runtime.sendMessage({action: 'easyproxy_purgetempo'});
-    }
     var proxy = proxies.value;
+    if (remove) {
+        return proxyTempoPurge(proxy);
+    }
     if (easyTempo[proxy] === undefined) {
         easyTempo[proxy] = [];
     }
     var {include, exclude} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
     await chrome.runtime.sendMessage({action: 'easyproxy_changetempo', params: {proxy, include, exclude}});
+    chrome.tabs.reload(easyId);
+}
+
+async function proxyTempoPurge(proxy) {
+    easyMatchTempo = {};
+    easyTempo = {};
+    easyHosts.forEach((match) => {
+        match.parentNode.classList.remove('tempo');
+        console.log(match, easyMatch[match.value] , easyMatchTempo[match.value]);
+        match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
+    });
+    await chrome.runtime.sendMessage({action: 'easyproxy_purgetempo'})
     chrome.tabs.reload(easyId);
 }
 
@@ -96,7 +108,6 @@ document.addEventListener('change', (event) => {
         return proxyUpdate(event.target.value);
     }
 });
-
 
 function matchUpdate(check) {
     if (changes[check.value] === undefined) {
