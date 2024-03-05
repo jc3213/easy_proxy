@@ -83,6 +83,14 @@ button:enabled:active {
     display: none;
 }
 
-.tempo {
+.match {
     pointer-events: none;
+}
+
+.match label {
+    filter: contrast(25%);
+}
+
+.tempo {
+    color: #7cfc00;
 }
