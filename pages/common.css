@@ -87,7 +87,7 @@ button:enabled:active {
     pointer-events: none;
 }
 
-.match label {
+.match > * {
     filter: contrast(25%);
 }
 
