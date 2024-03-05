@@ -47,7 +47,7 @@ async function proxyQuery() {
 
 async function proxySubmit() {
     var proxy = proxies.value;
-    var {include, exclude} = proxyChange('match', easyStorage[proxy], easyMatch);
+    var {include, exclude} = proxyChange('match', proxy, easyStorage[proxy], easyMatch);
     await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
     chrome.tabs.reload(easyId);
 }
@@ -60,12 +60,12 @@ async function proxyTempo(remove) {
     if (easyTempo[proxy] === undefined) {
         easyTempo[proxy] = [];
     }
-    var {include, exclude} = proxyChange('tempo', easyTempo[proxy], easyMatchTempo);
+    var {include, exclude} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
     await chrome.runtime.sendMessage({action: 'easyproxy_changetempo', params: {proxy, include, exclude}});
     chrome.tabs.reload(easyId);
 }
 
-function proxyChange(type, storage, logs) {
+function proxyChange(type, proxy, storage, logs) {
     var include = [];
     var exclude = [];
     checkboxes.forEach((match) => {
