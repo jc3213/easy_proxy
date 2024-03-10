@@ -7,29 +7,21 @@ chrome.runtime.onMessage.addListener(({query}, sender, response) => {
 });
 
 function inspectProxyItems(archive = {}, result = []) {
-    document.querySelectorAll('[href], [src]').forEach((link) => {
+    [location, ...document.querySelectorAll('[href], [src]')].forEach((link) => {
         var url = link.href || link.src;
         if (!url) {
             return;
         }
         var {hostname} = new URL(url);
-        if (hostname === '' || archive[hostname]) {
+        if (hostname === '') {
             return;
         }
-        archive[hostname] = hostname.indexOf('.');
-        if (archive[hostname] !== hostname.lastIndexOf('.')) {
-            var domain = '*.' + hostname.slice(archive[hostname] + 1);
-            if (archive[domain] !== undefined) {
-                return;
-            }
-            archive[domain] = true;
-            return result.push(domain);
+        var match = '*.' + hostname.split('.').slice(-2).join('.');
+        if (archive[match]) {
+            return;
         }
-        result.push(hostname);
+        archive[match] = true;
+        result.push(match);
     });
-    var {hostname} = location;
-    if (archive[hostname] === undefined) {
-        result = [...result, hostname].sort();
-    }
-    return {result};
+    return {result: result.sort()};
 }

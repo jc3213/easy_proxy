@@ -6,6 +6,8 @@ var easyId;
 var easyHosts = [];
 var changes = {};
 var checkboxes = [];
+var queryLogs = {};
+var queryId = 0;
 var [queryBtn, output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 
@@ -41,7 +43,7 @@ async function proxyQuery() {
     chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'}).then(({result}) => {
         result.forEach(matchCreate);
     }).catch((error) => {
-        matchCreate(new URL(url).hostname, 0);
+        matchCreate('*.' + new URL(url).hostname.split('.').slice(-2).join('.'), 0);
     });
 }
 
@@ -70,7 +72,6 @@ async function proxyTempoPurge(proxy) {
     easyTempo = {};
     easyHosts.forEach((match) => {
         match.parentNode.classList.remove('tempo');
-        console.log(match, easyMatch[match.value] , easyMatchTempo[match.value]);
         match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
     });
     await chrome.runtime.sendMessage({action: 'easyproxy_purgetempo'})
@@ -125,7 +126,8 @@ function proxyUpdate(proxy) {
     }
 }
 
-function matchCreate(match, id) {
+function matchCreate(hostname, id) {
+    var match = '*.' + hostname.split('.').slice(-2).join('.');
     var host = hostLET.cloneNode(true);
     var [check, label] = host.querySelectorAll('input, label');
     check.id = 'easyproxy_' + id;
@@ -143,6 +145,8 @@ function matchCreate(match, id) {
     easyHosts.push(check);
     output.append(host);
 }
+matchCreate.prototype.logs = {};
+matchCreate.prototype.id = 0;
 
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo, fallback}) => {
     easyProxy = storage.proxies[0];
