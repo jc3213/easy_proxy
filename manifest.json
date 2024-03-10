@@ -25,7 +25,7 @@
                 "https://*/*"
             ],
             "js": [
-                "libs/match.js",
+                "libs/matchpattern.js",
                 "scripts/message.js"
             ],
             "run_at": "document_idle"
