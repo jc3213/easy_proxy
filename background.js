@@ -129,7 +129,7 @@ function pacScriptConverter(pac_script = '', tempo = '') {
 }
 
 function convertRegexp(proxy, matches) {
-    return '\n    if (/^(' + matches.join('|').replace(/\./g, '\\.').replace(/\\?\.?\*\\?\.?/, '.*') + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
+    return '\n    if (/^(' + matches.join('|').replace(/\./g, '\\.').replace(/\\?\.?\*\\?\.?/g, '.*') + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
 }
 
 function convertPacScript(pac_script) {
