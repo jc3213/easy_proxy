@@ -56,7 +56,7 @@
         return result;
     }
 
-    self.easyMatchPattern = (hostname) => {
+    window.easyMatchPattern = (hostname) => {
         return cache[hostname] || create(hostname);
     };
 })();
