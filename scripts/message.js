@@ -16,7 +16,7 @@ function inspectProxyItems(archive = {}, result = []) {
         if (hostname === '') {
             return;
         }
-        var match = createMatchPattern(hostname);
+        var match = easyMatchPattern(hostname);
         if (archive[match]) {
             return;
         }

@@ -1,5 +1,5 @@
 (() => {
-    const popularTopLevelDomains = {
+    const tlds = {
         'aero': true,
         'app': true,
         'arpa': true,
@@ -37,16 +37,26 @@
         'xyz': true
     };
 
-    const createMatchPattern = (hostname) => {
-        var [tld, sld, sbd, ...useless] = hostname.split('.').reverse();
+    const cache = {};
+
+    const create = (hostname) => {
+        let result;
+        let [tld, sld, sbd, ...useless] = hostname.split('.').reverse();
         if (sld === undefined) {
-            return hostname;
+            result = hostname;
         }
-        if (sld in popularTopLevelDomains) {
-            return '*.' + sbd + '.' + sld + '.' + tld;
+        else if (sld in tlds) {
+            result = '*.' + sbd + '.' + sld + '.' + tld;
         }
-        return '*.' + sld + '.' + tld;
+        else {
+            result = '*.' + sld + '.' + tld;
+        }
+
+        cache[hostname] = result;
+        return result;
     }
 
-    self.createMatchPattern = createMatchPattern;
+    self.easyMatchPattern = (hostname) => {
+        return cache[hostname] || create(hostname);
+    };
 })();

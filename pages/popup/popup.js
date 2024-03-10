@@ -41,7 +41,7 @@ async function proxyQuery() {
     chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'}).then(({result}) => {
         result.forEach(matchCreate);
     }).catch((error) => {
-        matchCreate(createMatchPattern(new URL(url).hostname));
+        matchCreate(easyMatchPattern(new URL(url).hostname));
     });
 }
 
