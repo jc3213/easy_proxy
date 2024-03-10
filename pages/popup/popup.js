@@ -6,8 +6,6 @@ var easyId;
 var easyHosts = [];
 var changes = {};
 var checkboxes = [];
-var queryLogs = {};
-var queryId = 0;
 var [queryBtn, output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
 
@@ -126,8 +124,7 @@ function proxyUpdate(proxy) {
     }
 }
 
-function matchCreate(hostname, id) {
-    var match = '*.' + hostname.split('.').slice(-2).join('.');
+function matchCreate(match, id) {
     var host = hostLET.cloneNode(true);
     var [check, label] = host.querySelectorAll('input, label');
     check.id = 'easyproxy_' + id;
