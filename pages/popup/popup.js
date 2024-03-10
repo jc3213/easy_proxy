@@ -142,8 +142,6 @@ function matchCreate(match, id) {
     easyHosts.push(check);
     output.append(host);
 }
-matchCreate.prototype.logs = {};
-matchCreate.prototype.id = 0;
 
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo, fallback}) => {
     easyProxy = storage.proxies[0];
