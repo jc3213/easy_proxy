@@ -16,7 +16,7 @@ function inspectProxyItems(archive = {}, result = []) {
         if (hostname === '') {
             return;
         }
-        var match = '*.' + hostname.split('.').slice(-2).join('.');
+        var match = createMatchPattern(hostname);
         if (archive[match]) {
             return;
         }

@@ -41,7 +41,7 @@ async function proxyQuery() {
     chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'}).then(({result}) => {
         result.forEach(matchCreate);
     }).catch((error) => {
-        matchCreate('*.' + new URL(url).hostname.split('.').slice(-2).join('.'), 0);
+        matchCreate(createMatchPattern(new URL(url).hostname));
     });
 }
 
@@ -142,6 +142,8 @@ function matchCreate(match, id) {
     easyHosts.push(check);
     output.append(host);
 }
+matchCreate.prototype.logs = {};
+matchCreate.prototype.id = 0;
 
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo, fallback}) => {
     easyProxy = storage.proxies[0];
