@@ -1,4 +1,4 @@
-(function() {
+(() => {
     const popularTopLevelDomains = {
         'aero': true,
         'app': true,
@@ -37,7 +37,7 @@
         'xyz': true
     };
 
-    const createMatchPattern = function (hostname) {
+    const createMatchPattern = (hostname) => {
         var [tld, sld, sbd, ...useless] = hostname.split('.').reverse();
         if (sld === undefined) {
             return hostname;
