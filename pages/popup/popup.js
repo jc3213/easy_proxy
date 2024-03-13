@@ -119,7 +119,9 @@ function proxyUpdate(proxy) {
     easyProxy = proxy;
     if (easyQuery) {
         easyHosts.forEach((match) => {
-            match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
+            var host = match.value;
+            match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
+            match.disabled = (easyMatch[host] !== undefined && easyMatch[host] !== proxy) || (easyMatchTempo[host] !== undefined && easyMatchTempo[host] !== proxy);
         });
     }
 }
