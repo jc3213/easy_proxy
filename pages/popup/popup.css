@@ -39,13 +39,9 @@ button {
 }
 
 .match {
-    pointer-events: none;
-}
-
-.match > * {
-    filter: contrast(25%);
+    color: #e76b4a;
 }
 
 .tempo {
-    color: #7cfc00;
+    color: #7ac2fc;
 }

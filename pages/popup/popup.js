@@ -5,6 +5,7 @@ var easyQuery = false;
 var easyId;
 var easyHosts = [];
 var changes = {};
+var checkLogs = {};
 var checkboxes = [];
 var [queryBtn, output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
 var hostLET = document.querySelector('.template > .host');
@@ -47,9 +48,11 @@ async function proxyQuery() {
 
 async function proxySubmit() {
     var proxy = proxies.value;
-    var {include, exclude} = proxyChange('match', proxy, easyStorage[proxy], easyMatch);
-    await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
-    chrome.tabs.reload(easyId);
+    var {include, exclude, manage} = proxyChange('match', proxy, easyStorage[proxy], easyMatch);
+    if (manage) {
+        await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}});
+        chrome.tabs.reload(easyId);
+    }
 }
 
 async function proxyTempo(remove) {
@@ -60,9 +63,11 @@ async function proxyTempo(remove) {
     if (easyTempo[proxy] === undefined) {
         easyTempo[proxy] = [];
     }
-    var {include, exclude} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
-    await chrome.runtime.sendMessage({action: 'easyproxy_changetempo', params: {proxy, include, exclude}});
-    chrome.tabs.reload(easyId);
+    var {include, exclude, manage} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
+    if (manage) {
+        await chrome.runtime.sendMessage({action: 'easyproxy_changetempo', params: {proxy, include, exclude}});
+        chrome.tabs.reload(easyId);
+    }
 }
 
 async function proxyTempoPurge(proxy) {
@@ -81,6 +86,11 @@ function proxyChange(type, proxy, storage, logs) {
     var exclude = [];
     checkboxes.forEach((match) => {
         var {value, checked} = match;
+        var status = match.parentNode.classList[1];
+        if (status && status !== type) {
+            match.checked = checkLogs[value];
+            return;
+        }
         if (checked && logs[value] === undefined) {
             logs[value] = proxy;
             include.push(value);
@@ -95,8 +105,9 @@ function proxyChange(type, proxy, storage, logs) {
         }
     });
     changes = {};
+    checkLogs = {};
     checkboxes = [];
-    return {include, exclude};
+    return {include, exclude, manage: include.length !== 0 || exclude.length !== 0};
 }
 
 document.addEventListener('change', (event) => {
@@ -109,10 +120,12 @@ document.addEventListener('change', (event) => {
 });
 
 function matchUpdate(check) {
-    if (changes[check.value] === undefined) {
+    var {value, checked} = check;
+    if (changes[value] === undefined) {
+        checkLogs[value] = !checked;
         checkboxes.push(check);
     }
-    changes[check.value] = check.checked;
+    changes[value] = checked;
 }
 
 function proxyUpdate(proxy) {
