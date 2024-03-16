@@ -1,0 +1,44 @@
+{
+    "extension_name": {
+        "message": "简易代理"
+    },
+    "extension_description": {
+        "message": "一个简易使用的自动代理扩展"
+    },
+    "options_title": {
+        "message": "简易代理设置"
+    },
+    "options_profile": {
+        "message": "新档案"
+    },
+    "options_save": {
+        "message": "保存"
+    },
+    "options_import": {
+        "message": "导入"
+    },
+    "options_export": {
+        "message": "导出"
+    },
+    "options_resort": {
+        "message": "排序"
+    },
+    "options_fallback": {
+        "message": "回落代理"
+    },
+    "popup_title": {
+        "message": "简易代理管理"
+    },
+    "popup_query": {
+        "message": "获取"
+    },
+    "popup_submit": {
+        "message": "添加"
+    },
+    "popup_tempo": {
+        "message": "临时"
+    },
+    "popup_options": {
+        "message": "设置"
+    }
+}

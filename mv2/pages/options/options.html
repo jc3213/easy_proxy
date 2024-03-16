@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title i18n="options_title">Easy Proxy Options</title>
+        <link rel="stylesheet" href="/pages/common.css">
+        <link rel="stylesheet" href="options.css">
+    </head>
+    <body>
+        <div id="menu" class="flex">
+            <select data-nid="scheme">
+                <option value="PROXY" selected>PROXY</option>
+                <option value="HTTP">HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+                <option value="SOCKS">SOCKS</option>
+                <option value="SOCKS4">SOCKS4</option>
+                <option value="SOCKS5">SOCKS5</option>
+            </select>
+            <input data-nid="proxy" type="url">
+            <button data-bid="new_btn" disabled i18n="options_profile">New Profile</button>
+            <button data-bid="save_btn" disabled i18n="options_save">Save</button>
+            <button data-bid="import_btn" i18n="options_import">Import</button>
+            <button data-bid="export_btn" i18n="options_export">Export</button>
+            <input type="file" accept=".json">
+            <a></a>
+        </div>
+        <hr>
+        <div class="template">
+            <div class="profile">
+                <div>
+                    <div class="proxy"></div>
+                    <button class="resort" data-bid="resort_btn" i18n="options_resort">Sort</button>
+                    <button class="fallback" data-bid="fallback_btn" i18n="options_fallback">Fallback</button>
+                    <button class="discard" data-bid="remove_btn">❌</button>
+                </div>
+                <textarea class="matches" rows="4"></textarea>
+            </div>
+        </div>
+        <div id="profile"></div>
+        <script src="options.js"></script>
+    </body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title i18n="popup_title">Manager - Easy Proxy</title>
+        <link rel="stylesheet" href="/pages/common.css">
+        <link rel="stylesheet" href="popup.css">
+    </head>
+    <body>
+        <button data-bid="query_btn" i18n="popup_query">Query</button>
+        <div id="output"></div>
+        <hr>
+        <select id="proxy"></select>
+        <hr>
+        <div id="menu" class="flex">
+            <button data-bid="submit_btn" i18n="popup_submit">Submit</button>
+            <button data-bid="tempo_btn" i18n="popup_tempo">Tempo</button>
+            <button data-bid="options_btn" i18n="popup_options">Options</button>
+        </div>
+        <div class="template">
+            <div class="host">
+                <input type="checkbox" id="">
+                <label for=""></label>
+            </div>
+        </div>
+        <script src="/libs/matchpattern.js"></script>
+        <script src="popup.js"></script>
+    </body>
+</html>

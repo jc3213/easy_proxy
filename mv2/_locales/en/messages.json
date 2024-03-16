@@ -1,0 +1,44 @@
+{
+    "extension_name": {
+        "message": "Easy Proxy"
+    },
+    "extension_description": {
+        "message": "An ease to use auto-proxy browser extension"
+    },
+    "options_title": {
+        "message": "Easy Proxy Options"
+    },
+    "options_profile": {
+        "message": "New Profile"
+    },
+    "options_save": {
+        "message": "Save"
+    },
+    "options_import": {
+        "message": "Import"
+    },
+    "options_export": {
+        "message": "Export"
+    },
+    "options_resort": {
+        "message": "Sort"
+    },
+    "options_fallback": {
+        "message": "Fallback"
+    },
+    "popup_title": {
+        "message": "Easy Proxy Manager"
+    },
+    "popup_query": {
+        "message": "Query"
+    },
+    "popup_submit": {
+        "message": "Submit"
+    },
+    "popup_tempo": {
+        "message": "Tempo"
+    },
+    "popup_options": {
+        "message": "Options"
+    }
+}

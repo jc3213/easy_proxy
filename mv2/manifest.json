@@ -1,0 +1,42 @@
+{
+    "name": "Easy Proxy",
+    "description": "An ease to use auto-proxy browser extension",
+    "version": "0.6.0",
+    "manifest_version": 2,
+    "permissions": [
+        "proxy",
+        "storage",
+        "unlimitedStorage",
+        "webRequest",
+        "contextMenus",
+        "tabs",
+        "http://*/*",
+        "https://*/*"
+    ],
+    "default_locale": "en",
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "libs/matchpattern.js",
+                "scripts/message.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "browser_action": {
+        "default_popup": "pages/popup/popup.html"
+    },
+    "options_ui": {
+        "page": "pages/options/options.html",
+        "open_in_tab": true
+    }
+}
