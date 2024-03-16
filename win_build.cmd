@@ -14,7 +14,7 @@ goto :main
 :archive
 for /f "usebackq skip=3 tokens=1,2 delims=,: " %%a in (mv%~1\manifest.json) do (if %%~a equ version set output=easyproxy_mv%~1-%%~b.zip)
 "%zip%" a "%output%" "%~dp0mv2\*" >nul
-if %~1 equ 3 goto :exit
+if %~1 equ 2 goto :exit
 "%zip%" u "%output%" -ux2 "%~dp0mv3\*" >nul
 :exit
 echo.
