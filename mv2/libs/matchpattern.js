@@ -65,7 +65,9 @@
 
     const ipv4_handler = (ipv4) => {
         let [network, host, ...useless] = ipv4.split('.');
-        return network + '.' + host + '.*';
+        let result = network + '.' + host + '.*';
+        cache[ipv4] = result;
+        return result;
     };
 
     window.easyMatchPattern = (hostname) => {
