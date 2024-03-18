@@ -39,9 +39,16 @@
 
     const cache = {};
 
+    const ipv4_tester = /((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])/;
+
     const create = (hostname) => {
+        if (ipv4_tester.test(hostname)) {
+            return ipv4_handler(hostname);
+        }
+
         let result;
         let [tld, sld, sbd, ...useless] = hostname.split('.').reverse();
+
         if (sld === undefined) {
             result = hostname;
         }
@@ -54,7 +61,12 @@
 
         cache[hostname] = result;
         return result;
-    }
+    };
+
+    const ipv4_handler = (ipv4) => {
+        let [network, host, ...useless] = ipv4.split('.');
+        return network + '.' + host + '.*';
+    };
 
     window.easyMatchPattern = (hostname) => {
         return cache[hostname] || create(hostname);
