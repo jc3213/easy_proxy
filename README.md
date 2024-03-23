@@ -1,6 +1,6 @@
 ## About
-- An ease to use autoproxy browser extension
-- Support auto proxy, auto fallback proxy, and export proxy rules as PAC script file
+- An ease to use auto-proxy browser extension
+- Support auto proxy, fallback proxy, and export proxy rules as PAC script file
 
 ## Install the extension
 - Microsoft Edge
