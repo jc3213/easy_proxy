@@ -1,7 +1,7 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "manifest_version": 3,
     "permissions": [
         "proxy",
@@ -9,7 +9,8 @@
         "unlimitedStorage",
         "webRequest",
         "contextMenus",
-        "tabs"
+        "tabs",
+        "scripting"
     ],
     "host_permissions": [
         "http://*/*",
@@ -19,19 +20,6 @@
     "background": {
         "service_worker": "background.js"
     },
-    "content_scripts": [
-        {
-            "matches": [
-                "http://*/*",
-                "https://*/*"
-            ],
-            "js": [
-                "libs/matchpattern.js",
-                "scripts/message.js"
-            ],
-            "run_at": "document_start"
-        }
-    ],
     "action": {
         "default_popup": "pages/popup/popup.html"
     },
