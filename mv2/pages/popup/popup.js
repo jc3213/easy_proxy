@@ -187,8 +187,8 @@ function scriptExecutor(tabId, func) {
 }
 
 function inspectProxyItems() {
-    var archive = {};
     var result = [];
+    var logs = {};
     [location, ...document.querySelectorAll('[href], [src]')].forEach((link) => {
         var url = link.href || link.src;
         if (!url) {
@@ -199,10 +199,10 @@ function inspectProxyItems() {
             return;
         }
         var match = easyMatchPattern(hostname);
-        if (archive[match]) {
+        if (logs[match]) {
             return;
         }
-        archive[match] = true;
+        logs[match] = true;
         result.push(match);
     });
     return result.sort();
