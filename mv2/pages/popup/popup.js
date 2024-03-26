@@ -61,7 +61,7 @@ function proxyTempo(remove) {
     if (remove) {
         return proxyTempoPurge(proxy);
     }
-    if (easyTempo[proxy] === undefined) {
+    if (!easyTempo[proxy]) {
         easyTempo[proxy] = [];
     }
     var {include, exclude, manage} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
@@ -92,13 +92,13 @@ function proxyChange(type, proxy, storage, logs) {
             match.checked = checkLogs[value];
             return;
         }
-        if (checked && logs[value] === undefined) {
+        if (checked && !logs[value]) {
             logs[value] = proxy;
             include.push(value);
             storage.push(value);
             return match.parentNode.classList.add(type);
         }
-        if (!checked && logs[value] !== undefined) {
+        if (!checked && logs[value]) {
             delete logs[value];
             storage.splice(storage.indexOf(value), 1);
             exclude.push(value);
@@ -122,7 +122,7 @@ document.addEventListener('change', (event) => {
 
 function matchUpdate(check) {
     var {value, checked} = check;
-    if (changes[value] === undefined) {
+    if (!changes[value]) {
         checkLogs[value] = !checked;
         checkboxes.push(check);
     }
@@ -135,7 +135,7 @@ function proxyUpdate(proxy) {
         easyHosts.forEach((match) => {
             var host = match.value;
             match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
-            match.disabled = (easyMatch[host] !== undefined && easyMatch[host] !== proxy) || (easyMatchTempo[host] !== undefined && easyMatchTempo[host] !== proxy);
+            match.disabled = easyMatch[host] && easyMatch[host] !== proxy || easyMatchTempo[host] && easyMatchTempo[host] !== proxy;
         });
     }
 }
@@ -146,10 +146,10 @@ function matchCreate(match, id) {
     check.id = 'easyproxy_' + id;
     label.setAttribute('for', 'easyproxy_' + id);
     label.textContent = check.value = match;
-    if (easyMatch[match] !== undefined) {
+    if (easyMatch[match]) {
         host.classList.add('match');
     }
-    if (easyMatchTempo[match] !== undefined) {
+    if (easyMatchTempo[match]) {
         host.classList.add('tempo');
     }
     if (easyMatch[match] === easyProxy || easyMatchTempo[match] === easyProxy) {
@@ -161,7 +161,7 @@ function matchCreate(match, id) {
 
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo, fallback}) => {
     easyProxy = storage.proxies[0];
-    if (easyProxy === undefined) {
+    if (!easyProxy) {
         proxies.disabled = submitBtn.disabled = tempoBtn.disabled = queryBtn.disabled = true;
         return;
     }
