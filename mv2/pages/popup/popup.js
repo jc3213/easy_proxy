@@ -40,11 +40,10 @@ document.addEventListener('click', (event) => {
 
 function proxyQuery() {
     easyQuery = true;
-    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
         easyId = tabs[0].id;
         queryBtn.style.display = 'none';
-        chrome.tabs.sendMessage(easyId, {query: 'easyproxy_inspect'},
-        (response) => chrome.runtime.lastError ? matchCreate(easyMatchPattern(new URL(tabs[0].url).hostname)) : response.result.forEach(matchCreate));
+        scriptExecutor(easyId, inspectProxyItems).then((result) => result.forEach(matchCreate)).catch(() => matchCreate(easyMatchPattern(new URL(tabs[0].url).hostname)))
     });
 }
 
@@ -179,3 +178,33 @@ function proxyCreate(proxy) {
     easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
     easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
 }
+
+function scriptExecutor(tabId, func) {
+    if (chrome.runtime.getManifest().manifest_version === 3) {
+        return chrome.scripting.executeScript({target : {tabId}, func}).then((injectionResults) => injectionResults[0].result);
+    }
+    return new Promise((resolve, reject) => chrome.tabs.executeScript(tabId, {code: '(' + func.toString() + ')();'}, (results) => results ? resolve(results[0]) : reject(chrome.runtime.lastError)));
+}
+
+function inspectProxyItems() {
+    var archive = {};
+    var result = [];
+    [location, ...document.querySelectorAll('[href], [src]')].forEach((link) => {
+        var url = link.href || link.src;
+        if (!url) {
+            return;
+        }
+        var {hostname} = new URL(url);
+        if (hostname === '') {
+            return;
+        }
+        var match = easyMatchPattern(hostname);
+        if (archive[match]) {
+            return;
+        }
+        archive[match] = true;
+        result.push(match);
+    });
+    return result.sort();
+}
+
