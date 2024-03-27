@@ -202,13 +202,10 @@ function inspectProxyItems() {
     var logs = {};
     [location, ...document.querySelectorAll('[href], [src]')].forEach((link) => {
         var url = link.href || link.src;
-        if (!url) {
+        if (!url || !url.includes('://')) {
             return;
         }
         var {hostname} = new URL(url);
-        if (hostname === '') {
-            return;
-        }
         if (logs[hostname]) {
             return;
         }
