@@ -43,7 +43,18 @@ function proxyQuery() {
     chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
         easyId = tabs[0].id;
         queryBtn.style.display = 'none';
-        scriptExecutor(easyId, inspectProxyItems).then((result) => result.forEach(matchCreate)).catch(() => matchCreate(easyMatchPattern(new URL(tabs[0].url).hostname)))
+        var logs = {};
+        var matches = [];
+        var result = await scriptExecutor(easyId, inspectProxyItems).then((result) => result).catch(() => [new URL(tabs[0].url).hostname]);
+        result.forEach((host, index) => {
+            var match = easyMatchPattern(host);
+            if (logs[match]) {
+                return;
+            }
+            logs[match] = host;
+            matches.push(match);
+        });
+        matches.sort().forEach(matchCreate);
     });
 }
 
@@ -198,13 +209,11 @@ function inspectProxyItems() {
         if (hostname === '') {
             return;
         }
-        var match = easyMatchPattern(hostname);
-        if (logs[match]) {
+        if (logs[hostname]) {
             return;
         }
-        logs[match] = true;
-        result.push(match);
+        logs[hostname] = true;
+        result.push(hostname);
     });
-    return result.sort();
+    return result;
 }
-
