@@ -1,10 +1,13 @@
-## About
-- An ease to use auto-proxy browser extension
-- Support auto proxy, fallback proxy, and export proxy rules as PAC script file
+## 关于
+- 一个简单易用的自动代理扩展
+- 可以通过设置添加代理服务器跟对应规则
+- 可以通过设置导出代理规则或PAC自动代理脚本
+- 可以通过工具栏图标查询当前页面的可代理规则
+- 可以通过工具栏图标添加代理规则或临时代理规则
 
-## Install the extension
+## 安装
 - Microsoft Edge
   - https://microsoftedge.microsoft.com/addons/detail/mdoojhdlkngkgcgkefkbmfaahpclojen
 
-## User Manual
-- [Read Me](https://github.com/jc3213/easy_proxy/releases/tag/0.1.0)
+## 用户手册
+- 完善中
