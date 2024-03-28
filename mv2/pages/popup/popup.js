@@ -198,19 +198,31 @@ function scriptExecutor(tabId, func) {
 }
 
 function inspectProxyItems() {
-    var result = [];
-    var logs = {};
-    [location, ...document.querySelectorAll('[href], [src]')].forEach((link) => {
-        var url = link.href || link.src;
-        if (!url || !url.startsWith('http')) {
+    var {hostname} = location;
+    var result = [hostname];
+    var logs = { [hostname]: true };
+    getLinksInFrame(document);
+    document.querySelectorAll('iframe').forEach((iframe) => {
+        try {
+            getLinksInFrame(iframe.contentDocument ?? iframe.contentWindow.document)
+        } catch (e) {
             return;
         }
-        var {hostname} = new URL(url);
-        if (logs[hostname]) {
-            return;
-        }
-        logs[hostname] = true;
-        result.push(hostname);
     });
     return result;
+
+    function getLinksInFrame(doc) {
+        doc?.querySelectorAll('[href], [src]').forEach((link) => {
+            var url = link.href || link.src;
+            if (!url || !url.startsWith('http')) {
+                return;
+            }
+            var {hostname} = new URL(url);
+            if (logs[hostname]) {
+                return;
+            }
+            logs[hostname] = true;
+            result.push(hostname);
+        });
+    }
 }
