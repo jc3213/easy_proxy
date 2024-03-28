@@ -198,9 +198,8 @@ function scriptExecutor(tabId, func) {
 }
 
 function inspectProxyItems() {
-    var {hostname} = location;
-    var result = [hostname];
-    var logs = { [hostname]: true };
+    var result = [location.hostname];
+    var logs = { [location.hostname]: true };
     getLinksInFrame(document);
     document.querySelectorAll('iframe').forEach((iframe) => {
         try {
