@@ -45,7 +45,7 @@ function proxyQuery() {
         queryBtn.style.display = 'none';
         var logs = {};
         var matches = [];
-        var result = await scriptExecutor(easyId, inspectProxyItems).catch(() => [new URL(tabs[0].url).hostname]);
+        var result = await scriptExecutor(easyId, inspectProxyItems).catch((error) => [new URL(tabs[0].url).hostname]);
         result.forEach((host, index) => {
             var match = easyMatchPattern(host);
             if (logs[match]) {
@@ -198,13 +198,13 @@ function scriptExecutor(tabId, func) {
 }
 
 function inspectProxyItems() {
-    var logs = {};
     var result = [];
+    var logs = {};
     getLinksInFrame(document);
     document.querySelectorAll('iframe').forEach((iframe) => {
         try {
             getLinksInFrame(iframe.contentWindow.document)
-        } catch(e) {
+        } catch (error) {
             return;
         }
     });
@@ -220,7 +220,7 @@ function inspectProxyItems() {
                 }
                 logs[hostname] = true;
                 result.push(hostname);
-            } catch (e) {
+            } catch (error) {
                 return;
             }
         });
