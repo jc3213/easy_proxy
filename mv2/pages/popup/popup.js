@@ -45,7 +45,7 @@ function proxyQuery() {
         queryBtn.style.display = 'none';
         var logs = {};
         var matches = [];
-        var result = await scriptExecutor(easyId, inspectProxyItems).then((result) => result).catch(() => [new URL(tabs[0].url).hostname]);
+        var result = await scriptExecutor(easyId, inspectProxyItems).catch(() => [new URL(tabs[0].url).hostname]);
         result.forEach((host, index) => {
             var match = easyMatchPattern(host);
             if (logs[match]) {
@@ -198,30 +198,31 @@ function scriptExecutor(tabId, func) {
 }
 
 function inspectProxyItems() {
-    var result = [location.hostname];
-    var logs = { [location.hostname]: true };
+    var logs = {};
+    var result = [];
     getLinksInFrame(document);
     document.querySelectorAll('iframe').forEach((iframe) => {
         try {
-            getLinksInFrame(iframe.contentDocument ?? iframe.contentWindow.document)
-        } catch (e) {
+            getLinksInFrame(iframe.contentWindow.document)
+        } catch(e) {
             return;
         }
     });
     return result;
 
-    function getLinksInFrame(doc) {
-        doc?.querySelectorAll('[href], [src]').forEach((link) => {
-            var url = link.href || link.src;
-            if (!url || !url.startsWith('http')) {
+    function getLinksInFrame(Document) {
+        [Document.location, ...Document.querySelectorAll('a, img, script, link, video, audio')].forEach((link) => {
+            try {
+                var url = link.href || link.src || link.dataset.srcset;
+                var {hostname} = new URL(url);
+                if (!hostname || logs[hostname]) {
+                    return;
+                }
+                logs[hostname] = true;
+                result.push(hostname);
+            } catch (e) {
                 return;
             }
-            var {hostname} = new URL(url);
-            if (logs[hostname]) {
-                return;
-            }
-            logs[hostname] = true;
-            result.push(hostname);
         });
     }
 }
