@@ -211,7 +211,7 @@ function inspectProxyItems() {
     return result;
 
     function getLinksInFrame(Document) {
-        [Document.location, ...Document.querySelectorAll('a, img, script, link, video, audio')].forEach((link) => {
+        [Document.location, ...Document.querySelectorAll('a, img, script, link, iframe, video, audio')].forEach((link) => {
             try {
                 var url = link.href || link.src || link.dataset.srcset;
                 var {hostname} = new URL(url);
