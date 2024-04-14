@@ -4,6 +4,7 @@ var easyDefault = {
 };
 var easyStorage = {};
 var easyPAC = '';
+var easyPACX = '';
 var easyMatch = {};
 var easyMatchLog = {};
 var easyTempo = {};
@@ -40,7 +41,6 @@ function easyOptionsChanges({storage, removed}, response) {
     easyStorage = storage;
     pacScriptConverter();
     response({pac_script: easyPAC});
-    setEasyProxy(easyPAC);
     chrome.storage.local.set(storage);
     if (removed?.length > 0) {
         chrome.storage.local.remove(removed);
@@ -70,14 +70,12 @@ function easyTempoProxy({proxy, include, exclude}) {
     console.log('Proxy Server: ' + proxy + '\nAdded Tempo: ' + result.join(' ') + '\nRemoved Tempo: ' + exclude.join(' '));
     tempo.push(...result);
     pacScriptConverter();
-    setEasyProxy(easyPAC);
 }
 
 function easyTempoPurge() {
     easyTempo = {};
     easyTempoLog = {};
     pacScriptConverter();
-    setEasyProxy(neoPAC);
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url}) => {
@@ -103,7 +101,6 @@ chrome.tabs.onRemoved.addListener(({tabId}) => {
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
     pacScriptConverter();
-    setEasyProxy(easyPAC);
 });
 
 function setEasyProxy(data) {
@@ -127,7 +124,9 @@ function pacScriptConverter() {
             tempo += convertRegexp(proxy, easyTempo[proxy]);
         }
     });
-    easyPAC = convertPacScript(pac_script + tempo);
+    easyPAC = convertPacScript(pac_script);
+    easyPACX = convertPacScript(pac_script + tempo);
+    setEasyProxy(easyPACX);
 }
 
 function convertRegexp(proxy, matches) {
