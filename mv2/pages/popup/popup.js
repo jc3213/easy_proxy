@@ -43,7 +43,7 @@ function proxyQuery() {
     chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
         easyId = tabs[0].id;
         queryBtn.style.display = 'none';
-        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (patterns) => patterns.sort().forEach(matchCreate));
+        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (result) => result?.sort().forEach(matchCreate));
     });
 }
 
