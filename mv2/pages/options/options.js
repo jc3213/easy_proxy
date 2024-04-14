@@ -1,5 +1,4 @@
 var easyProfile = {};
-var easyFallback;
 var easyProxy;
 var newProfile = {
     scheme: 'PROXY',
@@ -94,8 +93,7 @@ function profileResort(id) {
 function profileCreate(id) {
     var profile = profileLET.cloneNode(true);
     profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    // profile.color.value =  easyStorage.colors[id] || '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
-    profile.proxy.textContent = profile.discard.dataset.pid = profile.color.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
+    profile.proxy.textContent = profile.discard.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
     profiles.append(profile);
     easyProfile[id] = profile;
     return profile;
