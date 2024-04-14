@@ -23,9 +23,6 @@
     "options_resort": {
         "message": "Sort"
     },
-    "options_fallback": {
-        "message": "Fallback"
-    },
     "popup_title": {
         "message": "Easy Proxy Manager"
     },

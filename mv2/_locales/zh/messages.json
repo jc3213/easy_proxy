@@ -23,9 +23,6 @@
     "options_resort": {
         "message": "排序"
     },
-    "options_fallback": {
-        "message": "回落代理"
-    },
     "popup_title": {
         "message": "简易代理管理"
     },
