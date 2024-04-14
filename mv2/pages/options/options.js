@@ -34,9 +34,6 @@ document.addEventListener('click', (event) => {
         case 'export_btn':
             optionsExport(event.ctrlKey && event.altKey);
             break;
-        case 'fallback_btn':
-            profileFallback(event.target.dataset.pid);
-            break;
         case 'resort_btn':
             profileResort(event.target.dataset.pid);
             break;
@@ -83,9 +80,6 @@ function profileRemove(id) {
     saveBtn.disabled = false;
     easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
-    if (easyStorage.fallback === id) {
-        easyStorage.fallback === null;
-    }
     if (!removed.includes(id)) {
         removed.push(id);
     }
@@ -97,23 +91,11 @@ function profileResort(id) {
     easyProfile[id].matches.value = easyStorage[id].sort().join(' ');
 }
 
-function profileFallback(id) {
-    saveBtn.disabled = false;
-    var {fallback} = easyProfile[id];
-    easyFallback?.classList.remove('checked');
-    if (easyFallback === fallback) {
-        easyStorage.fallback = easyFallback = null;
-        return;
-    }
-    easyStorage.fallback = id;
-    easyFallback = fallback;
-    fallback.classList.add('checked');
-}
-
 function profileCreate(id) {
     var profile = profileLET.cloneNode(true);
     profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.discard.dataset.pid = profile.fallback.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
+    // profile.color.value =  easyStorage.colors[id] || '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
+    profile.proxy.textContent = profile.discard.dataset.pid = profile.color.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
     profiles.append(profile);
     easyProfile[id] = profile;
     return profile;
@@ -165,9 +147,5 @@ function easyOptionsSetUp() {
     easyStorage.proxies.forEach((proxy) => {
         var profile = profileCreate(proxy);
         profile.matches.value = easyStorage[proxy].join(' ');
-        if (easyStorage.fallback === proxy) {
-            easyFallback = profile.fallback;
-            profile.fallback.classList.add('checked');
-        }
     });
 }

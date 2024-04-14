@@ -4,9 +4,7 @@ var easyDefault = {
 };
 var easyStorage = {};
 var easyPAC = '';
-var neoPAC = '';
-var easyFallback;
-var easyMatch = [];
+var easyMatch = {};
 var easyMatchLog = {};
 var easyTempo = {};
 var easyTempoLog = {};
@@ -18,6 +16,9 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             break;
         case 'options_onchange':
             easyOptionsChanges(params, response);
+            break;
+        case 'easyproxy_query':
+            easyToolbarQuery(params, response);
             break;
         case 'easyproxy_changetempo':
             easyTempoProxy(params);
@@ -31,14 +32,12 @@ function easyPluginInit(response) {
     response({
         storage: {...easyDefault, ...easyStorage},
         tempo: easyTempo,
-        fallback: {proxy: easyFallback, matches: easyMatch},
         pac_script: easyPAC
     });
 }
 
 function easyOptionsChanges({storage, removed}, response) {
     easyStorage = storage;
-    easyFallback = storage.fallback;
     pacScriptConverter();
     response({pac_script: easyPAC});
     setEasyProxy(neoPAC);
@@ -46,6 +45,10 @@ function easyOptionsChanges({storage, removed}, response) {
     if (removed?.length > 0) {
         chrome.storage.local.remove(removed);
     }
+}
+
+function easyToolbarQuery(tabId, response) {
+    response(easyMatch[tabId]);
 }
 
 function easyTempoProxy({proxy, include, exclude}) {
@@ -77,23 +80,31 @@ function easyTempoPurge() {
     setEasyProxy(neoPAC);
 }
 
-chrome.webRequest.onErrorOccurred.addListener(({url, tabId, error}) => {
-    if (error === 'net::ERR_BLOCKED_BY_CLIENT') {
+chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url}) => {
+    var pattern = easyMatchPattern(new URL(url).hostname);
+    easyMatch[tabId] = [pattern];
+    easyMatchLog[tabId] = {[pattern]: true};
+}, {schemes: ['http', 'https']});
+
+chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
+    var pattern = easyMatchPattern(new URL(url).hostname);
+    if (!pattern || !easyMatchLog[tabId] || easyMatchLog[tabId][pattern]) {
         return;
     }
-    var {host} = new URL(url);
-    if (!easyFallback) {
-        return console.log('Error occurred: ' + host + '\n' + error);
-    }
-    if (error === 'net::ERR_FAILED' || easyMatchLog[host]) {
-        return;
-    }
-    easyMatchLog[host] = true;
-    easyMatch.push(host);
+    easyMatch[tabId].push(pattern);
+    easyMatchLog[tabId][pattern] = true;
+}, {urls: ['http://*/*', 'https://*/*']});
+
+chrome.tabs.onRemoved.addListener(({tabId}) => {
+    delete easyMatch[tabId];
+    delete easyMatchLog[tabId];
+});
+
+chrome.storage.local.get(null, (json) => {
+    easyStorage = {...easyDefault, ...json};
     pacScriptConverter();
-    setEasyProxy(neoPAC);
-    console.log('Proxy fallback: ' + host);
-}, {urls: ["<all_urls>"]});
+    setEasyProxy(easyPAC);
+});
 
 function setEasyProxy(data) {
     chrome.proxy.settings.set({
@@ -105,13 +116,6 @@ function setEasyProxy(data) {
     });
 }
 
-chrome.storage.local.get(null, (json) => {
-    easyStorage = {...easyDefault, ...json};
-    easyFallback = easyStorage.fallback;
-    pacScriptConverter();
-    setEasyProxy(easyPAC);
-});
-
 function pacScriptConverter(pac_script = '', tempo = '') {
     easyStorage.proxies.forEach((proxy) => {
         if (easyStorage[proxy].length > 0) {
@@ -122,10 +126,6 @@ function pacScriptConverter(pac_script = '', tempo = '') {
         }
     });
     easyPAC = convertPacScript(pac_script);
-    if (easyFallback && easyMatch.length > 0) {
-        tempo += convertRegexp(easyFallback, easyMatch);
-    }
-    neoPAC = convertPacScript(pac_script + tempo);
 }
 
 function convertRegexp(proxy, matches) {

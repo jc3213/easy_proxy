@@ -1,12 +1,13 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "0.6.3",
+    "version": "0.7.0",
     "manifest_version": 2,
     "permissions": [
         "proxy",
         "storage",
         "unlimitedStorage",
+        "webNavigation",
         "webRequest",
         "contextMenus",
         "tabs",
@@ -16,6 +17,7 @@
     "default_locale": "en",
     "background": {
         "scripts": [
+            "libs/matchpattern.js",
             "background.js"
         ]
     },

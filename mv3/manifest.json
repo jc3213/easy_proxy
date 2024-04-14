@@ -1,16 +1,16 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "0.6.3",
+    "version": "0.7.0",
     "manifest_version": 3,
     "permissions": [
         "proxy",
         "storage",
         "unlimitedStorage",
+        "webNavigation",
         "webRequest",
         "contextMenus",
-        "tabs",
-        "scripting"
+        "tabs"
     ],
     "host_permissions": [
         "http://*/*",
@@ -18,7 +18,7 @@
     ],
     "default_locale": "en",
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "application.js"
     },
     "action": {
         "default_popup": "pages/popup/popup.html"

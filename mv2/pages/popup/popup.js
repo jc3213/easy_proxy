@@ -43,18 +43,7 @@ function proxyQuery() {
     chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
         easyId = tabs[0].id;
         queryBtn.style.display = 'none';
-        var logs = {};
-        var matches = [];
-        var result = await scriptExecutor(easyId, inspectProxyItems).catch((error) => [new URL(tabs[0].url).hostname]);
-        result.forEach((host, index) => {
-            var match = easyMatchPattern(host);
-            if (logs[match]) {
-                return;
-            }
-            logs[match] = host;
-            matches.push(match);
-        });
-        matches.sort().forEach(matchCreate);
+        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (patterns) => patterns.sort().forEach(matchCreate));
     });
 }
 
@@ -170,7 +159,7 @@ function matchCreate(match, id) {
     output.append(host);
 }
 
-chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo, fallback}) => {
+chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo}) => {
     easyProxy = storage.proxies[0];
     if (!easyProxy) {
         proxies.disabled = submitBtn.disabled = tempoBtn.disabled = queryBtn.disabled = true;
@@ -179,7 +168,6 @@ chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, t
     easyStorage = storage;
     easyTempo = tempo;
     storage.proxies.forEach(proxyCreate);
-    fallback.matches.forEach((match) => easyMatchTempo[match] = fallback.proxy);
 });
 
 function proxyCreate(proxy) {
@@ -188,41 +176,4 @@ function proxyCreate(proxy) {
     proxies.append(menu);
     easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
     easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
-}
-
-function scriptExecutor(tabId, func) {
-    if (chrome.runtime.getManifest().manifest_version === 3) {
-        return chrome.scripting.executeScript({target : {tabId}, func}).then((injectionResults) => injectionResults[0].result);
-    }
-    return new Promise((resolve, reject) => chrome.tabs.executeScript(tabId, {code: '(' + func.toString() + ')();'}, (results) => results ? resolve(results[0]) : reject(chrome.runtime.lastError)));
-}
-
-function inspectProxyItems() {
-    var result = [];
-    var logs = {};
-    getLinksInFrame(document);
-    document.querySelectorAll('iframe').forEach((iframe) => {
-        try {
-            getLinksInFrame(iframe.contentWindow.document)
-        } catch (error) {
-            return;
-        }
-    });
-    return result;
-
-    function getLinksInFrame(Document) {
-        [Document.location, ...Document.querySelectorAll('a, img, script, link, iframe, video, audio')].forEach((link) => {
-            try {
-                var url = link.href || link.src || link.dataset.srcset;
-                var {hostname} = new URL(url);
-                if (!hostname || logs[hostname]) {
-                    return;
-                }
-                logs[hostname] = true;
-                result.push(hostname);
-            } catch (error) {
-                return;
-            }
-        });
-    }
 }

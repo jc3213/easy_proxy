@@ -6,6 +6,13 @@ input[type="file"], a {
     display: none;
 }
 
+input[type="color"] {
+    height: 23px;
+    padding: 0px;
+    margin: 6px 0px 0px;
+    border-width: 0px;
+}
+
 #menu {
     display: flex;
     gap: 3px;
