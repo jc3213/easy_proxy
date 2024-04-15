@@ -52,7 +52,7 @@ function easyToolbarQuery(tabId, response) {
 }
 
 function easyTempoProxy({proxy, include, exclude}) {
-    if (easyTempo[proxy] === undefined) {
+    if (!easyTempo[proxy]) {
         easyTempo[proxy] = [];
         easyTempoLog[proxy] = {};
     }
@@ -78,10 +78,12 @@ function easyTempoPurge() {
     pacScriptConverter();
 }
 
-chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url}) => {
-    var pattern = easyMatchPattern(new URL(url).hostname);
-    easyMatch[tabId] = [pattern];
-    easyMatchLog[tabId] = {[pattern]: true};
+chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
+    if (frameId === 0) {
+        var pattern = easyMatchPattern(new URL(url).hostname);
+        easyMatch[tabId] = [pattern];
+        easyMatchLog[tabId] = {[pattern]: true};
+    }
 }, {schemes: ['http', 'https']});
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
