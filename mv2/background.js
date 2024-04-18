@@ -84,7 +84,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
         easyMatch[tabId] = [pattern];
         easyMatchLog[tabId] = {[pattern]: true};
     }
-}, {schemes: ['http', 'https']});
+});
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     var pattern = easyMatchPattern(url);
