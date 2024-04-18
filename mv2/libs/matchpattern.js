@@ -70,7 +70,8 @@
         return result;
     };
 
-    window.easyMatchPattern = (hostname) => {
+    self.easyMatchPattern = (url) => {
+        let [hostname] = url.match(/(?:[^:\/\.]+\.){1,4}[^:\/\.]+/);
         return cache[hostname] || create(hostname);
     };
 })();

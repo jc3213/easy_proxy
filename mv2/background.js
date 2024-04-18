@@ -80,14 +80,14 @@ function easyTempoPurge() {
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
-        var pattern = easyMatchPattern(new URL(url).hostname);
+        var pattern = easyMatchPattern(url);
         easyMatch[tabId] = [pattern];
         easyMatchLog[tabId] = {[pattern]: true};
     }
 }, {schemes: ['http', 'https']});
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
-    var pattern = easyMatchPattern(new URL(url).hostname);
+    var pattern = easyMatchPattern(url);
     if (!pattern || !easyMatchLog[tabId] || easyMatchLog[tabId][pattern]) {
         return;
     }
