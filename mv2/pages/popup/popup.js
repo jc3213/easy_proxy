@@ -1,13 +1,12 @@
 var easyMatch = {};
 var easyMatchTempo = {};
 var easyProxy;
-var easyQuery = false;
 var easyId;
 var easyHosts = [];
 var changes = {};
 var checkLogs = {};
 var checkboxes = [];
-var [queryBtn, output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, select, button');
+var [output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, #proxy, button');
 var hostLET = document.querySelector('.template > .host');
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -23,9 +22,6 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('click', (event) => {
     switch (event.target.dataset.bid) {
-        case 'query_btn':
-            proxyQuery();
-            break;
         case 'submit_btn':
             proxySubmit();
             break;
@@ -37,15 +33,6 @@ document.addEventListener('click', (event) => {
             break;
     }
 });
-
-function proxyQuery() {
-    easyQuery = true;
-    chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
-        easyId = tabs[0].id;
-        queryBtn.style.display = 'none';
-        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (result) => result?.sort().forEach(matchCreate));
-    });
-}
 
 function proxySubmit() {
     var proxy = proxies.value;
@@ -131,13 +118,11 @@ function matchUpdate(check) {
 
 function proxyUpdate(proxy) {
     easyProxy = proxy;
-    if (easyQuery) {
-        easyHosts.forEach((match) => {
-            var host = match.value;
-            match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
-            match.disabled = easyMatch[host] && easyMatch[host] !== proxy || easyMatchTempo[host] && easyMatchTempo[host] !== proxy;
-        });
-    }
+    easyHosts.forEach((match) => {
+        var host = match.value;
+        match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
+        match.disabled = easyMatch[host] && easyMatch[host] !== proxy || easyMatchTempo[host] && easyMatchTempo[host] !== proxy;
+    });
 }
 
 function matchCreate(match, id) {
@@ -162,12 +147,16 @@ function matchCreate(match, id) {
 chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo}) => {
     easyProxy = storage.proxies[0];
     if (!easyProxy) {
-        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = queryBtn.disabled = true;
+        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
         return;
     }
     easyStorage = storage;
     easyTempo = tempo;
     storage.proxies.forEach(proxyCreate);
+    chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
+        easyId = tabs[0].id;
+        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (result) => result?.sort().forEach(matchCreate));
+    });
 });
 
 function proxyCreate(proxy) {

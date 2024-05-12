@@ -26,6 +26,10 @@ button {
     flex: 1;
 }
 
+#output:empty + hr {
+    display: none;
+}
+
 .host {
     display: flex;
     padding: 3px;
