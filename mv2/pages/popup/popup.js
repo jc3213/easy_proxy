@@ -155,7 +155,12 @@ chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, t
     storage.proxies.forEach(proxyCreate);
     chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
         easyId = tabs[0].id;
-        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (result) => result?.sort().forEach(matchCreate));
+        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (result) => {
+            if (result && result.length !== 0) {
+                return result.sort().forEach(matchCreate);
+            }
+            proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
+        });
     });
 });
 
