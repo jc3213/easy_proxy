@@ -1,6 +1,5 @@
 var easyDefault = {
-    proxies: [],
-    persistent: true
+    proxies: []
 };
 var easyStorage = {};
 var easyPAC = '';
