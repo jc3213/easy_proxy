@@ -1,7 +1,7 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "manifest_version": 3,
     "permissions": [
         "proxy",
@@ -22,6 +22,19 @@
     },
     "action": {
         "default_popup": "pages/popup/popup.html"
+    },
+    "commands": {
+        "_execute_action": {
+            "suggested_key": {
+                "default": "Alt+Shift+P"
+            }
+        },
+        "persistent_mode": {
+            "suggested_key": {
+                "default": "Alt+Shift+M"
+            },
+            "description": "Persistent mode"
+        }
     },
     "options_ui": {
         "page": "pages/options/options.html",
