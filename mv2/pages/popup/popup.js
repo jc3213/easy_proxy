@@ -38,8 +38,7 @@ function proxySubmit() {
     var proxy = proxies.value;
     var {include, exclude, manage} = proxyChange('match', proxy, easyStorage[proxy], easyMatch);
     if (manage) {
-        chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage}},
-        () => chrome.tabs.reload(easyId));
+        chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, tabId: easyId}});
     }
 }
 
@@ -53,8 +52,7 @@ function proxyTempo(remove) {
     }
     var {include, exclude, manage} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
     if (manage) {
-        chrome.runtime.sendMessage({action: 'easyproxy_changetempo', params: {proxy, include, exclude}},
-        () => chrome.tabs.reload(easyId));
+        chrome.runtime.sendMessage({action: 'easyproxy_changetempo', params: {tabId: easyId, proxy, include, exclude}});
     }
 }
 
@@ -65,8 +63,7 @@ function proxyTempoPurge(proxy) {
         match.parentNode.classList.remove('tempo');
         match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
     });
-    chrome.runtime.sendMessage({action: 'easyproxy_purgetempo'},
-    () => chrome.tabs.reload(easyId));
+    chrome.runtime.sendMessage({action: 'easyproxy_purgetempo', params: {tabId: easyId}});
 }
 
 function proxyChange(type, proxy, storage, logs) {

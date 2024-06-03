@@ -5,7 +5,6 @@ var easyStorage = {};
 var easyPAC = '';
 var easyPACX = '';
 var easyMatch = {};
-var easyMatchLog = {};
 var easyTempo = {};
 var easyTempoLog = {};
 
@@ -24,7 +23,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             easyTempoProxy(params);
             break;
         case 'easyproxy_purgetempo':
-            easyTempoPurge();
+            easyTempoPurge(params);
     }
 });
 
@@ -36,7 +35,7 @@ function easyPluginInit(response) {
     });
 }
 
-function easyOptionsChanges({storage, removed}, response) {
+function easyOptionsChanges({storage, removed, tabId}, response) {
     easyStorage = storage;
     pacScriptConverter();
     response({pac_script: easyPAC});
@@ -44,13 +43,14 @@ function easyOptionsChanges({storage, removed}, response) {
     if (removed?.length > 0) {
         chrome.storage.local.remove(removed);
     }
+    easyReloadTab(tabId);
 }
 
 function easyToolbarQuery(tabId, response) {
-    response(easyMatch[tabId]);
+    response(easyMatch[tabId].list);
 }
 
-function easyTempoProxy({proxy, include, exclude}) {
+function easyTempoProxy({tabId, proxy, include, exclude}) {
     if (!easyTempo[proxy]) {
         easyTempo[proxy] = [];
         easyTempoLog[proxy] = {};
@@ -69,34 +69,40 @@ function easyTempoProxy({proxy, include, exclude}) {
     console.log('Proxy Server: ' + proxy + '\nAdded Tempo: ' + result.join(' ') + '\nRemoved Tempo: ' + exclude.join(' '));
     tempo.push(...result);
     pacScriptConverter();
+    easyReloadTab(tabId);
 }
 
-function easyTempoPurge() {
+function easyTempoPurge({tabId}) {
     easyTempo = {};
     easyTempoLog = {};
     pacScriptConverter();
+    easyReloadTab(tabId);
+}
+
+function easyReloadTab(id) {
+    if (id) {
+        chrome.tabs.update(id, { url: easyMatch[id].url });
+    }
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var pattern = easyMatchPattern(url);
-        easyMatch[tabId] = [pattern];
-        easyMatchLog[tabId] = {[pattern]: true};
+        easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url};
     }
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     var pattern = easyMatchPattern(url);
-    if (!pattern || !easyMatchLog[tabId] || easyMatchLog[tabId][pattern]) {
+    if (!pattern || !easyMatch[tabId]?.rule || easyMatch[tabId].rule[pattern]) {
         return;
     }
-    easyMatch[tabId].push(pattern);
-    easyMatchLog[tabId][pattern] = true;
+    easyMatch[tabId].list.push(pattern);
+    easyMatch[tabId].rule[pattern] = true;
 }, {urls: ['http://*/*', 'https://*/*']});
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {
     delete easyMatch[tabId];
-    delete easyMatchLog[tabId];
 });
 
 chrome.storage.local.get(null, (json) => {
