@@ -4,50 +4,53 @@ var easyDefault = {
 var easyStorage = {};
 var easyPAC = '';
 var easyPACX = '';
+var easyPort;
 var easyMatch = {};
 var easyTempo = {};
 var easyTempoLog = {};
 
-chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
-    switch (action) {
-        case 'options_plugins':
-            easyPluginInit(response);
+chrome.runtime.onConnect.addListener((port) => {
+    switch (port.name) {
+        case 'easyproxy-manager':
+            easyManagerInitial(port);
             break;
-        case 'options_onchange':
-            easyOptionsChanges(params, response);
-            break;
-        case 'easyproxy_query':
-            easyToolbarQuery(params, response);
-            break;
-        case 'easyproxy_changetempo':
-            easyTempoProxy(params);
-            break;
-        case 'easyproxy_purgetempo':
-            easyTempoPurge(params);
     }
 });
 
-function easyPluginInit(response) {
-    response({
-        storage: {...easyDefault, ...easyStorage},
-        tempo: easyTempo,
-        pac_script: easyPAC
+function easyManagerInitial(port) {
+    easyPort = port;
+    port.onMessage.addListener(({action, params}) => {
+        switch (action) {
+            case 'match_initial':
+                port.postMessage({
+                    action: 'match_respond',
+                    params: {
+                        storage: {...easyDefault, ...easyStorage},
+                        tempo: easyTempo,
+                        result: easyMatch[params.tabId].list
+                    }
+                });
+                break;
+            case 'match_submit':
+                easyMatchSubmit(params);
+                break;
+            case 'tempo_update':
+                easyTempoProxy(params);
+                break;
+            case 'tempo_purge':
+                easyTempoPurge(params);
+                break;
+    }
+    });
+    port.onDisconnect.addListener(() => {
+        easyPort = null;
     });
 }
 
-function easyOptionsChanges({storage, removed, tabId}, response) {
+function easyMatchSubmit({storage, tabId}) {
     easyStorage = storage;
     pacScriptConverter();
-    response({pac_script: easyPAC});
-    chrome.storage.local.set(storage);
-    if (removed?.length > 0) {
-        chrome.storage.local.remove(removed);
-    }
     easyReloadTab(tabId);
-}
-
-function easyToolbarQuery(tabId, response) {
-    response(easyMatch[tabId].list);
 }
 
 function easyTempoProxy({tabId, proxy, include, exclude}) {
@@ -80,15 +83,43 @@ function easyTempoPurge({tabId}) {
 }
 
 function easyReloadTab(id) {
-    if (id) {
-        chrome.tabs.update(id, { url: easyMatch[id].url });
+    chrome.tabs.update(id, {url: easyMatch[id].url});
+}
+
+chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
+    switch (action) {
+        case 'options_plugins':
+            easyPluginInit(response);
+            break;
+        case 'options_onchange':
+            easyOptionsChanges(params, response);
+            break;
     }
+});
+
+function easyPluginInit(response) {
+    response({
+        storage: {...easyDefault, ...easyStorage},
+        tempo: easyTempo,
+        pac_script: easyPAC
+    });
+}
+
+function easyOptionsChanges({storage, removed, tabId}, response) {
+    easyStorage = storage;
+    pacScriptConverter();
+    response({pac_script: easyPAC});
+    chrome.storage.local.set(storage);
+    if (removed?.length > 0) {
+        chrome.storage.local.remove(removed);
+    }
+    easyReloadTab(tabId);
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var pattern = easyMatchPattern(url);
-        easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url};
+        easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url };
     }
 });
 
@@ -99,6 +130,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     }
     easyMatch[tabId].list.push(pattern);
     easyMatch[tabId].rule[pattern] = true;
+    easyPort?.postMessage({action: 'match_update', params: {pattern}});
 }, {urls: ['http://*/*', 'https://*/*']});
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {

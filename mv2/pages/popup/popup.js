@@ -3,6 +3,7 @@ var easyMatchTempo = {};
 var easyProxy;
 var easyId;
 var easyHosts = [];
+var easyPort = chrome.runtime.connect({name: 'easyproxy-manager'});
 var changes = {};
 var checkLogs = {};
 var checkboxes = [];
@@ -38,7 +39,7 @@ function proxySubmit() {
     var proxy = proxies.value;
     var {include, exclude, manage} = proxyChange('match', proxy, easyStorage[proxy], easyMatch);
     if (manage) {
-        chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, tabId: easyId}});
+        easyPort.postMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyId}});
     }
 }
 
@@ -52,7 +53,7 @@ function proxyTempo(remove) {
     }
     var {include, exclude, manage} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
     if (manage) {
-        chrome.runtime.sendMessage({action: 'easyproxy_changetempo', params: {tabId: easyId, proxy, include, exclude}});
+        easyPort.postMessage({action: 'tempo_update', params: {tabId: easyId, proxy, include, exclude}});
     }
 }
 
@@ -63,7 +64,7 @@ function proxyTempoPurge(proxy) {
         match.parentNode.classList.remove('tempo');
         match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
     });
-    chrome.runtime.sendMessage({action: 'easyproxy_purgetempo', params: {tabId: easyId}});
+    easyPort.postMessage({action: 'tempo_purge', params: {tabId: easyId}});
 }
 
 function proxyChange(type, proxy, storage, logs) {
@@ -122,7 +123,46 @@ function proxyUpdate(proxy) {
     });
 }
 
-function matchCreate(match, id) {
+easyPort.onMessage.addListener(({action, params}) => {
+    switch (action) {
+        case 'match_respond':
+            easyMatchInitial(params);
+            break;
+        case 'match_update':
+            easyMatchUpdate(params.pattern);
+            break;
+    }
+});
+
+chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
+    easyId = tabs[0].id;
+    easyPort.postMessage({action: 'match_initial', params: {tabId: easyId}});
+});
+
+function easyMatchInitial({storage, tempo, result}) {
+    easyProxy = storage.proxies[0];
+    if (!easyProxy) {
+        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
+        return;
+    }
+    easyStorage = storage;
+    easyTempo = tempo;
+    storage.proxies.forEach(easyProxyCeate);
+    if (result && result.length !== 0) {
+        return result.sort().forEach(easyMatchUpdate);
+    }
+    proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
+}
+
+function easyProxyCeate(proxy) {
+    var menu = document.createElement('option');
+    menu.textContent = menu.title = menu.value = proxy;
+    proxies.append(menu);
+    easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
+    easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
+}
+
+function easyMatchUpdate(match, id) {
     var host = hostLET.cloneNode(true);
     var [check, label] = host.querySelectorAll('input, label');
     check.id = 'easyproxy_' + id;
@@ -139,32 +179,4 @@ function matchCreate(match, id) {
     }
     easyHosts.push(check);
     output.append(host);
-}
-
-chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script, tempo}) => {
-    easyProxy = storage.proxies[0];
-    if (!easyProxy) {
-        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
-        return;
-    }
-    easyStorage = storage;
-    easyTempo = tempo;
-    storage.proxies.forEach(proxyCreate);
-    chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
-        easyId = tabs[0].id;
-        chrome.runtime.sendMessage({action: 'easyproxy_query', params: easyId}, (result) => {
-            if (result && result.length !== 0) {
-                return result.sort().forEach(matchCreate);
-            }
-            proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
-        });
-    });
-});
-
-function proxyCreate(proxy) {
-    var menu = document.createElement('option');
-    menu.textContent = menu.title = menu.value = proxy;
-    proxies.append(menu);
-    easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
-    easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
 }
