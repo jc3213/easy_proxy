@@ -22,14 +22,7 @@ function easyManagerInitial(port) {
     port.onMessage.addListener(({action, params}) => {
         switch (action) {
             case 'match_initial':
-                port.postMessage({
-                    action: 'match_respond',
-                    params: {
-                        storage: {...easyDefault, ...easyStorage},
-                        tempo: easyTempo,
-                        result: easyMatch[params.tabId].list
-                    }
-                });
+                easyMatchInitial(params);
                 break;
             case 'match_submit':
                 easyMatchSubmit(params);
@@ -44,6 +37,17 @@ function easyManagerInitial(port) {
     });
     port.onDisconnect.addListener(() => {
         easyPort = null;
+    });
+}
+
+function easyMatchInitial({tabId}) {
+    easyPort.postMessage({
+        action: 'match_respond',
+        params: {
+            storage: {...easyDefault, ...easyStorage},
+            tempo: easyTempo,
+            result: easyMatch[tabId].list
+        }
     });
 }
 
