@@ -1,7 +1,8 @@
 var easyMatch = {};
 var easyMatchTempo = {};
 var easyProxy;
-var easyId;
+var easyTab;
+var easyId = 0;
 var easyHosts = [];
 var easyPort = chrome.runtime.connect({name: 'easyproxy-manager'});
 var changes = {};
@@ -39,7 +40,7 @@ function proxySubmit() {
     var proxy = proxies.value;
     var manage = proxyChange('match', easyStorage, easyMatch);
     if (manage) {
-        easyPort.postMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyId}});
+        easyPort.postMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyTab}});
     }
 }
 
@@ -48,7 +49,7 @@ function proxyTempo(remove) {
     var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
     console.log(manage, easyTempo)
     if (manage) {
-        easyPort.postMessage({action: 'tempo_update', params: {tempo: easyTempo, tabId: easyId}});
+        easyPort.postMessage({action: 'tempo_update', params: {tempo: easyTempo, tabId: easyTab}});
     }
 }
 
@@ -59,7 +60,7 @@ function proxyTempoPurge(proxy) {
         match.parentNode.classList.remove('tempo');
         match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
     });
-    easyPort.postMessage({action: 'tempo_purge', params: {tabId: easyId}});
+    easyPort.postMessage({action: 'tempo_purge', params: {tabId: easyTab}});
 }
 
 function proxyChange(type, storage, logs) {
@@ -135,8 +136,8 @@ easyPort.onMessage.addListener(({action, params}) => {
 });
 
 chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
-    easyId = tabs[0].id;
-    easyPort.postMessage({action: 'match_initial', params: {tabId: easyId}});
+    easyTab = tabs[0].id;
+    easyPort.postMessage({action: 'match_initial', params: {tabId: easyTab}});
 });
 
 function easyMatchInitial({storage, tempo, result}) {
@@ -162,11 +163,11 @@ function easyProxyCeate(proxy) {
     easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
 }
 
-function easyMatchUpdate(match, id) {
+function easyMatchUpdate(match) {
     var host = hostLET.cloneNode(true);
     var [check, label] = host.querySelectorAll('input, label');
-    check.id = 'easyproxy_' + id;
-    label.setAttribute('for', 'easyproxy_' + id);
+    check.id = 'easyproxy_' + easyId;
+    label.setAttribute('for', 'easyproxy_' + easyId);
     label.textContent = check.value = match;
     if (easyMatch[match]) {
         host.classList.add('match');
@@ -178,5 +179,6 @@ function easyMatchUpdate(match, id) {
         check.checked = true;
     }
     easyHosts.push(check);
+    easyId ++;
     output.append(host);
 }
