@@ -1,4 +1,4 @@
-var easyDefault = {
+   var easyDefault = {
     proxies: []
 };
 var easyStorage = {};
@@ -14,6 +14,9 @@ chrome.runtime.onConnect.addListener((port) => {
         case 'easyproxy-manager':
             easyManagerInitial(port);
             break;
+        case 'easyproxy-options':
+            easyOptionsInitial(port);
+            break;
     }
 });
 
@@ -28,7 +31,7 @@ function easyManagerInitial(port) {
                 easyMatchSubmit(params);
                 break;
             case 'tempo_update':
-                easyTempoProxy(params);
+                easyTempoUpdate(params);
                 break;
             case 'tempo_purge':
                 easyTempoPurge(params);
@@ -40,24 +43,50 @@ function easyManagerInitial(port) {
     });
 }
 
+function easyOptionsInitial(port) {
+    port.postMessage(easyOptionsSyncData('options_initial'));
+    port.onMessage.addListener(({storage, removed}) => {
+        easyStorageUpdated(storage);
+        if (removed?.length !== 0) {
+            chrome.storage.local.remove(removed);
+        }
+        port.postMessage(easyOptionsSyncData('options_update'));
+    });
+}
+
+function easyOptionsSyncData(action) {
+    return {
+        action,
+        params: {
+            storage: {...easyDefault, ...easyStorage},
+            pac_script: easyPAC
+        }
+    };
+}
+
+function easyStorageUpdated(json) {
+    easyStorage = json;
+    pacScriptConverter();
+    chrome.storage.local.set(json);
+}
+
 function easyMatchInitial({tabId}) {
     easyPort.postMessage({
         action: 'match_respond',
         params: {
             storage: {...easyDefault, ...easyStorage},
             tempo: easyTempo,
-            result: easyMatch[tabId].list
+            result: easyMatch[tabId]?.list
         }
     });
 }
 
 function easyMatchSubmit({storage, tabId}) {
-    easyStorage = storage;
-    pacScriptConverter();
+    easyStorageUpdated(storage);
     easyReloadTab(tabId);
 }
 
-function easyTempoProxy({tabId, proxy, include, exclude}) {
+function easyTempoUpdate({tabId, proxy, include, exclude}) {
     if (!easyTempo[proxy]) {
         easyTempo[proxy] = [];
         easyTempoLog[proxy] = {};
@@ -88,36 +117,6 @@ function easyTempoPurge({tabId}) {
 
 function easyReloadTab(id) {
     chrome.tabs.update(id, {url: easyMatch[id].url});
-}
-
-chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
-    switch (action) {
-        case 'options_plugins':
-            easyPluginInit(response);
-            break;
-        case 'options_onchange':
-            easyOptionsChanges(params, response);
-            break;
-    }
-});
-
-function easyPluginInit(response) {
-    response({
-        storage: {...easyDefault, ...easyStorage},
-        tempo: easyTempo,
-        pac_script: easyPAC
-    });
-}
-
-function easyOptionsChanges({storage, removed, tabId}, response) {
-    easyStorage = storage;
-    pacScriptConverter();
-    response({pac_script: easyPAC});
-    chrome.storage.local.set(storage);
-    if (removed?.length > 0) {
-        chrome.storage.local.remove(removed);
-    }
-    easyReloadTab(tabId);
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {

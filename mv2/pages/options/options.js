@@ -1,5 +1,6 @@
 var easyProfile = {};
 var easyProxy;
+var easyPort = chrome.runtime.connect({name: 'easyproxy-options'});
 var newProfile = {
     scheme: 'PROXY',
     proxy: ''
@@ -44,8 +45,7 @@ document.addEventListener('click', (event) => {
 
 async function optionsSaved() {
     saveBtn.disabled = true;
-    var {pac_script} = await chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}});
-    easyPAC = pac_script;
+    easyPort.postMessage({storage: easyStorage, removed});
     removed = [];
 }
 
@@ -135,10 +135,12 @@ function optionsImport(file) {
     fileReader.readAsText(file);
 }
 
-chrome.runtime.sendMessage({action: 'options_plugins'}, ({storage, pac_script}) => {
-    easyStorage = storage;
-    easyPAC = pac_script;
-    easyOptionsSetUp();
+easyPort.onMessage.addListener(({action, params}) => {
+    easyStorage = params.storage;
+    easyPAC = params.pac_script;
+    if (action === 'options_initial') {
+        easyOptionsSetUp();
+    }
 });
 
 function easyOptionsSetUp() {
