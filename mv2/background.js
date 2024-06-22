@@ -86,24 +86,8 @@ function easyMatchSubmit({storage, tabId}) {
     easyReloadTab(tabId);
 }
 
-function easyTempoUpdate({tabId, proxy, include, exclude}) {
-    if (!easyTempo[proxy]) {
-        easyTempo[proxy] = [];
-        easyTempoLog[proxy] = {};
-    }
-    var tempo = easyTempo[proxy];
-    var Log = easyTempoLog[proxy];
-    var result = [];
-    include.forEach((rule) => {
-        Log[rule] = true;
-        result.push(rule);
-    });
-    exclude.forEach((rule) => {
-        delete Log[rule];
-        tempo.splice(tempo.indexOf(rule), 1);
-    });
-    console.log('Proxy Server: ' + proxy + '\nAdded Tempo: ' + result.join(' ') + '\nRemoved Tempo: ' + exclude.join(' '));
-    tempo.push(...result);
+function easyTempoUpdate({tempo, tabId}) {
+    easyTempo = tempo;
     pacScriptConverter();
     easyReloadTab(tabId);
 }
@@ -123,6 +107,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var pattern = easyMatchPattern(url);
         easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url };
+        easyPort?.postMessage({action: 'match_resync', params: {pattern}});
     }
 });
 

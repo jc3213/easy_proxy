@@ -37,23 +37,18 @@ document.addEventListener('click', (event) => {
 
 function proxySubmit() {
     var proxy = proxies.value;
-    var {include, exclude, manage} = proxyChange('match', proxy, easyStorage[proxy], easyMatch);
+    var manage = proxyChange('match', easyStorage, easyMatch);
     if (manage) {
         easyPort.postMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyId}});
     }
 }
 
 function proxyTempo(remove) {
-    var proxy = proxies.value;
-    if (remove) {
-        return proxyTempoPurge(proxy);
-    }
-    if (!easyTempo[proxy]) {
-        easyTempo[proxy] = [];
-    }
-    var {include, exclude, manage} = proxyChange('tempo', proxy, easyTempo[proxy], easyMatchTempo);
+    console.log(easyTempo);
+    var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
+    console.log(manage, easyTempo)
     if (manage) {
-        easyPort.postMessage({action: 'tempo_update', params: {tabId: easyId, proxy, include, exclude}});
+        easyPort.postMessage({action: 'tempo_update', params: {tempo: easyTempo, tabId: easyId}});
     }
 }
 
@@ -67,33 +62,36 @@ function proxyTempoPurge(proxy) {
     easyPort.postMessage({action: 'tempo_purge', params: {tabId: easyId}});
 }
 
-function proxyChange(type, proxy, storage, logs) {
+function proxyChange(type, storage, logs) {
+    var proxy = proxies.value;
     var include = [];
     var exclude = [];
-    checkboxes.forEach((match) => {
-        var {value, checked} = match;
-        var status = match.parentNode.classList[1];
+    var matches = storage[proxy] || [];
+    checkboxes.forEach((check) => {
+        var {value, checked} = check;
+        var status = check.parentNode.classList[1];
         if (status && status !== type) {
-            match.checked = checkLogs[value];
+            check.checked = checkLogs[value];
             return;
         }
         if (checked && !logs[value]) {
             logs[value] = proxy;
             include.push(value);
-            storage.push(value);
-            return match.parentNode.classList.add(type);
+            matches.push(value);
+            return check.parentNode.classList.add(type);
         }
         if (!checked && logs[value]) {
             delete logs[value];
-            storage.splice(storage.indexOf(value), 1);
+            matches.splice(matches.indexOf(value), 1);
             exclude.push(value);
-            return match.parentNode.classList.remove(type);
+            return check.parentNode.classList.remove(type);
         }
     });
     changes = {};
     checkLogs = {};
     checkboxes = [];
-    return {include, exclude, manage: include.length !== 0 || exclude.length !== 0};
+    storage[proxy] = matches;
+    return include.length !== 0 || exclude.length !== 0;
 }
 
 document.addEventListener('change', (event) => {
@@ -128,6 +126,8 @@ easyPort.onMessage.addListener(({action, params}) => {
         case 'match_respond':
             easyMatchInitial(params);
             break;
+        case 'match_resync':
+            output.innerHTML = '';
         case 'match_update':
             easyMatchUpdate(params.pattern);
             break;
