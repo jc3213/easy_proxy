@@ -1,4 +1,4 @@
-   var easyDefault = {
+var easyDefault = {
     proxies: []
 };
 var easyStorage = {};
