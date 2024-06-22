@@ -149,7 +149,7 @@ function easyMatchInitial({storage, tempo, result}) {
     easyTempo = tempo;
     storage.proxies.forEach(easyProxyCeate);
     if (result && result.length !== 0) {
-        return result.sort().forEach(easyMatchUpdate);
+        return result.forEach(easyMatchUpdate);
     }
     proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
 }
