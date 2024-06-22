@@ -107,7 +107,7 @@ document.addEventListener('change', (event) => {
         return;
     }
     if (pid) {
-        easyStorage[pid] = value.split(' ');
+        easyStorage[pid] = value.match(/[^\s]+/g) ?? [];
         saveBtn.disabled = false;
         return;
     }
