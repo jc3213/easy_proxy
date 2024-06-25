@@ -130,7 +130,7 @@ easyPort.onMessage.addListener(({action, params}) => {
         case 'match_resync':
             output.innerHTML = '';
         case 'match_update':
-            easyMatchUpdate(params.pattern);
+            easyMatchUpdate(params);
             break;
     }
 });
@@ -150,7 +150,7 @@ function easyMatchInitial({storage, tempo, result}) {
     easyTempo = tempo;
     storage.proxies.forEach(easyProxyCeate);
     if (result && result.length !== 0) {
-        return result.forEach(easyMatchUpdate);
+        return result.forEach(easyMatchPattern);
     }
     proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
 }
@@ -163,7 +163,13 @@ function easyProxyCeate(proxy) {
     easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
 }
 
-function easyMatchUpdate(match) {
+function easyMatchUpdate({tabId, pattern}) {
+    if (tabId === easyTab) {
+        easyMatchPattern(pattern);
+    }
+}
+
+function easyMatchPattern(match) {
     var host = hostLET.cloneNode(true);
     var [check, label] = host.querySelectorAll('input, label');
     check.id = 'easyproxy_' + easyId;

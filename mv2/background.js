@@ -107,7 +107,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var pattern = easyMatchPattern(url);
         easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url };
-        easyPort?.postMessage({action: 'match_resync', params: {pattern}});
+        easyPort?.postMessage({action: 'match_resync', params: {tabId, pattern}});
     }
 });
 
@@ -118,7 +118,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     }
     easyMatch[tabId].list.push(pattern);
     easyMatch[tabId].rule[pattern] = true;
-    easyPort?.postMessage({action: 'match_update', params: {pattern}});
+    easyPort?.postMessage({action: 'match_update', params: {tabId, pattern}});
 }, {urls: ['http://*/*', 'https://*/*']});
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {
