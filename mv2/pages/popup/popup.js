@@ -37,7 +37,6 @@ document.addEventListener('click', (event) => {
 });
 
 function proxySubmit() {
-    var proxy = proxies.value;
     var manage = proxyChange('match', easyStorage, easyMatch);
     if (manage) {
         easyPort.postMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyTab}});
@@ -45,9 +44,7 @@ function proxySubmit() {
 }
 
 function proxyTempo(remove) {
-    console.log(easyTempo);
     var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
-    console.log(manage, easyTempo)
     if (manage) {
         easyPort.postMessage({action: 'tempo_update', params: {tempo: easyTempo, tabId: easyTab}});
     }
