@@ -119,7 +119,7 @@ document.addEventListener('change', (event) => {
 function profileCheck() {
     var {scheme, proxy} = newProfile;
     easyProxy = scheme + ' ' + proxy;
-    newBtn.disabled = profile in easyStorage || !/([\w-]+\.)+\w+(:\d+)?/.test(proxy) ? true : false;
+    newBtn.disabled = easyProxy in easyStorage || !/([\w-]+\.)+\w+(:\d+)?/.test(proxy) ? true : false;
 }
 
 function optionsImport(file) {
