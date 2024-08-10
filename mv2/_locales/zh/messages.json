@@ -23,6 +23,9 @@
     "options_submit": {
         "message": "提交"
     },
+    "options_autopac": {
+        "message": "读取PAC"
+    },
     "options_resort": {
         "message": "排序"
     },

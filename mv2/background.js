@@ -121,7 +121,7 @@ function pacScriptConverter() {
     var tempo = '';
     easyStorage.proxies.forEach((proxy) => {
         if (easyStorage.pacs[proxy]) {
-            pac_script += easyStorage[proxy].replace(/^[^{]*{/, '').replace(/}[^}]*$/, '');
+            pac_script += '\n    ' + easyStorage[proxy].replace(/^[^{]*{/, '').replace(/}[^}]*$/, '').trim();
             return;
         }
         pac_script += convertRegexp(proxy, easyStorage[proxy]);
