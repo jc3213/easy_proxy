@@ -35,6 +35,10 @@ body:not(.new_profile) #profile {
     display: none;
 }
 
+.new_profile [data-bid="new_btn"] {
+    border-style: inset;
+}
+
 .profile {
     margin-bottom: 20px;
 }

@@ -67,13 +67,16 @@ function optionsExport(pacScript) {
 }
 
 function profileSubmit() {
-    saveBtn.disabled = false;
     var proxy = easyProxy.proxy.value;
     if (/([^\.]+\.){1,}[^:]+(:\d+)?/.test(proxy)) {
         var profile = easyProxy.scheme.value + ' ' + proxy;
         easyStorage[profile] = [];
         easyStorage.proxies.push(profile);
         profileCreate(profile);
+        easyProxy.scheme.value = 'PROXY';
+        easyProxy.proxy.value = '';
+        options.remove('new_profile');
+        saveBtn.disabled = false;
     }
 }
 
@@ -102,6 +105,7 @@ document.querySelector('#files').addEventListener('change', async (event) => {
     saveBtn.disabled = true;
     await Promise.all([...event.target.files].map(importHandler));
     optionsSaved();
+    options.remove('new_profile');
     event.target.value = '';
 });
 
