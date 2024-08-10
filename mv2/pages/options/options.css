@@ -2,22 +2,41 @@ body {
     width: 680px;
 }
 
-input[type="file"], a {
-    display: none;
+body > div {
+    padding: 10px;
+}
+
+input {
+    width: auto;
 }
 
 #menu {
     display: flex;
     gap: 3px;
-    padding: 10px;
 }
 
-#menu > :nth-child(4) {
+#menu > :nth-child(2) {
     margin-left: auto;
 }
 
+#profile {
+    border-style: inset;
+    border-width: 2px;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    grid-gap: 3px;
+}
+
+#files {
+    display: none;
+}
+
+body:not(.new_profile) #profile {
+    display: none;
+}
+
 .profile {
-    padding: 10px;
+    margin-bottom: 20px;
 }
 
 .profile > div {
@@ -38,7 +57,11 @@ input[type="file"], a {
     height: 23px;
 }
 
-.profile > div > :last-child {
+.profile.autopac > div > button:nth-child(2) {
+    display: none;
+}
+
+.profile > div > :nth-child(3) {
     margin-left: auto;
 }
 

@@ -20,6 +20,9 @@
     "options_export": {
         "message": "Export"
     },
+    "options_submit": {
+        "message": "Submit"
+    },
     "options_resort": {
         "message": "Sort"
     },

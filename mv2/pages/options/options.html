@@ -8,7 +8,13 @@
     </head>
     <body>
         <div id="menu" class="flex">
-            <select data-nid="scheme">
+            <button data-bid="new_btn" i18n="options_profile">New Profile</button>
+            <button data-bid="save_btn" disabled i18n="options_save">Save</button>
+            <button><label for="import_options" i18n="options_import">Import</label></button>
+            <button data-bid="export_btn" i18n="options_export">Export</button>
+        </div>
+        <div id="profile">
+            <select name="scheme">
                 <option value="PROXY" selected>PROXY</option>
                 <option value="HTTP">HTTP</option>
                 <option value="HTTPS">HTTPS</option>
@@ -16,12 +22,13 @@
                 <option value="SOCKS4">SOCKS4</option>
                 <option value="SOCKS5">SOCKS5</option>
             </select>
-            <input data-nid="proxy" type="url">
-            <button data-bid="new_btn" disabled i18n="options_profile">New Profile</button>
-            <button data-bid="save_btn" disabled i18n="options_save">Save</button>
-            <button data-bid="import_btn" i18n="options_import">Import</button>
-            <button data-bid="export_btn" i18n="options_export">Export</button>
-            <input type="file" accept=".json">
+            <input name="proxy" type="url">
+            <button data-bid="submit_btn" i18n="options_submit">Submit</button>
+            <button><label for="import_pac" i18n="options_import">Import</label></button>
+        </div>
+        <div id="files">
+            <input id="import_pac" type="file" accept=".pac" multiple>
+            <input id="import_options" type="file" accept=".json">
             <a></a>
         </div>
         <hr>
@@ -35,7 +42,7 @@
                 <textarea class="matches" rows="4"></textarea>
             </div>
         </div>
-        <div id="profile"></div>
+        <div id="manager"></div>
         <script src="options.js"></script>
     </body>
 </html>

@@ -1,13 +1,11 @@
 var easyProfile = {};
-var easyProxy;
+var easyProxy = {};
 var easyPort = chrome.runtime.connect({name: 'easyproxy-options'});
-var newProfile = {
-    scheme: 'PROXY',
-    proxy: ''
-};
 var removed = [];
-var [scheme, proxy, newBtn, saveBtn, importBtn, exportBtn, importer, exporter, profiles] = document.querySelectorAll('#menu > *, #profile');
-var profileLET = document.querySelector('.template > .profile');
+var options = document.body.classList;
+var [newBtn, saveBtn, profile, exporter, manager] = document.querySelectorAll('[data-bid="new_btn"], [data-bid="save_btn"], a, #profile, #manager');
+var [profileLET, pacLET] = document.querySelectorAll('.template > *');
+document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
 document.querySelectorAll('[i18n]').forEach((node) => {
     node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
@@ -23,16 +21,16 @@ document.addEventListener('keydown', (event) => {
 document.addEventListener('click', (event) => {
     switch (event.target.dataset.bid) {
         case 'new_btn':
-            profileNew();
+            options.toggle('new_profile');
             break;
         case 'save_btn':
             optionsSaved();
             break;
-        case 'import_btn':
-            importer.click();
-            break;
         case 'export_btn':
             optionsExport(event.ctrlKey && event.altKey);
+            break;
+        case 'submit_btn':
+            profileSubmit();
             break;
         case 'resort_btn':
             profileResort(event.target.dataset.pid);
@@ -67,12 +65,15 @@ function optionsExport(pacScript) {
     exporter.click();
 }
 
-function profileNew() {
-    newBtn.disabled = true;
+function profileSubmit() {
     saveBtn.disabled = false;
-    profileCreate(easyProxy);
-    easyStorage[easyProxy] = [];
-    easyStorage.proxies.push(easyProxy);
+    var proxy = easyProxy.proxy.value;
+    if (/([^\.]+\.){1,}[^:]+(:\d+)?/.test(proxy)) {
+        var profile = easyProxy.scheme.value + ' ' + proxy;
+        easyStorage[profile] = [];
+        easyStorage.proxies.push(profile);
+        profileCreate(profile);
+    }
 }
 
 function profileRemove(id) {
@@ -90,62 +91,76 @@ function profileResort(id) {
     easyProfile[id].matches.value = easyStorage[id].sort().join(' ');
 }
 
-function profileCreate(id) {
-    var profile = profileLET.cloneNode(true);
-    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.discard.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
-    profiles.append(profile);
-    easyProfile[id] = profile;
-    return profile;
-}
-
-document.addEventListener('change', (event) => {
-    var {dataset: {nid, pid}, value, files} = event.target;
-    if (nid) {
-        newProfile[nid] = value;
-        profileCheck();
-        return;
-    }
-    if (pid) {
-        easyStorage[pid] = value.match(/[^\s]+/g) ?? [];
-        saveBtn.disabled = false;
-        return;
-    }
-    if (files) {
-        optionsImport(files[0]);
-    }
+document.querySelector('#manager').addEventListener('change', (event) => {
+    easyStorage[event.target.dataset.pid] = value.match(/[^\s]+/g) ?? [];
+    saveBtn.disabled = false;
 });
 
-function profileCheck() {
-    var {scheme, proxy} = newProfile;
-    easyProxy = scheme + ' ' + proxy;
-    newBtn.disabled = easyProxy in easyStorage || !/([\w-]+\.)+\w+(:\d+)?/.test(proxy) ? true : false;
-}
-
-function optionsImport(file) {
+document.querySelector('#files').addEventListener('change', async (event) => {
     saveBtn.disabled = true;
-    var fileReader = new FileReader();
-    fileReader.onload = (event) => {
-        var json = JSON.parse(event.target.result);
-        removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
-        easyStorage = json;
-        easyOptionsSetUp();
-        optionsSaved();
-    };
-    fileReader.readAsText(file);
+    var upload = await Promise.all([...event.target.files].map(importHandler));
+    removed = upload.flat();
+    optionsSaved();
+    event.target.value = '';
+});
+
+function importHandler(file) {
+    return new Promise((resolve) => {
+        var fileReader = new FileReader();
+        fileReader.onload = (event) => {
+            var result = event.target.result;
+            if (file.name.endsWith('.json')) {
+                var json = JSON.parse(result);
+                removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
+                easyStorage = json;
+                easyOptionsSetup();
+            }
+            else {
+                var pac = easyStorage.pacs.find((id) => easyStorage[id] === result);
+                if (!pac) {
+                    var pacId = 'PAC ' + Date.now().toString(16);
+                    easyStorage[pacId] = result;
+                    easyStorage.pacs.push(pacId);
+                    profileCreate(pacId, true);
+                }
+            }
+            resolve(removed);
+        };
+        fileReader.readAsText(file);
+    });
 }
 
 easyPort.onMessage.addListener(({action, params}) => {
     easyStorage = params.storage;
     easyPAC = params.pac_script;
     if (action === 'options_initial') {
-        easyOptionsSetUp();
+        easyOptionsSetup();
     }
 });
 
-function easyOptionsSetUp() {
+function easyOptionsSetup() {
     easyStorage.proxies.forEach((proxy) => {
-        var profile = profileCreate(proxy);
-        profile.matches.value = easyStorage[proxy].join(' ');
+        profileCreate(proxy);
+    });
+    easyStorage.pacs.forEach((pac) => {
+        profileCreate(pac, true);
     });
 }
+
+function profileCreate(id, isPac) {
+    var profile = profileLET.cloneNode(true);
+    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
+    profile.proxy.textContent = profile.discard.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
+    if (isPac) {
+        profile.classList.add('autopac');
+        profile.matches.value = easyStorage[id];
+        profile.matches.setAttribute('readonly', 'true');
+    }
+    else {
+        profile.matches.value = easyStorage[id].join(' ');
+    }
+    manager.append(profile);
+    easyProfile[id] = profile;
+    return profile;
+}
+

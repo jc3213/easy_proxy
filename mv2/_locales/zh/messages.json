@@ -20,6 +20,9 @@
     "options_export": {
         "message": "导出"
     },
+    "options_submit": {
+        "message": "提交"
+    },
     "options_resort": {
         "message": "排序"
     },
