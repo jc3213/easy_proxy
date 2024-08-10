@@ -57,11 +57,7 @@ body:not(.new_profile) #profile {
     height: 23px;
 }
 
-.profile.autopac > div > button:nth-child(2) {
-    display: none;
-}
-
-.profile > div > :nth-child(3) {
+.profile > div > :last-child {
     margin-left: auto;
 }
 

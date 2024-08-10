@@ -80,6 +80,7 @@ function profileRemove(id) {
     saveBtn.disabled = false;
     easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
+    delete easyStorage.pacs[id];
     if (!removed.includes(id)) {
         removed.push(id);
     }
@@ -116,11 +117,12 @@ function importHandler(file) {
                 easyOptionsSetup();
             }
             else {
-                var pac = easyStorage.pacs.find((id) => easyStorage[id] === result);
+                var pac = easyStorage.proxies.find((id) => easyStorage[id] === result);
                 if (!pac) {
                     var pacId = 'PAC ' + Date.now().toString(16);
                     easyStorage[pacId] = result;
-                    easyStorage.pacs.push(pacId);
+                    easyStorage.pacs[pacId] = true;
+                    easyStorage.proxies.push(pacId);
                     profileCreate(pacId, true);
                 }
             }
@@ -140,10 +142,7 @@ easyPort.onMessage.addListener(({action, params}) => {
 
 function easyOptionsSetup() {
     easyStorage.proxies.forEach((proxy) => {
-        profileCreate(proxy);
-    });
-    easyStorage.pacs.forEach((pac) => {
-        profileCreate(pac, true);
+        profileCreate(proxy, easyStorage.pacs[proxy]);
     });
 }
 
@@ -152,9 +151,10 @@ function profileCreate(id, isPac) {
     profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
     profile.proxy.textContent = profile.discard.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
     if (isPac) {
-        profile.classList.add('autopac');
+        easyProxy[id] = true;
         profile.matches.value = easyStorage[id];
         profile.matches.setAttribute('readonly', 'true');
+        profile.resort.remove();
     }
     else {
         profile.matches.value = easyStorage[id].join(' ');
