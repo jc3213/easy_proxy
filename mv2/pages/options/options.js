@@ -114,6 +114,7 @@ function importHandler(file) {
                 var json = JSON.parse(result);
                 removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
                 easyStorage = json;
+                manager.innerHTML = '';
                 easyOptionsSetup();
             }
             else {
