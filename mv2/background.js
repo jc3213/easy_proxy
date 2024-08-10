@@ -1,4 +1,5 @@
 var easyDefault = {
+    pacs: {},
     proxies: []
 };
 var easyStorage = {};
@@ -8,6 +9,8 @@ var easyPort;
 var easyMatch = {};
 var easyTempo = {};
 var easyTempoLog = {};
+
+chrome.storage.local.remove('fallback');
 
 chrome.runtime.onConnect.addListener((port) => {
     switch (port.name) {
@@ -144,12 +147,12 @@ function pacScriptConverter() {
     var pac_script = '';
     var tempo = '';
     easyStorage.proxies.forEach((proxy) => {
-        if (easyStorage[proxy].length > 0) {
-            pac_script += convertRegexp(proxy, easyStorage[proxy]);
+        if (easyStorage.pacs[proxy]) {
+            pac_script += easyStorage[proxy].replace(/^[^{]*{/, '').replace(/}[^}]*$/, '');
+            return;
         }
-        if (easyTempo[proxy]?.length > 0) {
-            tempo += convertRegexp(proxy, easyTempo[proxy]);
-        }
+        pac_script += convertRegexp(proxy, easyStorage[proxy]);
+        tempo += convertRegexp(proxy, easyTempo[proxy] ?? []);
     });
     easyPAC = convertPacScript(pac_script);
     easyPACX = convertPacScript(pac_script + tempo);
@@ -157,7 +160,7 @@ function pacScriptConverter() {
 }
 
 function convertRegexp(proxy, matches) {
-    return '\n    if (/^(' + matches.join('|').replace(/\./g, '\\.').replace(/\\?\.?\*\\?\.?/g, '.*') + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
+    return matches.length === 0 ? '' : '\n    if (/^(' + matches.join('|').replace(/\./g, '\\.').replace(/\\?\.?\*\\?\.?/g, '.*') + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
 }
 
 function convertPacScript(pac_script) {
