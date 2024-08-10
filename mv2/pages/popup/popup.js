@@ -4,7 +4,6 @@ var easyProxy;
 var easyTab;
 var easyId = 0;
 var easyHosts = [];
-var easyPort = chrome.runtime.connect({name: 'easyproxy-manager'});
 var changes = {};
 var checkLogs = {};
 var checkboxes = [];
@@ -39,14 +38,14 @@ document.addEventListener('click', (event) => {
 function proxySubmit() {
     var manage = proxyChange('match', easyStorage, easyMatch);
     if (manage) {
-        easyPort.postMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyTab}});
+        chrome.runtime.sendMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyTab}});
     }
 }
 
 function proxyTempo(remove) {
     var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
     if (manage) {
-        easyPort.postMessage({action: 'tempo_update', params: {tempo: easyTempo, tabId: easyTab}});
+        chrome.runtime.sendMessage({action: 'tempo_update', params: {tempo: easyTempo, tabId: easyTab}});
     }
 }
 
@@ -57,7 +56,7 @@ function proxyTempoPurge(proxy) {
         match.parentNode.classList.remove('tempo');
         match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
     });
-    easyPort.postMessage({action: 'tempo_purge', params: {tabId: easyTab}});
+    chrome.runtime.sendMessage({action: 'tempo_purge', params: {tabId: easyTab}});
 }
 
 function proxyChange(type, storage, logs) {
@@ -119,14 +118,11 @@ function proxyUpdate(proxy) {
     });
 }
 
-easyPort.onMessage.addListener(({action, params}) => {
+chrome.runtime.onMessage.addListener(({action, params}) => {
     switch (action) {
-        case 'match_respond':
-            easyMatchInitial(params);
-            break;
-        case 'match_resync':
-            output.innerHTML = '';
         case 'match_update':
+            output.innerHTML = '';
+        case 'match_sync':
             easyMatchUpdate(params);
             break;
     }
@@ -134,10 +130,12 @@ easyPort.onMessage.addListener(({action, params}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
     easyTab = tabs[0].id;
-    easyPort.postMessage({action: 'match_initial', params: {tabId: easyTab}});
+    chrome.runtime.sendMessage({action: 'options_initial', params: {tabId: easyTab}}, easyMatchInitial);
 });
 
 function easyMatchInitial({storage, tempo, result}) {
+    easyStorage = storage;
+    easyTempo = tempo;
     storage.proxies.forEach((proxy) => {
         if (!storage.pacs[proxy]) {
             easyProxy ??= proxy;
@@ -148,8 +146,6 @@ function easyMatchInitial({storage, tempo, result}) {
         proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
         return;
     }
-    easyStorage = storage;
-    easyTempo = tempo;
     if (result && result.length !== 0) {
         return result.forEach(easyMatchPattern);
     }

@@ -1,6 +1,5 @@
 var easyProfile = {};
 var easyProxy = {};
-var easyPort = chrome.runtime.connect({name: 'easyproxy-options'});
 var removed = [];
 var options = document.body.classList;
 var [newBtn, saveBtn, profile, exporter, manager] = document.querySelectorAll('[data-bid="new_btn"], [data-bid="save_btn"], a, #profile, #manager');
@@ -43,8 +42,10 @@ document.addEventListener('click', (event) => {
 
 async function optionsSaved() {
     saveBtn.disabled = true;
-    easyPort.postMessage({storage: easyStorage, removed});
-    removed = [];
+    chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}}, (params) => {
+        easyPAC = params.pac_script;
+        removed = [];
+    });
 }
 
 function optionsExport(pacScript) {
@@ -93,14 +94,13 @@ function profileResort(id) {
 }
 
 document.querySelector('#manager').addEventListener('change', (event) => {
-    easyStorage[event.target.dataset.pid] = value.match(/[^\s]+/g) ?? [];
+    easyStorage[event.target.dataset.pid] = event.target.value.match(/[^\s]+/g) ?? [];
     saveBtn.disabled = false;
 });
 
 document.querySelector('#files').addEventListener('change', async (event) => {
     saveBtn.disabled = true;
-    var upload = await Promise.all([...event.target.files].map(importHandler));
-    removed = upload.flat();
+    await Promise.all([...event.target.files].map(importHandler));
     optionsSaved();
     event.target.value = '';
 });
@@ -133,12 +133,10 @@ function importHandler(file) {
     });
 }
 
-easyPort.onMessage.addListener(({action, params}) => {
+chrome.runtime.sendMessage({action: 'options_initial'}, (params) => {
     easyStorage = params.storage;
     easyPAC = params.pac_script;
-    if (action === 'options_initial') {
-        easyOptionsSetup();
-    }
+    easyOptionsSetup();
 });
 
 function easyOptionsSetup() {

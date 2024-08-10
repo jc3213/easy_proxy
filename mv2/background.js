@@ -12,81 +12,50 @@ var easyTempoLog = {};
 
 chrome.storage.local.remove('fallback');
 
-chrome.runtime.onConnect.addListener((port) => {
-    switch (port.name) {
-        case 'easyproxy-manager':
-            easyManagerInitial(port);
+chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
+    switch (action) {
+        case 'options_initial':
+            easyMatchInitial(params, response);
             break;
-        case 'easyproxy-options':
-            easyOptionsInitial(port);
+        case 'match_submit':
+            easyMatchSubmit(params);
+            break;
+        case 'options_onchange':
+            easyMatchChanged(params, response);
+            break;
+        case 'tempo_update':
+            easyTempoUpdate(params);
+            break;
+        case 'tempo_purge':
+            easyTempoPurge(params);
             break;
     }
 });
 
-function easyManagerInitial(port) {
-    easyPort = port;
-    port.onMessage.addListener(({action, params}) => {
-        switch (action) {
-            case 'match_initial':
-                easyMatchInitial(params);
-                break;
-            case 'match_submit':
-                easyMatchSubmit(params);
-                break;
-            case 'tempo_update':
-                easyTempoUpdate(params);
-                break;
-            case 'tempo_purge':
-                easyTempoPurge(params);
-                break;
-    }
-    });
-    port.onDisconnect.addListener(() => {
-        easyPort = null;
-    });
-}
-
-function easyOptionsInitial(port) {
-    port.postMessage(easyOptionsSyncData('options_initial'));
-    port.onMessage.addListener(({storage, removed}) => {
-        easyStorageUpdated(storage);
-        if (removed?.length !== 0) {
-            chrome.storage.local.remove(removed);
-        }
-        port.postMessage(easyOptionsSyncData('options_update'));
-    });
-}
-
-function easyOptionsSyncData(action) {
-    return {
-        action,
-        params: {
-            storage: {...easyDefault, ...easyStorage},
-            pac_script: easyPAC
-        }
-    };
-}
-
-function easyStorageUpdated(json) {
-    easyStorage = json;
-    pacScriptConverter();
-    chrome.storage.local.set(json);
-}
-
-function easyMatchInitial({tabId}) {
-    easyPort.postMessage({
-        action: 'match_respond',
-        params: {
-            storage: {...easyDefault, ...easyStorage},
-            tempo: easyTempo,
-            result: easyMatch[tabId]?.list
-        }
+function easyMatchInitial(params, response) {
+    response({
+        storage: {...easyDefault, ...easyStorage},
+        pac_script: easyPAC,
+        tempo: easyTempo,
+        result: easyMatch[params?.tabId]?.list ?? []
     });
 }
 
 function easyMatchSubmit({storage, tabId}) {
     easyStorageUpdated(storage);
     easyReloadTab(tabId);
+}
+
+function easyMatchChanged({storage, removed = []}, response) {
+    easyStorageUpdated(storage, response);
+    chrome.storage.local.remove(removed);
+}
+
+function easyStorageUpdated(json, callback) {
+    easyStorage = json;
+    pacScriptConverter();
+    chrome.storage.local.set(json);
+    callback({storage: {...easyDefault, ...easyStorage}, pac_script: easyPAC});
 }
 
 function easyTempoUpdate({tempo, tabId}) {
@@ -110,23 +79,27 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var pattern = easyMatchPattern(url);
         easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url };
-        easyPort?.postMessage({action: 'match_resync', params: {tabId, pattern}});
+        easyMatchSync('match_update', tabId, pattern);
     }
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     var pattern = easyMatchPattern(url);
-    if (!pattern || !easyMatch[tabId]?.rule || easyMatch[tabId].rule[pattern]) {
+    if (!pattern || !easyMatch[tabId] || easyMatch[tabId].rule[pattern]) {
         return;
     }
     easyMatch[tabId].list.push(pattern);
     easyMatch[tabId].rule[pattern] = true;
-    easyPort?.postMessage({action: 'match_update', params: {tabId, pattern}});
+    easyMatchSync('match_sync', tabId, pattern);
 }, {urls: ['http://*/*', 'https://*/*']});
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {
     delete easyMatch[tabId];
 });
+
+function easyMatchSync(action, tabId, pattern) {
+    chrome.runtime.sendMessage({action, params: {tabId, pattern}});
+}
 
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
