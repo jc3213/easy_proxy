@@ -138,14 +138,18 @@ chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
 });
 
 function easyMatchInitial({storage, tempo, result}) {
-    easyProxy = storage.proxies[0];
+    storage.proxies.forEach((proxy) => {
+        if (!storage.pacs[proxy]) {
+            easyProxy ??= proxy;
+            easyProxyCeate(proxy);
+        }
+    });
     if (!easyProxy) {
         proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
         return;
     }
     easyStorage = storage;
     easyTempo = tempo;
-    storage.proxies.forEach(easyProxyCeate);
     if (result && result.length !== 0) {
         return result.forEach(easyMatchPattern);
     }
@@ -161,7 +165,7 @@ function easyProxyCeate(proxy) {
 }
 
 function easyMatchUpdate({tabId, pattern}) {
-    if (tabId === easyTab) {
+    if (easyProxy && tabId === easyTab) {
         easyMatchPattern(pattern);
     }
 }
