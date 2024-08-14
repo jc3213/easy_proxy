@@ -1,5 +1,7 @@
 importScripts('/libs/matchpattern.js', 'background.js');
 
+var easyPersistent;
+
 chrome.commands.onCommand.addListener((command) => {
     switch (command) {
         case 'persistent_mode':
@@ -21,12 +23,6 @@ async function easyProxyMV3Persistent() {
     }
     chrome.storage.local.set(storage);
 }
-
-chrome.storage.local.get(null).then((json) => {
-    if (json.persistent) {
-        persistentModeEnabled()
-    }
-});
 
 function persistentModeEnabled() {
     easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
