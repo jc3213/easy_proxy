@@ -9,8 +9,7 @@ var easyPort;
 var easyMatch = {};
 var easyTempo = {};
 var easyTempoLog = {};
-
-chrome.storage.local.remove('fallback');
+var easyMain = chrome.runtime.getManifest().manifest_version;
 
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     switch (action) {
@@ -104,6 +103,9 @@ function easyMatchSync(action, tabId, pattern) {
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
     pacScriptConverter();
+    if (easyMain === 3) {
+        persistentModeEnabled();
+    }
 });
 
 function setEasyProxy(data) {
