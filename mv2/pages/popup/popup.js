@@ -128,6 +128,13 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
     }
 });
 
+function easyMatchUpdate({tabId, pattern}) {
+    if (easyProxy && tabId === easyTab) {
+        easyMatchPattern(pattern);
+        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = false;
+    }
+}
+
 chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
     easyTab = tabs[0].id;
     chrome.runtime.sendMessage({action: 'options_initial', params: {tabId: easyTab}}, easyMatchInitial);
@@ -142,14 +149,11 @@ function easyMatchInitial({storage, tempo, result}) {
             easyProxyCeate(proxy);
         }
     });
-    if (!easyProxy) {
+    if (!easyProxy || result.length === 0 ) {
         proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
         return;
     }
-    if (result && result.length !== 0) {
-        return result.forEach(easyMatchPattern);
-    }
-    proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
+    result.forEach(easyMatchPattern);
 }
 
 function easyProxyCeate(proxy) {
@@ -158,12 +162,6 @@ function easyProxyCeate(proxy) {
     proxies.append(menu);
     easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
     easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
-}
-
-function easyMatchUpdate({tabId, pattern}) {
-    if (easyProxy && tabId === easyTab) {
-        easyMatchPattern(pattern);
-    }
 }
 
 function easyMatchPattern(match) {
