@@ -76,19 +76,20 @@ function easyReloadTab(id) {
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
-        var pattern = MatchPattern.host(url);
-        easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url };
+        var pattern = MatchPattern.url(url);
+        easyMatch[tabId] = { list: [pattern], cache: { [pattern]: true }, url };
         easyMatchSync('match_update', tabId, pattern);
     }
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
-    var pattern = MatchPattern.host(url);
-    if (!pattern || !easyMatch[tabId] || easyMatch[tabId].rule[pattern]) {
+    var pattern = MatchPattern.url(url);
+    var matched = easyMatch[tabId];
+    if (!pattern || !matched || matched.cache[pattern]) {
         return;
     }
-    easyMatch[tabId].list.push(pattern);
-    easyMatch[tabId].rule[pattern] = true;
+    matched.list.push(pattern);
+    matched.cache[pattern] = true;
     easyMatchSync('match_sync', tabId, pattern);
 }, {urls: ['http://*/*', 'https://*/*']});
 
