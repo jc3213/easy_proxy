@@ -76,14 +76,14 @@ function easyReloadTab(id) {
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
-        var pattern = easyMatchPattern(url);
+        var pattern = MatchPattern.host(url);
         easyMatch[tabId] = { list: [pattern], rule: { [pattern]: true }, url };
         easyMatchSync('match_update', tabId, pattern);
     }
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
-    var pattern = easyMatchPattern(url);
+    var pattern = MatchPattern.host(url);
     if (!pattern || !easyMatch[tabId] || easyMatch[tabId].rule[pattern]) {
         return;
     }

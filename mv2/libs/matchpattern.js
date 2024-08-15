@@ -70,8 +70,14 @@
         return result;
     };
 
-    self.easyMatchPattern = (url) => {
-        let [hostname] = url.match(/(?:[^:\/\.]+\.){1,4}[^:\/\.]+/);
+    const host = (hostname) => {
         return cache[hostname] || create(hostname);
     };
+    
+    const url = (url) => {
+        const {hostname} = new URL(url);
+        return cache[hostname] || create(hostname);
+    }
+    
+    self.MatchPattern = {url, host};
 })();
