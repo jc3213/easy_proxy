@@ -9,7 +9,10 @@
     <body>
         <div id="output"></div>
         <hr>
-        <select id="proxy"></select>
+        <div id="expand">
+            <select id="proxy"></select>
+            <button data-bid="expand_btn">⚙</button>
+        </div>
         <hr>
         <div id="menu" class="flex">
             <button data-bid="submit_btn" i18n="popup_submit">Submit</button>
@@ -18,8 +21,8 @@
         </div>
         <div class="template">
             <div class="host">
-                <input type="checkbox" id="">
-                <label for=""></label>
+                <input type="checkbox">
+                <label></label>
             </div>
         </div>
         <script src="popup.js"></script>

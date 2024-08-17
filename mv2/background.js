@@ -14,29 +14,38 @@ var easyMain = chrome.runtime.getManifest().manifest_version;
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     switch (action) {
         case 'options_initial':
-            easyMatchInitial(params, response);
-            break;
-        case 'match_submit':
-            easyMatchSubmit(params);
+            easyOptionsInitial(response);
             break;
         case 'options_onchange':
             easyMatchChanged(params, response);
             break;
-        case 'tempo_update':
+        case 'manager_initial':
+            easyMatchInitial(params, response);
+            break;
+        case 'manager_submit':
+            easyMatchSubmit(params);
+            break;
+        case 'manager_tempo':
             easyTempoUpdate(params);
             break;
-        case 'tempo_purge':
+        case 'manager_purge':
             easyTempoPurge(params);
             break;
     }
 });
 
-function easyMatchInitial(params, response) {
+function easyOptionsInitial(response) {
     response({
         storage: {...easyDefault, ...easyStorage},
         pac_script: easyPAC,
+    });
+}
+
+function easyMatchInitial(params, response) {
+    response({
+        storage: {...easyDefault, ...easyStorage},
         tempo: easyTempo,
-        result: easyMatch[params?.tabId]?.list ?? []
+        result: easyMatch[params.tabId]
     });
 }
 
@@ -76,30 +85,38 @@ function easyReloadTab(id) {
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
-        var pattern = MatchPattern.url(url);
-        easyMatch[tabId] = { list: [pattern], cache: { [pattern]: true }, url };
-        easyMatchSync('match_update', tabId, pattern);
+        var host = new URL(url).hostname;
+        var match = MatchPattern.host(host);
+        easyMatch[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, url };
+        easyMatchSync('manager_update', tabId, host, match);
     }
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
-    var pattern = MatchPattern.url(url);
+    var host = new URL(url).hostname;
+    var match = MatchPattern.host(host);
     var matched = easyMatch[tabId];
-    if (!pattern || !matched || matched.cache[pattern]) {
+    if (!match || !matched) {
         return;
     }
-    matched.list.push(pattern);
-    matched.cache[pattern] = true;
-    easyMatchSync('match_sync', tabId, pattern);
+    if (!matched.cache[host]) {
+        matched.host.push(host);
+        matched.cache[host] = true;
+    }
+    if (!matched.cache[match]) {
+        matched.match.push(match);
+        matched.cache[match] = true;
+    }
+    easyMatchSync('manager_sync', tabId, host, match);
 }, {urls: ['http://*/*', 'https://*/*']});
+
+function easyMatchSync(action, tabId, host, match) {
+    chrome.runtime.sendMessage({action, params: {tabId, host, match}});
+}
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {
     delete easyMatch[tabId];
 });
-
-function easyMatchSync(action, tabId, pattern) {
-    chrome.runtime.sendMessage({action, params: {tabId, pattern}});
-}
 
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};

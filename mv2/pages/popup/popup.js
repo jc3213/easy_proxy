@@ -4,10 +4,12 @@ var easyProxy;
 var easyTab;
 var easyId = 0;
 var easyHosts = [];
+var easyList = {};
 var changes = {};
-var checkLogs = {};
+var restore = {};
 var checkboxes = [];
-var [output, proxies, submitBtn, tempoBtn] = document.querySelectorAll('#output, #proxy, button');
+var manager = document.body.classList;
+var [output, proxies, submitBtn] = document.querySelectorAll('#output, #proxy, [data-bid="submit_btn"]');
 var hostLET = document.querySelector('.template > .host');
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -23,6 +25,9 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('click', (event) => {
     switch (event.target.dataset.bid) {
+        case 'expand_btn': 
+            manager.toggle('expand');
+            break;
         case 'submit_btn':
             proxySubmit();
             break;
@@ -38,14 +43,14 @@ document.addEventListener('click', (event) => {
 function proxySubmit() {
     var manage = proxyChange('match', easyStorage, easyMatch);
     if (manage) {
-        chrome.runtime.sendMessage({action: 'match_submit', params: {storage: easyStorage, tabId: easyTab}});
+        proxyStatusUpdate('manager_submit', {storage: easyStorage});
     }
 }
 
 function proxyTempo(remove) {
     var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
     if (manage) {
-        chrome.runtime.sendMessage({action: 'tempo_update', params: {tempo: easyTempo, tabId: easyTab}});
+        proxyStatusUpdate('manager_tempo', {tempo: easyTempo});
     }
 }
 
@@ -56,7 +61,13 @@ function proxyTempoPurge(proxy) {
         match.parentNode.classList.remove('tempo');
         match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
     });
-    chrome.runtime.sendMessage({action: 'tempo_purge', params: {tabId: easyTab}});
+    proxyStatusUpdate('manager_purge');
+}
+
+function proxyStatusUpdate(action, params = {}) {
+    easyList = {};
+    params.tabId = easyTab;
+    chrome.runtime.sendMessage({action, params});
 }
 
 function proxyChange(type, storage, logs) {
@@ -66,9 +77,9 @@ function proxyChange(type, storage, logs) {
     var matches = storage[proxy] || [];
     checkboxes.forEach((check) => {
         var {value, checked} = check;
-        var status = check.parentNode.classList[1];
+        var status = check.parentNode.classList[2];
         if (status && status !== type) {
-            check.checked = checkLogs[value];
+            check.checked = restore[value];
             return;
         }
         if (checked && !logs[value]) {
@@ -85,59 +96,53 @@ function proxyChange(type, storage, logs) {
         }
     });
     changes = {};
-    checkLogs = {};
+    restore = {};
     checkboxes = [];
     storage[proxy] = matches;
     return include.length !== 0 || exclude.length !== 0;
 }
 
-document.addEventListener('change', (event) => {
-    if (event.target.type === 'checkbox') {
-        return matchUpdate(event.target);
-    }
-    if (event.target.id === 'proxy') {
-        return proxyUpdate(event.target.value);
-    }
-});
-
-function matchUpdate(check) {
-    var {value, checked} = check;
-    if (!changes[value]) {
-        checkLogs[value] = !checked;
-        checkboxes.push(check);
+document.getElementById('output').addEventListener('change', (event) => {
+    var entry = event.target;
+    var value = entry.value;
+    var checked = entry.checked;
+    if (changes[value] === undefined) {
+        restore[value] = !checked;
+        checkboxes.push(entry);
     }
     changes[value] = checked;
-}
+});
 
-function proxyUpdate(proxy) {
-    easyProxy = proxy;
+document.getElementById('expand').addEventListener('change', (event) => {
+    easyProxy = event.target.value;
     easyHosts.forEach((match) => {
         var host = match.value;
         match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
         match.disabled = easyMatch[host] && easyMatch[host] !== proxy || easyMatchTempo[host] && easyMatchTempo[host] !== proxy;
     });
-}
+});
 
 chrome.runtime.onMessage.addListener(({action, params}) => {
     switch (action) {
-        case 'match_update':
+        case 'manager_update':
             output.innerHTML = '';
-        case 'match_sync':
+        case 'manager_sync':
             easyMatchUpdate(params);
             break;
     }
 });
 
-function easyMatchUpdate({tabId, pattern}) {
+function easyMatchUpdate({tabId, host, match}) {
     if (easyProxy && tabId === easyTab) {
-        easyMatchPattern(pattern);
-        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = false;
+        easyMatchPattern(host, 'hostname');
+        easyMatchPattern(match, 'wildcard');
+        manager.remove('hibernate');
     }
 }
 
 chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'options_initial', params: {tabId: easyTab}}, easyMatchInitial);
+    chrome.runtime.sendMessage({action: 'manager_initial', params: {tabId: easyTab}}, easyMatchInitial);
 });
 
 function easyMatchInitial({storage, tempo, result}) {
@@ -149,11 +154,11 @@ function easyMatchInitial({storage, tempo, result}) {
             easyProxyCeate(proxy);
         }
     });
-    if (!easyProxy || result.length === 0 ) {
-        proxies.disabled = submitBtn.disabled = tempoBtn.disabled = true;
-        return;
+    if (!easyProxy || !result) {
+        return manager.add('hibernate');
     }
-    result.forEach(easyMatchPattern);
+    result.host.forEach((value) => easyMatchPattern(value, 'hostname'));
+    result.match.forEach((value) => easyMatchPattern(value, 'wildcard'));
 }
 
 function easyProxyCeate(proxy) {
@@ -164,22 +169,27 @@ function easyProxyCeate(proxy) {
     easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
 }
 
-function easyMatchPattern(match) {
+function easyMatchPattern(value, type) {
+    if (easyList[value]) {
+        return;
+    }
     var host = hostLET.cloneNode(true);
-    var [check, label] = host.querySelectorAll('input, label');
-    check.id = 'easyproxy_' + easyId;
+    host.classList.add(type);
+    var [entry, label] = host.querySelectorAll('input, label');
+    entry.id = 'easyproxy_' + easyId;
     label.setAttribute('for', 'easyproxy_' + easyId);
-    label.textContent = check.value = match;
-    if (easyMatch[match]) {
+    host.title = label.textContent = entry.value = value;
+    if (easyMatch[value]) {
         host.classList.add('match');
     }
-    if (easyMatchTempo[match]) {
+    if (easyMatchTempo[value]) {
         host.classList.add('tempo');
     }
-    if (easyMatch[match] === easyProxy || easyMatchTempo[match] === easyProxy) {
-        check.checked = true;
+    if (easyMatch[value] === easyProxy || easyMatchTempo[value] === easyProxy) {
+        entry.checked = true;
     }
-    easyHosts.push(check);
+    easyHosts.push(entry);
     easyId ++;
     output.append(host);
+    easyList[value] = true;
 }
