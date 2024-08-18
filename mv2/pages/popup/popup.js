@@ -65,7 +65,6 @@ function proxyTempoPurge(proxy) {
 }
 
 function proxyStatusUpdate(action, params = {}) {
-    easyList = {};
     params.tabId = easyTab;
     chrome.runtime.sendMessage({action, params});
 }
@@ -125,8 +124,6 @@ document.getElementById('expand').addEventListener('change', (event) => {
 chrome.runtime.onMessage.addListener(({action, params}) => {
     switch (action) {
         case 'manager_update':
-            output.innerHTML = '';
-        case 'manager_sync':
             easyMatchUpdate(params);
             break;
     }
@@ -140,7 +137,14 @@ function easyMatchUpdate({tabId, host, match}) {
     }
 }
 
-chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
+chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
+    if (tabId === easyTab && frameId === 0) {
+        easyList = {};
+        output.innerHTML = '';
+    }
+});
+
+chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
     chrome.runtime.sendMessage({action: 'manager_initial', params: {tabId: easyTab}}, easyMatchInitial);
 });
@@ -177,19 +181,23 @@ function easyMatchPattern(value, type) {
     host.classList.add(type);
     var [entry, label] = host.querySelectorAll('input, label');
     entry.id = 'easyproxy_' + easyId;
-    label.setAttribute('for', 'easyproxy_' + easyId);
+    label.setAttribute('for', entry.id);
     host.title = label.textContent = entry.value = value;
+    easyHosts.push(entry);
+    easyId ++;
+    easyList[value] = true;
+    output.append(host);
     if (easyMatch[value]) {
         host.classList.add('match');
+        easyList.lastMatch?.after(host);
+        easyList.lastMatch = host;
     }
-    if (easyMatchTempo[value]) {
+    else if (easyMatchTempo[value]) {
         host.classList.add('tempo');
+        easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host);
+        easyList.lastTempo = host;
     }
     if (easyMatch[value] === easyProxy || easyMatchTempo[value] === easyProxy) {
         entry.checked = true;
     }
-    easyHosts.push(entry);
-    easyId ++;
-    output.append(host);
-    easyList[value] = true;
 }

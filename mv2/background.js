@@ -88,7 +88,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
         var host = new URL(url).hostname;
         var match = MatchPattern.host(host);
         easyMatch[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, url };
-        easyMatchSync('manager_update', tabId, host, match);
+        easyMatchSync(tabId, host, match);
     }
 });
 
@@ -107,11 +107,11 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
         matched.match.push(match);
         matched.cache[match] = true;
     }
-    easyMatchSync('manager_sync', tabId, host, match);
+    easyMatchSync(tabId, host, match);
 }, {urls: ['http://*/*', 'https://*/*']});
 
-function easyMatchSync(action, tabId, host, match) {
-    chrome.runtime.sendMessage({action, params: {tabId, host, match}});
+function easyMatchSync(tabId, host, match) {
+    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
 }
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {
