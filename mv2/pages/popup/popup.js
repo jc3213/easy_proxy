@@ -32,7 +32,7 @@ document.addEventListener('click', (event) => {
             proxySubmit();
             break;
         case 'tempo_btn':
-            proxyTempo(event.ctrlKey && event.altKey);
+            event.ctrlKey && event.altKey ? proxyTempoPurge() : proxyTempo();
             break;
         case 'options_btn':
             chrome.runtime.openOptionsPage();
@@ -47,19 +47,19 @@ function proxySubmit() {
     }
 }
 
-function proxyTempo(remove) {
+function proxyTempo() {
     var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
     if (manage) {
         proxyStatusUpdate('manager_tempo', {tempo: easyTempo});
     }
 }
 
-function proxyTempoPurge(proxy) {
+function proxyTempoPurge() {
     easyMatchTempo = {};
     easyTempo = {};
     easyHosts.forEach((match) => {
         match.parentNode.classList.remove('tempo');
-        match.checked = easyMatch[match.value] === proxy || easyMatchTempo[match.value] === proxy ? true : false;
+        match.checked = easyMatch[match.value] === easyProxy || easyMatchTempo[match.value] === easyProxy ? true : false;
     });
     proxyStatusUpdate('manager_purge');
 }
@@ -189,12 +189,12 @@ function easyMatchPattern(value, type) {
     output.append(host);
     if (easyMatch[value]) {
         host.classList.add('match');
-        easyList.lastMatch?.after(host);
+        easyList.lastMatch?.after(host) || output.insertBefore(host, output.children[0]);
         easyList.lastMatch = host;
     }
     else if (easyMatchTempo[value]) {
         host.classList.add('tempo');
-        easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host);
+        easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host) || output.insertBefore(host, output.children[0]);
         easyList.lastTempo = host;
     }
     if (easyMatch[value] === easyProxy || easyMatchTempo[value] === easyProxy) {
