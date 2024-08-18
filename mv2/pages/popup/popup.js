@@ -59,7 +59,7 @@ function proxyTempoPurge() {
     easyTempo = {};
     easyHosts.forEach((match) => {
         match.parentNode.classList.remove('tempo');
-        match.checked = easyMatch[match.value] === easyProxy || easyMatchTempo[match.value] === easyProxy ? true : false;
+        match.checked = easyMatch[match.value] === easyProxy ? true : false;
     });
     proxyStatusUpdate('manager_purge');
 }
