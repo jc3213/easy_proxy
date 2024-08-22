@@ -57,13 +57,13 @@ function easyMatchSubmit({storage, tabId}) {
 function easyMatchChanged({storage, removed = []}, response) {
     easyStorageUpdated(storage, response);
     chrome.storage.local.remove(removed);
+    response({storage: {...easyDefault, ...easyStorage}, pac_script: easyPAC});
 }
 
-function easyStorageUpdated(json, callback) {
+function easyStorageUpdated(json) {
     easyStorage = json;
     pacScriptConverter();
     chrome.storage.local.set(json);
-    callback({storage: {...easyDefault, ...easyStorage}, pac_script: easyPAC});
 }
 
 function easyTempoUpdate({tempo, tabId}) {
