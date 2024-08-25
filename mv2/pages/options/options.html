@@ -33,13 +33,29 @@
         </div>
         <hr>
         <div class="template">
-            <div class="profile">
-                <div>
+            <div class="matchpattern">
+                <div class="menu">
                     <div class="proxy"></div>
+                    <div>
+                        <input class="entry" type="text">
+                        <button class="append" data-bid="append_btn">➕</button>
+                    </div>
                     <button class="resort" data-bid="resort_btn" i18n="options_resort">Sort</button>
-                    <button class="discard" data-bid="remove_btn">❌</button>
+                    <button class="delete" data-bid="remove_btn">❌</button>
                 </div>
-                <textarea class="matches" rows="4"></textarea>
+                <div class="matches"></div>
+            </div>
+            <div class="pacscript">
+                <div class="menu">
+                    <div class="proxy"></div>
+                    <button class="detail" data-bid="detail_btn" i18n="options_detail">Detail</button>
+                    <button class="delete" data-bid="remove_btn">❌</button>
+                </div>
+                <div class="content"></div>
+            </div>
+            <div>
+                <div></div>
+                <button data-bid="splice_btn">❌</button>
             </div>
         </div>
         <div id="manager"></div>

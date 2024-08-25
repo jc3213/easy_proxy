@@ -3,7 +3,7 @@ var easyProxy = {};
 var removed = [];
 var options = document.body.classList;
 var [newBtn, saveBtn, profile, exporter, manager] = document.querySelectorAll('[data-bid="new_btn"], [data-bid="save_btn"], a, #profile, #manager');
-var [profileLET, pacLET] = document.querySelectorAll('.template > *');
+var [profileLET, pacLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -34,8 +34,17 @@ document.addEventListener('click', (event) => {
         case 'resort_btn':
             profileResort(event.target.dataset.pid);
             break;
+        case 'detail_btn':
+            profileDetail(event.target.dataset.pid);
+            break;
         case 'remove_btn':
             profileRemove(event.target.dataset.pid);
+            break;
+        case 'append_btn':
+            matchCreate(event.target);
+            break;
+        case 'splice_btn':
+            matchRemove(event.target.dataset);
             break;
     }
 });
@@ -72,12 +81,21 @@ function profileSubmit() {
         var profile = easyProxy.scheme.value + ' ' + proxy;
         easyStorage[profile] = [];
         easyStorage.proxies.push(profile);
-        profileCreate(profile);
+        createMatchPattern(profile);
         easyProxy.scheme.value = 'PROXY';
         easyProxy.proxy.value = '';
         options.remove('new_profile');
         saveBtn.disabled = false;
     }
+}
+
+function profileDetail(id) {
+    easyProfile[id].classList.toggle('expand');
+}
+
+function profileResort(id) {
+    saveBtn.disabled = false;
+    // under development
 }
 
 function profileRemove(id) {
@@ -91,9 +109,12 @@ function profileRemove(id) {
     delete easyStorage[id];
 }
 
-function profileResort(id) {
-    saveBtn.disabled = false;
-    easyProfile[id].matches.value = easyStorage[id].sort().join(' ');
+function matchCreate(id) {
+    // under development
+}
+
+function matchRemove(id) {
+    // under development
 }
 
 document.querySelector('#manager').addEventListener('change', (event) => {
@@ -128,7 +149,7 @@ function importHandler(file) {
                     easyStorage[pacId] = result;
                     easyStorage.pacs[pacId] = true;
                     easyStorage.proxies.push(pacId);
-                    profileCreate(pacId, true);
+                    createPacScript(proxy);
                 }
             }
             resolve(removed);
@@ -145,25 +166,34 @@ chrome.runtime.sendMessage({action: 'options_initial'}, (params) => {
 
 function easyOptionsSetup() {
     easyStorage.proxies.forEach((proxy) => {
-        profileCreate(proxy, easyStorage.pacs[proxy]);
+        easyStorage.pacs[proxy] ? createPacScript(proxy) : createMatchPattern(proxy);
     });
 }
 
-function profileCreate(id, isPac) {
+function createMatchPattern(id) {
     var profile = profileLET.cloneNode(true);
     profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.discard.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
-    if (isPac) {
-        easyProxy[id] = true;
-        profile.matches.value = easyStorage[id];
-        profile.matches.setAttribute('readonly', 'true');
-        profile.resort.remove();
-    }
-    else {
-        profile.matches.value = easyStorage[id].join(' ');
-    }
+    profile.proxy.textContent = profile.delete.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
+    listMatchPattern(profile.matches, id, easyStorage[id]);
     manager.append(profile);
     easyProfile[id] = profile;
-    return profile;
 }
 
+function createPacScript(id) {
+    var profile = pacLET.cloneNode(true);
+    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
+    profile.proxy.textContent = profile.delete.dataset.pid = profile.detail.dataset.pid = profile.content.dataset.pid = id;
+    profile.content.textContent = easyStorage[id];
+    manager.append(profile);
+    easyProfile[id] = profile;
+}
+
+function listMatchPattern(list, id, matches) {
+    matches.forEach((value) => {
+        var match = matchLET.cloneNode(true);
+        var [content, button] = match.querySelectorAll('*');
+        content.textContent = button.dataset.value = value;
+        button.dataset.pid = id;
+        list.appendChild(match);
+    });
+}
