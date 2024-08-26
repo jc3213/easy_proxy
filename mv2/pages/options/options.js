@@ -174,7 +174,7 @@ function createMatchPattern(id) {
     });
     listMatchPattern(profile.matches, easyStorage[id]);
     easyProfile[id] = profile;
-    manager.append(profile);
+    manager.appendChild(profile);
 }
 
 function listMatchPattern(list, matches) {
@@ -217,6 +217,6 @@ function createPacScript(id) {
     profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
     profile.proxy.textContent = profile.detail.dataset.pid = profile.delete.dataset.pid = id;
     profile.content.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
-    manager.append(profile);
     easyProfile[id] = profile;
+    manager.appendChild(profile);
 }
