@@ -83,10 +83,10 @@ body:not(.new_profile) #profile {
 }
 
 .matches {
-    min-height: 25px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-column-gap: 3px;
+    min-height: 25px;
 }
 
 .expand .content {
@@ -100,10 +100,11 @@ body:not(.new_profile) #profile {
 }
 
 .matches > * {
-    border-style: outset;
-    border-width: 1px;
     display: grid;
     grid-template-columns: 1fr auto;
+    white-space: nowrap;
+    border-width: 1px;
+    border-style: outset;
 }
 
 .matches > * > :first-child {
