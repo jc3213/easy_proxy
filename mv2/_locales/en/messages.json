@@ -27,7 +27,22 @@
         "message": "PAC File"
     },
     "options_resort": {
-        "message": "Sort"
+        "message": "Resort"
+    },
+    "profile_resort": {
+        "message": "Resort match patterns"
+    },
+    "profile_detail": {
+        "message": "Show full PAC script"
+    },
+    "profile_remove": {
+        "message": "Remove proxy profile"
+    },
+    "match_add": {
+        "message": "Add new match pattern"
+    },
+    "match_remove": {
+        "message": "Remove current match pattern"
     },
     "popup_title": {
         "message": "Easy Proxy Manager"
@@ -43,5 +58,8 @@
     },
     "popup_options": {
         "message": "Options"
+    },
+    "full-host": {
+        "message": "Toggle host name match rules"
     }
 }

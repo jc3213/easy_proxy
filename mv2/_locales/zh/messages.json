@@ -26,8 +26,20 @@
     "options_autopac": {
         "message": "读取PAC"
     },
-    "options_resort": {
-        "message": "排序"
+    "profile_resort": {
+        "message": "排序匹配规则"
+    },
+    "profile_detail": {
+        "message": "显示完整PAC"
+    },
+    "profile_remove": {
+        "message": "移除代理档案"
+    },
+    "match_add": {
+        "message": "添加新的规则"
+    },
+    "match_remove": {
+        "message": "删除当前规格"
     },
     "popup_title": {
         "message": "简易代理管理"
@@ -43,5 +55,8 @@
     },
     "popup_options": {
         "message": "设置"
+    },
+    "full-host": {
+        "message": "切换域名匹配规则"
     }
 }
