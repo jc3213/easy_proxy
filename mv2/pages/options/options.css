@@ -42,16 +42,16 @@ input {
     height: 16px;
 }
 
+#manager > * {
+    margin-bottom: 30px;
+}
+
 body:not(.new_profile) #profile {
     display: none;
 }
 
-.new_profile [data-bid="new_btn"] {
+.new_profile [data-bid="new_btn"], .expand .detail {
     border-style: inset;
-}
-
-.matchpattern, .pacscript {
-    margin-bottom: 20px;
 }
 
 .matchpattern > .menu > :nth-child(2) {
@@ -59,12 +59,8 @@ body:not(.new_profile) #profile {
     padding: 5px;
 }
 
-.expand .detail, .matches, .content {
-    border-style: inset;
-}
-
 .expand .content {
-    height: fit-content;
+    max-height: fit-content;
 }
 
 .menu {
@@ -81,19 +77,20 @@ body:not(.new_profile) #profile {
 
 .matches, .content {
     border-width: 1px;
-    padding: 5px;
+    border-style: inset;
+    overflow-y: auto;
+    max-height: 174px;
 }
 
 .matches {
+    min-height: 25px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-gap: 3px;
+    grid-column-gap: 3px;
 }
 
 .content {
-    overflow-y: scroll;
-    height: 105px;
-    border-width: 1px;
+    padding: 5px;
     word-wrap: break-word;
     grid-area: 2 / 1 / 3 / 4;
 }
@@ -105,6 +102,6 @@ body:not(.new_profile) #profile {
     grid-template-columns: 1fr auto;
 }
 
-.pattern {
+.matches > * > :first-child {
     padding: 3px 5px;
 }

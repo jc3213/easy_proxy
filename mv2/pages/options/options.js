@@ -91,12 +91,18 @@ function profileRemove(id) {
     delete easyStorage[id];
 }
 
-document.querySelector('#manager').addEventListener('change', (event) => {
+document.getElementById('profile').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        profileSubmit();
+    }
+});
+
+document.getElementById('manager').addEventListener('change', (event) => {
     easyStorage[event.target.dataset.pid] = event.target.value.match(/[^\s]+/g) ?? [];
     saveBtn.disabled = false;
 });
 
-document.querySelector('#files').addEventListener('change', async (event) => {
+document.getElementById('files').addEventListener('change', async (event) => {
     saveBtn.disabled = true;
     await Promise.all([...event.target.files].map(importHandler));
     optionsSaved();
