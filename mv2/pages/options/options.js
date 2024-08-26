@@ -31,20 +31,11 @@ document.addEventListener('click', (event) => {
         case 'submit_btn':
             profileSubmit();
             break;
-        case 'resort_btn':
-            profileResort(event.target.dataset.pid);
-            break;
         case 'detail_btn':
             profileDetail(event.target.dataset.pid);
             break;
         case 'remove_btn':
             profileRemove(event.target.dataset.pid);
-            break;
-        case 'append_btn':
-            matchCreate(event.target);
-            break;
-        case 'splice_btn':
-            matchRemove(event.target.dataset);
             break;
     }
 });
@@ -93,11 +84,6 @@ function profileDetail(id) {
     easyProfile[id].classList.toggle('expand');
 }
 
-function profileResort(id) {
-    saveBtn.disabled = false;
-    // under development
-}
-
 function profileRemove(id) {
     saveBtn.disabled = false;
     easyProfile[id].remove();
@@ -107,14 +93,6 @@ function profileRemove(id) {
         removed.push(id);
     }
     delete easyStorage[id];
-}
-
-function matchCreate(id) {
-    // under development
-}
-
-function matchRemove(id) {
-    // under development
 }
 
 document.querySelector('#manager').addEventListener('change', (event) => {
@@ -173,27 +151,60 @@ function easyOptionsSetup() {
 function createMatchPattern(id) {
     var profile = profileLET.cloneNode(true);
     profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.delete.dataset.pid = profile.resort.dataset.pid = profile.matches.dataset.pid = id;
+    profile.proxy.textContent = profile.delete.dataset.pid = id;
+    profile.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            addPattern(profile.matches, id, profile.entry);
+        }
+    });
+    profile.addEventListener('click', (event) => {
+        switch (event.target.dataset.bid) {
+            case 'append_btn':
+                addPattern(profile.matches, id, profile.entry);
+                break;
+            case 'resort_btn':
+                resortPattern(profile.matches, id);
+                break;
+            case 'splice_rule':
+                removePattern(id, event.target.dataset.mid);
+                break;
+        }
+    });
     listMatchPattern(profile.matches, id, easyStorage[id]);
-    manager.append(profile);
     easyProfile[id] = profile;
-}
-
-function createPacScript(id) {
-    var profile = pacLET.cloneNode(true);
-    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.delete.dataset.pid = profile.detail.dataset.pid = profile.content.dataset.pid = id;
-    profile.content.textContent = easyStorage[id];
     manager.append(profile);
-    easyProfile[id] = profile;
 }
 
 function listMatchPattern(list, id, matches) {
     matches.forEach((value) => {
         var match = matchLET.cloneNode(true);
         var [content, button] = match.querySelectorAll('*');
-        content.textContent = button.dataset.value = value;
+        match.title = content.textContent = button.dataset.value = value;
         button.dataset.pid = id;
         list.appendChild(match);
     });
+}
+
+function addPattern(list, id, entry) {
+    
+}
+
+function resortPattern(list, id) {
+    saveBtn.disabled = false;
+    easyStorage[id] = easyStorage[id].sort();
+    var resort = [...list.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
+    list.append(...resort);
+}
+
+function removePattern(id, value) {
+    
+}
+
+function createPacScript(id) {
+    var profile = pacLET.cloneNode(true);
+    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
+    profile.proxy.textContent = profile.delete.dataset.pid = id;
+    profile.content.textContent = easyStorage[id];
+    manager.append(profile);
+    easyProfile[id] = profile;
 }

@@ -39,7 +39,8 @@ input {
 }
 
 #manager input {
-    height: 18px;
+    padding: 3px 5px;
+    height: 16px;
 }
 
 body:not(.new_profile) #profile {
