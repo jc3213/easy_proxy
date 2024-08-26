@@ -26,9 +26,6 @@
     "options_autopac": {
         "message": "PAC File"
     },
-    "options_resort": {
-        "message": "Resort"
-    },
     "profile_resort": {
         "message": "Resort match patterns"
     },
