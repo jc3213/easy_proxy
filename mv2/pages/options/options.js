@@ -165,39 +165,49 @@ function createMatchPattern(id) {
             case 'resort_btn':
                 resortPattern(profile.matches, id);
                 break;
-            case 'splice_rule':
-                removePattern(id, event.target.dataset.mid);
+            case 'splice_btn':
+                removePattern(id, event.target.parentNode);
                 break;
         }
     });
-    listMatchPattern(profile.matches, id, easyStorage[id]);
+    listMatchPattern(profile.matches, easyStorage[id]);
     easyProfile[id] = profile;
     manager.append(profile);
 }
 
-function listMatchPattern(list, id, matches) {
-    matches.forEach((value) => {
-        var match = matchLET.cloneNode(true);
-        var [content, button] = match.querySelectorAll('*');
-        match.title = content.textContent = button.dataset.value = value;
-        button.dataset.pid = id;
-        list.appendChild(match);
-    });
+function listMatchPattern(list, matches) {
+    matches.forEach((value) => createPattern(list, value));
 }
 
 function addPattern(list, id, entry) {
-    
+    var storage = easyStorage[id];
+    entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
+        if (value && !storage.includes(value)) {
+            createPattern(list, value);
+            storage.push(value);
+            list.scrollTop = list.scrollHeight;
+        }
+    });
+}
+
+function createPattern(list, value) {
+    var match = matchLET.cloneNode(true);
+    match.querySelector('div').textContent = match.title = value;
+    list.appendChild(match);
 }
 
 function resortPattern(list, id) {
     saveBtn.disabled = false;
-    easyStorage[id] = easyStorage[id].sort();
+    easyStorage[id].sort();
     var resort = [...list.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
     list.append(...resort);
 }
 
-function removePattern(id, value) {
-    
+function removePattern(id, pattern) {
+    saveBtn.disabled = false;
+    pattern.remove();
+    var value = pattern.title;
+    easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
 }
 
 function createPacScript(id) {
