@@ -56,7 +56,7 @@
     "popup_options": {
         "message": "Options"
     },
-    "full-host": {
+    "full_host": {
         "message": "Toggle host name match rules"
     }
 }

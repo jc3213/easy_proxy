@@ -56,7 +56,7 @@
     "popup_options": {
         "message": "设置"
     },
-    "full-host": {
+    "full_host": {
         "message": "切换域名匹配规则"
     }
 }
