@@ -40,6 +40,8 @@ input {
 
 #manager input {
     height: 16px;
+    position: relative;
+    top: 5px;
 }
 
 #manager > * {
@@ -54,18 +56,16 @@ body:not(.new_profile) #profile {
     border-style: inset;
 }
 
-.matchpattern > .menu > :nth-child(2) {
-    vertical-align: middle;
-    padding: 5px;
+.matchpattern > .menu {
+    grid-template-columns: 1fr 1fr auto auto auto;
 }
 
-.expand .content {
-    max-height: fit-content;
+.pacscript > .menu {
+    grid-template-columns: 1fr auto auto;
 }
 
 .menu {
     display: grid;
-    grid-template-columns: 1fr auto auto auto;
     grid-gap: 3px;
 }
 
@@ -87,6 +87,10 @@ body:not(.new_profile) #profile {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-column-gap: 3px;
+}
+
+.expand .content {
+    max-height: fit-content;
 }
 
 .content {
