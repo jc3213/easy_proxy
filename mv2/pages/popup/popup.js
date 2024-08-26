@@ -12,10 +12,6 @@ var manager = document.body.classList;
 var [output, proxies, submitBtn] = document.querySelectorAll('#output, #proxy, [data-bid="submit_btn"]');
 var hostLET = document.querySelector('.template > .host');
 
-document.querySelectorAll('[i18n]').forEach((node) => {
-    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
-});
-
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
