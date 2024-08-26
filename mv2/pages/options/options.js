@@ -6,10 +6,6 @@ var [newBtn, saveBtn, profile, exporter, manager] = document.querySelectorAll('[
 var [profileLET, pacLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
-document.querySelectorAll('[i18n]').forEach((node) => {
-    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
-});
-
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
@@ -127,7 +123,7 @@ function importHandler(file) {
                     easyStorage[pacId] = result;
                     easyStorage.pacs[pacId] = true;
                     easyStorage.proxies.push(pacId);
-                    createPacScript(proxy);
+                    createPacScript(pacId);
                 }
             }
             resolve(removed);
@@ -213,8 +209,8 @@ function removePattern(id, pattern) {
 function createPacScript(id) {
     var profile = pacLET.cloneNode(true);
     profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.delete.dataset.pid = id;
-    profile.content.textContent = easyStorage[id];
+    profile.proxy.textContent = profile.detail.dataset.pid = profile.delete.dataset.pid = id;
+    profile.content.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
     manager.append(profile);
     easyProfile[id] = profile;
 }
