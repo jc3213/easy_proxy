@@ -2,7 +2,7 @@ var easyProfile = {};
 var easyProxy = {};
 var removed = [];
 var options = document.body.classList;
-var [newBtn, saveBtn, profile, exporter, manager] = document.querySelectorAll('[data-bid="new_btn"], [data-bid="save_btn"], a, #profile, #manager');
+var [saveBtn, profile, exporter, manager] = document.querySelectorAll('[data-bid="save_btn"], a, #profile, #manager');
 var [profileLET, pacLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
@@ -13,7 +13,7 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-document.addEventListener('click', (event) => {
+document.getElementById('menu').addEventListener('click', (event) => {
     switch (event.target.dataset.bid) {
         case 'new_btn':
             options.toggle('new_profile');
@@ -26,12 +26,6 @@ document.addEventListener('click', (event) => {
             break;
         case 'submit_btn':
             profileSubmit();
-            break;
-        case 'detail_btn':
-            profileDetail(event.target.dataset.pid);
-            break;
-        case 'remove_btn':
-            profileRemove(event.target.dataset.pid);
             break;
     }
 });
@@ -62,6 +56,14 @@ function optionsExport(pacScript) {
     exporter.click();
 }
 
+document.getElementById('proxy-server').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        profileSubmit();
+    }
+});
+
+document.getElementById('submit-proxy').addEventListener('click', profileSubmit);
+
 function profileSubmit() {
     var proxy = easyProxy.proxy.value;
     if (/([^\.]+\.){1,}[^:]+(:\d+)?/.test(proxy)) {
@@ -76,65 +78,40 @@ function profileSubmit() {
     }
 }
 
-function profileDetail(id) {
-    easyProfile[id].classList.toggle('expand');
-}
-
-function profileRemove(id) {
-    saveBtn.disabled = false;
-    easyProfile[id].remove();
-    easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
-    delete easyStorage.pacs[id];
-    if (!removed.includes(id)) {
-        removed.push(id);
-    }
-    delete easyStorage[id];
-}
-
-document.getElementById('profile').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        profileSubmit();
-    }
+document.getElementById('import-options').addEventListener('change', async (event) => {
+    var result = await fileReader(event.target.files[0]);
+    var json = JSON.parse(result);
+    var removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
+    easyStorage = json;
+    manager.innerHTML = '';
+    easyOptionsSetup();
+    optionsSaved();
+    event.target.value = '';
 });
 
-document.getElementById('manager').addEventListener('change', (event) => {
-    easyStorage[event.target.dataset.pid] = event.target.value.match(/[^\s]+/g) ?? [];
-    saveBtn.disabled = false;
-});
-
-document.getElementById('files').addEventListener('change', async (event) => {
+document.getElementById('import-pacs').addEventListener('change', async (event) => {
     saveBtn.disabled = true;
-    await Promise.all([...event.target.files].map(importHandler));
+    await Promise.all([...event.target.files].map(async (file) => {
+        var result = await fileReader(file);
+        var pac = easyStorage.proxies.find((id) => easyStorage[id] === result);
+        if (!pac) {
+            var pacId = 'PAC ' + Date.now().toString(16);
+            easyStorage[pacId] = result;
+            easyStorage.pacs[pacId] = true;
+            easyStorage.proxies.push(pacId);
+            createPacScript(pacId);
+        }
+    }));
     optionsSaved();
     options.remove('new_profile');
     event.target.value = '';
 });
 
-function importHandler(file) {
+function fileReader(file) {
     return new Promise((resolve) => {
-        var fileReader = new FileReader();
-        fileReader.onload = (event) => {
-            var result = event.target.result;
-            if (file.name.endsWith('.json')) {
-                var json = JSON.parse(result);
-                removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
-                easyStorage = json;
-                manager.innerHTML = '';
-                easyOptionsSetup();
-            }
-            else {
-                var pac = easyStorage.proxies.find((id) => easyStorage[id] === result);
-                if (!pac) {
-                    var pacId = 'PAC ' + Date.now().toString(16);
-                    easyStorage[pacId] = result;
-                    easyStorage.pacs[pacId] = true;
-                    easyStorage.proxies.push(pacId);
-                    createPacScript(pacId);
-                }
-            }
-            resolve(removed);
-        };
-        fileReader.readAsText(file);
+        var reader = new FileReader();
+        reader.onload = (event) => resolve(reader.result);
+        reader.readAsText(file);
     });
 }
 
@@ -152,27 +129,30 @@ function easyOptionsSetup() {
 
 function createMatchPattern(id) {
     var profile = profileLET.cloneNode(true);
-    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.delete.dataset.pid = id;
-    profile.addEventListener('keydown', (event) => {
+    var [proxy, entry, matches] = profile.querySelectorAll('.proxy, input, .matches');
+    proxy.textContent = id;
+    entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
-            addPattern(profile.matches, id, profile.entry);
+            addPattern(matches, id, entry);
         }
     });
     profile.addEventListener('click', (event) => {
-        switch (event.target.dataset.bid) {
+        switch (event.target.dataset.mid) {
             case 'append_btn':
-                addPattern(profile.matches, id, profile.entry);
+                addPattern(matches, id, entry);
                 break;
             case 'resort_btn':
-                resortPattern(profile.matches, id);
+                resortPattern(matches, id);
                 break;
             case 'splice_btn':
                 removePattern(id, event.target.parentNode);
                 break;
+            case 'remove_btn':
+                profileRemove(id);
+                break;
         }
     });
-    listMatchPattern(profile.matches, easyStorage[id]);
+    listMatchPattern(matches, easyStorage[id]);
     easyProfile[id] = profile;
     manager.appendChild(profile);
 }
@@ -182,14 +162,16 @@ function listMatchPattern(list, matches) {
 }
 
 function addPattern(list, id, entry) {
+    saveBtn.disabled = false;
     var storage = easyStorage[id];
     entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
         if (value && !storage.includes(value)) {
             createPattern(list, value);
             storage.push(value);
-            list.scrollTop = list.scrollHeight;
         }
     });
+    entry.value = '';
+    list.scrollTop = list.scrollHeight;
 }
 
 function createPattern(list, value) {
@@ -199,7 +181,7 @@ function createPattern(list, value) {
 }
 
 function resortPattern(list, id) {
-    saveBtn.disabled = false;
+saveBtn.disabled = false;
     easyStorage[id].sort();
     var resort = [...list.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
     list.append(...resort);
@@ -214,9 +196,34 @@ function removePattern(id, pattern) {
 
 function createPacScript(id) {
     var profile = pacLET.cloneNode(true);
-    profile.querySelectorAll('[class]').forEach((item) => profile[item.className] = item);
-    profile.proxy.textContent = profile.detail.dataset.pid = profile.delete.dataset.pid = id;
-    profile.content.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
+    var [proxy, pac] = profile.querySelectorAll('.proxy, .content');
+    proxy.textContent = id;
+    pac.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
     easyProfile[id] = profile;
+    profile.addEventListener('click', (event) => {
+        switch (event.target.dataset.mid) {
+            case 'detail_btn':
+                profileDetail(id);
+                break;
+            case 'remove_btn':
+                profileRemove(id);
+                break;
+        }
+    });
     manager.appendChild(profile);
+}
+
+function profileDetail(id) {
+    easyProfile[id].classList.toggle('expand');
+}
+
+function profileRemove(id) {
+    saveBtn.disabled = false;
+    easyProfile[id].remove();
+    easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
+    delete easyStorage.pacs[id];
+    if (!removed.includes(id)) {
+        removed.push(id);
+    }
+    delete easyStorage[id];
 }

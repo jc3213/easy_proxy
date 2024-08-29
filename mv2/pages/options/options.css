@@ -10,6 +10,10 @@ input {
     width: auto;
 }
 
+input[type="file"], a {
+    display: none;
+}
+
 #menu {
     display: flex;
     gap: 3px;
@@ -25,10 +29,6 @@ input {
     display: grid;
     grid-template-columns: auto 1fr auto auto;
     grid-gap: 3px;
-}
-
-#files {
-    display: none;
 }
 
 #manager button {
