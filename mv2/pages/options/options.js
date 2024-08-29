@@ -181,7 +181,7 @@ function createPattern(list, value) {
 }
 
 function resortPattern(list, id) {
-saveBtn.disabled = false;
+    saveBtn.disabled = false;
     easyStorage[id].sort();
     var resort = [...list.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
     list.append(...resort);
