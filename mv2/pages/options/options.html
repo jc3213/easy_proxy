@@ -8,10 +8,10 @@
     </head>
     <body>
         <div id="menu" class="flex">
-            <button data-bid="new_btn" i18n="options_profile">New Profile</button>
-            <button data-bid="save_btn" disabled i18n="options_save">Save</button>
+            <button id="new-profile" i18n="options_profile">New Profile</button>
+            <button i18n="options_save" disabled>Save</button>
             <button><label for="import-options" i18n="options_import">Import</label></button>
-            <button data-bid="export_btn" i18n="options_export">Export</button>
+            <button i18n="options_export">Export</button>
             <input id="import-options" type="file" accept=".json">
             <a></a>
         </div>
@@ -24,8 +24,8 @@
                 <option value="SOCKS4">SOCKS4</option>
                 <option value="SOCKS5">SOCKS5</option>
             </select>
-            <input id="proxy-server" name="proxy" type="url">
-            <button id="submit-proxy" i18n="options_submit">Submit</button>
+            <input name="proxy" type="url">
+            <button i18n="options_submit">Submit</button>
             <button><label for="import-pacs" i18n="options_autopac">PAC File</label></button>
             <input id="import-pacs" type="file" accept=".pac" multiple>
         </div>
@@ -36,23 +36,23 @@
                 <div class="menu">
                     <div class="proxy"></div>
                     <input type="text">
-                    <button data-mid="append_btn" i18n-title="match_add">➕</button>
-                    <button data-mid="resort_btn" i18n-title="profile_resort">🧲</button>
-                    <button data-mid="remove_btn" i18n-title="profile_remove">❌</button>
+                    <button i18n-title="match_add">➕</button>
+                    <button i18n-title="profile_resort">🧲</button>
+                    <button i18n-title="profile_remove">❌</button>
                 </div>
                 <div class="matches"></div>
             </div>
             <div class="pacscript">
                 <div class="menu">
                     <div class="proxy"></div>
-                    <button data-mid="detail_btn" i18n-title="profile_detail">🔍</button>
-                    <button data-mid="remove_btn" i18n-title="profile_remove">❌</button>
+                    <button i18n-title="profile_detail">🔍</button>
+                    <button i18n-title="profile_remove">❌</button>
                 </div>
                 <div class="content"></div>
             </div>
             <div>
                 <div></div>
-                <button data-mid="splice_btn" i18n-title="match_remove">❌</button>
+                <button i18n-title="match_remove">❌</button>
             </div>
         </div>
         <script src="/pages/common.js"></script>

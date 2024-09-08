@@ -1,8 +1,8 @@
 var easyProfile = {};
 var easyProxy = {};
 var removed = [];
-var options = document.body.classList;
-var [saveBtn, profile, exporter, manager] = document.querySelectorAll('[data-bid="save_btn"], a, #profile, #manager');
+var [newBtn, saveBtn, , exportBtn, proxyserver, submitBtn] = document.querySelectorAll('#menu > button, #profile > input, #profile > button');
+var [exporter, profile, manager] = document.querySelectorAll('a, #profile, #manager');
 var [profileLET, pacLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
@@ -13,70 +13,49 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-document.getElementById('menu').addEventListener('click', (event) => {
-    switch (event.target.dataset.bid) {
-        case 'new_btn':
-            options.toggle('new_profile');
-            break;
-        case 'save_btn':
-            optionsSaved();
-            break;
-        case 'export_btn':
-            optionsExport(event.ctrlKey && event.altKey);
-            break;
-        case 'submit_btn':
-            profileSubmit();
-            break;
-    }
+newBtn.addEventListener('click', (event) => {
+    document.body.classList.toggle('new_profile');
 });
 
-async function optionsSaved() {
+saveBtn.addEventListener('click', (event) => {
     saveBtn.disabled = true;
     chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}}, (params) => {
         easyPAC = params.pac_script;
         removed = [];
     });
-}
+});
 
-function optionsExport(pacScript) {
-    if (pacScript) {
-        var data = easyPAC;
-        var type = 'application/x-ns-proxy-autoconfig;charset=utf-8;';
-        var ext = '.pac';
-    }
-    else {
-        data = JSON.stringify(easyStorage, null, 4);
-        type = 'application/json;charset=utf-8;';
-        ext = '.json';
-    }
-    var time = new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_');
-    var blob = new Blob([data], {type});
-    exporter.href = URL.createObjectURL(blob);
-    exporter.download = 'easy_proxy-' + time + ext;
-    exporter.click();
-}
+exportBtn.addEventListener('click', (event) => {
+    event.ctrlKey && event.altKey ? fileExporter(easyPAC, 'application/x-ns-proxy-autoconfig;charset=utf-8;', '.pac') : fileExporter(JSON.stringify(easyStorage, null, 4), 'application/json;charset=utf-8;', '.json');
+});
 
-document.getElementById('proxy-server').addEventListener('keydown', (event) => {
+proxyserver.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
-        profileSubmit();
+        submitBtn.click();
     }
 });
 
-document.getElementById('submit-proxy').addEventListener('click', profileSubmit);
+function fileExporter(data, type, fileext) {
+    var time = new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_');
+    var blob = new Blob([data], {type});
+    exporter.href = URL.createObjectURL(blob);
+    exporter.download = 'easy_proxy-' + time + fileext;
+    exporter.click();
+}
 
-function profileSubmit() {
+submitBtn.addEventListener('click', (event) => {
     var proxy = easyProxy.proxy.value;
     if (/([^\.]+\.){1,}[^:]+(:\d+)?/.test(proxy)) {
         var profile = easyProxy.scheme.value + ' ' + proxy;
         easyStorage[profile] = [];
         easyStorage.proxies.push(profile);
-        createMatchPattern(profile);
+        createMatchProfile(profile);
         easyProxy.scheme.value = 'PROXY';
         easyProxy.proxy.value = '';
         options.remove('new_profile');
         saveBtn.disabled = false;
     }
-}
+});
 
 document.getElementById('import-options').addEventListener('change', async (event) => {
     var result = await fileReader(event.target.files[0]);
@@ -123,42 +102,25 @@ chrome.runtime.sendMessage({action: 'options_initial'}, (params) => {
 
 function easyOptionsSetup() {
     easyStorage.proxies.forEach((proxy) => {
-        easyStorage.pacs[proxy] ? createPacScript(proxy) : createMatchPattern(proxy);
+        easyStorage.pacs[proxy] ? createPacScript(proxy) : createMatchProfile(proxy);
     });
 }
 
-function createMatchPattern(id) {
+function createMatchProfile(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, entry, matches] = profile.querySelectorAll('.proxy, input, .matches');
+    var [proxy, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button, .matches');
     proxy.textContent = id;
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             addPattern(matches, id, entry);
         }
     });
-    profile.addEventListener('click', (event) => {
-        switch (event.target.dataset.mid) {
-            case 'append_btn':
-                addPattern(matches, id, entry);
-                break;
-            case 'resort_btn':
-                resortPattern(matches, id);
-                break;
-            case 'splice_btn':
-                removePattern(id, event.target.parentNode);
-                break;
-            case 'remove_btn':
-                profileRemove(id);
-                break;
-        }
-    });
-    listMatchPattern(matches, easyStorage[id]);
+    addbtn.addEventListener('click', (event) => addPattern(matches, id, entry));
+    sortbtn.addEventListener('click', (event) => resortPattern(matches, id));
+    removebtn.addEventListener('click', (event) => profileRemove(id));
+    easyStorage[id].forEach((value) => createPattern(matches, id, value));
     easyProfile[id] = profile;
     manager.appendChild(profile);
-}
-
-function listMatchPattern(list, matches) {
-    matches.forEach((value) => createPattern(list, value));
 }
 
 function addPattern(list, id, entry) {
@@ -166,18 +128,12 @@ function addPattern(list, id, entry) {
     var storage = easyStorage[id];
     entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
         if (value && !storage.includes(value)) {
-            createPattern(list, value);
+            createPattern(list, id, value);
             storage.push(value);
         }
     });
     entry.value = '';
     list.scrollTop = list.scrollHeight;
-}
-
-function createPattern(list, value) {
-    var match = matchLET.cloneNode(true);
-    match.querySelector('div').textContent = match.title = value;
-    list.appendChild(match);
 }
 
 function resortPattern(list, id) {
@@ -187,29 +143,27 @@ function resortPattern(list, id) {
     list.append(...resort);
 }
 
-function removePattern(id, pattern) {
+function createPattern(list, id, value) {
+    var match = matchLET.cloneNode(true);
+    match.querySelector('div').textContent = match.title = value;
+    match.querySelector('button').addEventListener('click', (event) => removePattern(id, value, match));
+    list.appendChild(match);
+}
+
+function removePattern(id, value, match) {
     saveBtn.disabled = false;
-    pattern.remove();
-    var value = pattern.title;
+    match.remove();
     easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
 }
 
 function createPacScript(id) {
     var profile = pacLET.cloneNode(true);
-    var [proxy, pac] = profile.querySelectorAll('.proxy, .content');
+    var [proxy, detailbtn, removebtn, pac] = profile.querySelectorAll('.proxy, button, .content');
     proxy.textContent = id;
     pac.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
     easyProfile[id] = profile;
-    profile.addEventListener('click', (event) => {
-        switch (event.target.dataset.mid) {
-            case 'detail_btn':
-                profileDetail(id);
-                break;
-            case 'remove_btn':
-                profileRemove(id);
-                break;
-        }
-    });
+    detailbtn.addEventListener('click', (event) => profileDetail(id));
+    removebtn.addEventListener('click', (event) => profileRemove(id));
     manager.appendChild(profile);
 }
 
