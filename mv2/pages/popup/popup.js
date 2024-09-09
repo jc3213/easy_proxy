@@ -9,7 +9,9 @@ var changes = {};
 var restore = {};
 var checkboxes = [];
 var manager = document.body.classList;
-var [output, proxies, submitBtn] = document.querySelectorAll('#output, #proxy, [data-bid="submit_btn"]');
+
+var [output, proxies] = document.querySelectorAll('#output, #proxy');
+var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
 var hostLET = document.querySelector('.template > .host');
 
 document.addEventListener('keydown', (event) => {
@@ -19,46 +21,38 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-document.addEventListener('click', (event) => {
-    switch (event.target.dataset.bid) {
-        case 'expand_btn': 
-            manager.toggle('expand');
-            break;
-        case 'submit_btn':
-            proxySubmit();
-            break;
-        case 'tempo_btn':
-            event.ctrlKey && event.altKey ? proxyTempoPurge() : proxyTempo();
-            break;
-        case 'options_btn':
-            chrome.runtime.openOptionsPage();
-            break;
-    }
+expandBtn.addEventListener('click', (event) => {
+    manager.toggle('expand');
 });
 
-function proxySubmit() {
+submitBtn.addEventListener('click', (event) => {
     var manage = proxyChange('match', easyStorage, easyMatch);
     if (manage) {
         proxyStatusUpdate('manager_submit', {storage: easyStorage});
     }
-}
+});
 
-function proxyTempo() {
-    var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
-    if (manage) {
-        proxyStatusUpdate('manager_tempo', {tempo: easyTempo});
+tempoBtn.addEventListener('click', (event) => {
+    if (event.ctrlKey && event.altKey) {
+        easyMatchTempo = {};
+        easyTempo = {};
+        easyHosts.forEach((match) => {
+            match.parentNode.classList.remove('tempo');
+            match.checked = easyMatch[match.value] === easyProxy ? true : false;
+        });
+        return proxyStatusUpdate('manager_purge');
     }
-}
+    else {
+        var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
+        if (manage) {
+            proxyStatusUpdate('manager_tempo', {tempo: easyTempo});
+        }
+    }
+});
 
-function proxyTempoPurge() {
-    easyMatchTempo = {};
-    easyTempo = {};
-    easyHosts.forEach((match) => {
-        match.parentNode.classList.remove('tempo');
-        match.checked = easyMatch[match.value] === easyProxy ? true : false;
-    });
-    proxyStatusUpdate('manager_purge');
-}
+optionsBtn.addEventListener('click', (event) => {
+    chrome.runtime.openOptionsPage();
+});
 
 function proxyStatusUpdate(action, params = {}) {
     params.tabId = easyTab;
