@@ -57,15 +57,6 @@ body:not(.new_profile) #profile {
     border-style: inset;
 }
 
-.matchpattern > .menu > input {
-    margin-left: auto;
-    width: 40%;
-}
-
-.pacscript > .menu > button:nth-child(3) {
-    margin-left: auto;
-}
-
 .menu {
     display: flex;
     gap: 3px;
@@ -77,21 +68,35 @@ body:not(.new_profile) #profile {
     padding: 5px 0px;
 }
 
-.matches, .content {
+.matches {
     border-width: 1px;
     border-style: inset;
     overflow-y: auto;
     max-height: 174px;
 }
 
-.matches {
+.matchpattern > .menu > input {
+    margin-left: auto;
+    width: 40%;
+}
+
+.matchpattern > .menu > button:nth-child(6),
+.pacscript > .menu > :nth-child(n+3):nth-child(-n+5) {
+    display: none;
+}
+
+.pacscript > .menu > button:nth-child(6) {
+    margin-left: auto;
+}
+
+.matchpattern > .matches {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-column-gap: 3px;
     min-height: 25px;
 }
 
-.matches > * {
+.matchpattern > .matches > * {
     display: grid;
     grid-template-columns: 1fr auto;
     white-space: nowrap;
@@ -99,16 +104,16 @@ body:not(.new_profile) #profile {
     border-style: outset;
 }
 
-.matches > * > :first-child {
+.matchpattern > .matches > * > :first-child {
     padding: 3px 5px;
 }
 
-.expand .content {
-    max-height: fit-content;
-}
-
-.content {
+.pacscript > .matches {
     padding: 5px;
     word-wrap: break-word;
     grid-area: 2 / 1 / 3 / 4;
+}
+
+.pacscript.expand > .matches {
+    max-height: fit-content;
 }

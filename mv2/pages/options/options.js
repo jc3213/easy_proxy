@@ -3,7 +3,7 @@ var easyProxy = {};
 var removed = [];
 var [newBtn, saveBtn, , exportBtn, proxyserver, submitBtn] = document.querySelectorAll('#menu > button, #profile > input, #profile > button');
 var [exporter, profile, manager] = document.querySelectorAll('a, #profile, #manager');
-var [profileLET, pacLET, matchLET] = document.querySelectorAll('.template > *');
+var [profileLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
 document.addEventListener('keydown', (event) => {
@@ -109,7 +109,8 @@ function easyOptionsSetup() {
 
 function createMatchProfile(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, exportbtn, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button, .matches');
+    var [proxy, exportbtn, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button:not(:nth-child(6)), .matches');
+    profile.className = 'matchpattern';
     proxy.textContent = id;
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
@@ -165,8 +166,9 @@ function removePattern(id, value, match) {
 }
 
 function createPacScript(id) {
-    var profile = pacLET.cloneNode(true);
-    var [proxy, exportbtn, detailbtn, removebtn, pac] = profile.querySelectorAll('.proxy, button, .content');
+    var profile = profileLET.cloneNode(true);
+    var [proxy, exportbtn, detailbtn, removebtn, pac] = profile.querySelectorAll('.proxy, button:nth-child(2), button:nth-last-child(-n+2), .matches');
+    profile.className = 'pacscript';
     proxy.textContent = id;
     pac.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
     easyProfile[id] = profile;
