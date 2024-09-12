@@ -26,6 +26,9 @@
     "options_autopac": {
         "message": "读取PAC"
     },
+    "profile_export": {
+        "message": "将此代理导出为PAC脚本"
+    },
     "profile_resort": {
         "message": "排序匹配规则"
     },
@@ -33,13 +36,13 @@
         "message": "显示完整PAC"
     },
     "profile_remove": {
-        "message": "移除代理档案"
+        "message": "移除此代理"
     },
     "match_add": {
-        "message": "添加新的规则"
+        "message": "添加新规则"
     },
     "match_remove": {
-        "message": "删除当前规格"
+        "message": "移除此规则"
     },
     "popup_title": {
         "message": "简易代理管理"

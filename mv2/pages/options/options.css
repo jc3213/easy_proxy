@@ -34,7 +34,8 @@ input[type="file"], a {
 #manager button {
     font-size: 12px;
     padding: 3px;
-    margin: auto 0px;
+    margin-top: auto;
+    margin-bottom: auto;
     height: 23px;
 }
 
@@ -56,17 +57,18 @@ body:not(.new_profile) #profile {
     border-style: inset;
 }
 
-.matchpattern > .menu {
-    grid-template-columns: 1fr 1fr auto auto auto;
+.matchpattern > .menu > input {
+    margin-left: auto;
+    width: 40%;
 }
 
-.pacscript > .menu {
-    grid-template-columns: 1fr auto auto;
+.pacscript > .menu > button:nth-child(3) {
+    margin-left: auto;
 }
 
 .menu {
-    display: grid;
-    grid-gap: 3px;
+    display: flex;
+    gap: 3px;
 }
 
 .proxy {

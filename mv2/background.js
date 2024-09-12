@@ -19,6 +19,8 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
         case 'options_onchange':
             easyMatchChanged(params, response);
             break;
+        case 'options_pacscript':
+            easyPacscriptMaker(params, response);
         case 'manager_initial':
             easyMatchInitial(params, response);
             break;
@@ -46,6 +48,12 @@ function easyMatchInitial(params, response) {
         storage: {...easyDefault, ...easyStorage},
         tempo: easyTempo,
         result: easyMatch[params.tabId]
+    });
+}
+
+function easyPacscriptMaker({proxy}, response) {
+    response({
+        pac_script: convertPacScript(convertRegexp(proxy, easyStorage[proxy]))
     });
 }
 

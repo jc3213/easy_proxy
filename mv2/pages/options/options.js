@@ -17,31 +17,32 @@ newBtn.addEventListener('click', (event) => {
     document.body.classList.toggle('new_profile');
 });
 
-saveBtn.addEventListener('click', (event) => {
+saveBtn.addEventListener('click', optionsSaved);
+
+function optionsSaved() {
     saveBtn.disabled = true;
     chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}}, (params) => {
         easyPAC = params.pac_script;
         removed = [];
     });
-});
+}
 
 exportBtn.addEventListener('click', (event) => {
-    event.ctrlKey && event.altKey ? fileExporter(easyPAC, 'application/x-ns-proxy-autoconfig;charset=utf-8;', '.pac') : fileExporter(JSON.stringify(easyStorage, null, 4), 'application/json;charset=utf-8;', '.json');
+    fileExporter(JSON.stringify(easyStorage, null, 4), 'json', 'easy_proxy', '.json');
 });
+
+function fileExporter(data, type, filename, filetype) {
+    var blob = new Blob([data], {type: 'application/' + type + ';charset=utf-8;'});
+    exporter.href = URL.createObjectURL(blob);
+    exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_') + filetype;
+    exporter.click();
+}
 
 proxyserver.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         submitBtn.click();
     }
 });
-
-function fileExporter(data, type, fileext) {
-    var time = new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_');
-    var blob = new Blob([data], {type});
-    exporter.href = URL.createObjectURL(blob);
-    exporter.download = 'easy_proxy-' + time + fileext;
-    exporter.click();
-}
 
 submitBtn.addEventListener('click', (event) => {
     var proxy = easyProxy.proxy.value;
@@ -52,7 +53,7 @@ submitBtn.addEventListener('click', (event) => {
         createMatchProfile(profile);
         easyProxy.scheme.value = 'PROXY';
         easyProxy.proxy.value = '';
-        options.remove('new_profile');
+        document.body.classList.remove('new_profile');
         saveBtn.disabled = false;
     }
 });
@@ -82,7 +83,7 @@ document.getElementById('import-pacs').addEventListener('change', async (event) 
         }
     }));
     optionsSaved();
-    options.remove('new_profile');
+    document.body.classList.remove('new_profile');
     event.target.value = '';
 });
 
@@ -108,19 +109,26 @@ function easyOptionsSetup() {
 
 function createMatchProfile(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button, .matches');
+    var [proxy, exportbtn, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button, .matches');
     proxy.textContent = id;
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             addPattern(matches, id, entry);
         }
     });
+    exportbtn.addEventListener('click', (event) => exportPattern(id));
     addbtn.addEventListener('click', (event) => addPattern(matches, id, entry));
     sortbtn.addEventListener('click', (event) => resortPattern(matches, id));
     removebtn.addEventListener('click', (event) => profileRemove(id));
     easyStorage[id].forEach((value) => createPattern(matches, id, value));
     easyProfile[id] = profile;
     manager.appendChild(profile);
+}
+
+function exportPattern(proxy) {
+    chrome.runtime.sendMessage({action: 'options_pacscript', params: {proxy}}, ({pac_script}) => {
+        fileExporter(pac_script, 'x-ns-proxy-autoconfig;', proxy.replace(/[\s:]/g, '_'), '.pac');
+    });
 }
 
 function addPattern(list, id, entry) {
@@ -158,13 +166,18 @@ function removePattern(id, value, match) {
 
 function createPacScript(id) {
     var profile = pacLET.cloneNode(true);
-    var [proxy, detailbtn, removebtn, pac] = profile.querySelectorAll('.proxy, button, .content');
+    var [proxy, exportbtn, detailbtn, removebtn, pac] = profile.querySelectorAll('.proxy, button, .content');
     proxy.textContent = id;
     pac.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
     easyProfile[id] = profile;
+    exportbtn.addEventListener('click', (event) => exportPacScript(id, easyStorage[id]));
     detailbtn.addEventListener('click', (event) => profileDetail(id));
     removebtn.addEventListener('click', (event) => profileRemove(id));
     manager.appendChild(profile);
+}
+
+function exportPacScript(id, pac_script) {
+    fileExporter(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[\s:]/g, '_'), '.pac');
 }
 
 function profileDetail(id) {
