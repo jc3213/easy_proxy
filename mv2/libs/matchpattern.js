@@ -39,11 +39,18 @@
 
     const cache = {};
 
-    const ipv4_tester = /((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/;
+    const tester = /((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/;
 
-    const create = (hostname) => {
-        if (ipv4_tester.test(hostname)) {
-            return ipv4_handler(hostname);
+    const ipv4 = (ipv4) => {
+        let [network, host, ...useless] = ipv4.split('.');
+        let result = network + '.' + host + '.*';
+        cache[ipv4] = result;
+        return result;
+    };
+
+    const make = (hostname) => {
+        if (tester.test(hostname)) {
+            return ipv4(hostname);
         }
 
         let result;
@@ -63,20 +70,12 @@
         return result;
     };
 
-    const ipv4_handler = (ipv4) => {
-        let [network, host, ...useless] = ipv4.split('.');
-        let result = network + '.' + host + '.*';
-        cache[ipv4] = result;
-        return result;
-    };
-
     const host = (hostname) => {
-        return cache[hostname] || create(hostname);
+        return cache[hostname] ?? make(hostname);
     };
     
     const url = (url) => {
-        const {hostname} = new URL(url);
-        return cache[hostname] || create(hostname);
+        return host[new URL(url.hostname];
     }
     
     self.MatchPattern = {url, host};
