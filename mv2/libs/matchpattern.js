@@ -75,8 +75,8 @@
     };
     
     const url = (url) => {
-        return host[new URL(url.hostname];
-    }
+        return host(new URL(url).hostname);
+    };
     
     self.MatchPattern = {url, host};
 })();
