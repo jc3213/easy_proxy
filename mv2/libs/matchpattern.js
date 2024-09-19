@@ -10,7 +10,7 @@
             return hostname.replace(/\d+\.\d+$/, '*');
         }
 
-        return hostname.replace(/^.*([^.]+\.[^.]+)$/, '*.$1');
+        return hostname.replace(/^([^\.]+\.)*([^\.]+\.[^\.]+)$/, '*.$2');
     };
 
     const host = (hostname) => {
