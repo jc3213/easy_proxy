@@ -10,9 +10,9 @@ var restore = {};
 var checkboxes = [];
 var manager = document.body.classList;
 
-var [output, proxies] = document.querySelectorAll('#output, #proxy');
+var [output, proxies] = document.querySelectorAll('#output, select');
 var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
-var hostLET = document.querySelector('.template > .host');
+var hostLET = document.querySelector('.template > div');
 
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
@@ -102,7 +102,7 @@ document.getElementById('output').addEventListener('change', (event) => {
     changes[value] = checked;
 });
 
-document.getElementById('expand').addEventListener('change', (event) => {
+proxies.addEventListener('change', (event) => {
     easyProxy = event.target.value;
     easyHosts.forEach((match) => {
         var host = match.value;
@@ -165,7 +165,7 @@ function easyProxyCeate(proxy) {
 
 function easyMatchPattern(value, type) {
     if (easyList[value]) {
-        return;
+        return easyList[value].classList.add(type);
     }
     var host = hostLET.cloneNode(true);
     host.classList.add(type);
@@ -175,7 +175,7 @@ function easyMatchPattern(value, type) {
     host.title = label.textContent = entry.value = value;
     easyHosts.push(entry);
     easyId ++;
-    easyList[value] = true;
+    easyList[value] = host;
     output.append(host);
     if (easyMatch[value]) {
         host.classList.add('match');
