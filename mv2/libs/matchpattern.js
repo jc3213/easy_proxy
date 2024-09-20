@@ -36,6 +36,7 @@
         'xxx': true,
         'xyz': true
     };
+
     const cache = {};
 
     const make = (hostname) => {
