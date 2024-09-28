@@ -1,7 +1,7 @@
 # 简易代理
 
 ## 安装
-| <a href="https://microsoftedge.microsoft.com/addons/detail/mdoojhdlkngkgcgkefkbmfaahpclojen"><img src="https://edgestatic.azureedge.net/shared/cms/lrs1c69a1j/section-images/2c3f3c46bd764335beec466a0acfde0e.png" title="Microsoft Edge" width="32" height="32"></a> |
+| <a href="https://microsoftedge.microsoft.com/addons/detail/mdoojhdlkngkgcgkefkbmfaahpclojen"><img src="https://github.com/user-attachments/assets/755ede26-33d5-41eb-9000-9ba903886041" title="Microsoft Edge" width="48" height="48"></a> |
 | - |
 
 ## 关于
