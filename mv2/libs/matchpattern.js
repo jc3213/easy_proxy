@@ -37,14 +37,14 @@
         'xyz': true
     };
 
-    const cache = {};
+    const caches = {};
 
-    const make = (hostname) => {
-        if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(hostname)) {
-            return hostname.replace(/\d+\.\d+$/, '*');
+    const make = (host) => {
+        if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
+            return host.replace(/\d+\.\d+$/, '*');
         }
 
-        var [host, sbd, sld, tld] = hostname.match(/(?:([^\.]+)\.)?([^\.]+)\.([^\.]+)$/);
+        const [hostname, sbd, sld, tld] = host.match(/(?:([^\.]+)\.)?([^\.]+)\.([^\.]+)$/);
 
         if (!sbd || !tlds[sld]) {
             return '*.' + sld + '.' + tld;
@@ -52,14 +52,28 @@
 
         return '*.' + sbd + '.' + sld + '.' + tld;
     };
+    
+    self.MatchPattern = (string) => {
+        if (caches[string]) {
+            return caches[string];
+        }
 
-    const host = (hostname) => {
-        return cache[hostname] ??= make(hostname);
+        const test = string.match(/^(?:http|ftp|ws)?s?:?(?:\/\/)?((?:[^\./:]+\.)+[^\./:]+):?(?:\d+)?\/?(?:[^\/]+\/?)*$/);
+
+        if (!test) {
+            throw new Error ('"' + string + '" is either not a URL, or a valid MatchPattern');
+        }
+
+        const host = test[1];
+        
+        if (caches[host]) {
+            return caches[string] = caches[host];
+        }
+
+        if (host.includes('*')) {
+            return caches[string] = host;
+        }
+
+        return caches[string] = make(host);
     };
-    
-    const url = (url) => {
-        return host(new URL(url).hostname);
-    };
-    
-    self.MatchPattern = {url, host};
 })();

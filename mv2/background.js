@@ -94,7 +94,7 @@ function easyReloadTab(id) {
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var host = new URL(url).hostname;
-        var match = MatchPattern.host(host);
+        var match = MatchPattern(host);
         easyMatch[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, url };
         easyMatchSync(tabId, host, match);
     }
@@ -102,7 +102,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     var host = new URL(url).hostname;
-    var match = MatchPattern.host(host);
+    var match = MatchPattern(host);
     var matched = easyMatch[tabId];
     if (!match || !matched) {
         return;
