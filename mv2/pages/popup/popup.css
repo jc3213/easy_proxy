@@ -31,18 +31,43 @@ label {
 }
 
 #proxy > select,
-#menu > * {
+#menu > button {
     flex: 1;
 }
 
+#status {
+    padding: 3px;
+    text-align: center;
+    width: 25px;
+    border-radius: 50%;
+    color: white;
+    background-color: green;
+    content: "On";
+}
+
+#status:hover {
+    cursor: pointer;
+    filter: contrast(75%);
+}
+
+#status:active {
+    filter: contrast(45%);
+}
 
 body:not(.expand) > #output > :not(.wildcard),
-body.expand > #output > :not(.hostname) {
+body.expand > #output > :not(.hostname),
+body.disabled > :nth-child(-n + 2) {
     display: none;
 }
 
-.hibernate > #proxy > *,
-.hibernate > #menu > :nth-child(-n+2) {
+body.disabled #status {
+    background-color: red;
+}
+
+.asleep > #proxy > *,
+.asleep > #menu > button:nth-child(-n+3),
+.disabled > #proxy > *,
+.disabled > #menu > button:nth-child(-n+3) {
     pointer-events: none;
     filter: contrast(25%);
 }

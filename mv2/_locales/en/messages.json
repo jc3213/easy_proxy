@@ -47,8 +47,14 @@
     "popup_title": {
         "message": "Easy Proxy Manager"
     },
-    "popup_query": {
-        "message": "Query"
+    "popup_enabled": {
+        "message": "On"
+    },
+    "popup_disabled": {
+        "message": "Off"
+    },
+    "popup_status": {
+        "message": "Enable or disable \"Easy Proxy\""
     },
     "popup_submit": {
         "message": "Submit"

@@ -1,14 +1,12 @@
 var easyDefault = {
     pacs: {},
-    proxies: []
+    proxies: [],
+    enabled: true
 };
 var easyStorage = {};
-var easyPAC = '';
-var easyPACX = '';
-var easyPort;
-var easyMatch = {};
 var easyTempo = {};
 var easyTempoLog = {};
+var easyMatch = {};
 var easyMain = chrome.runtime.getManifest().manifest_version;
 
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
@@ -21,6 +19,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             break;
         case 'options_pacscript':
             easyPacscriptMaker(params, response);
+            break;
         case 'manager_initial':
             easyMatchInitial(params, response);
             break;
@@ -33,13 +32,19 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
         case 'manager_purge':
             easyTempoPurge(params);
             break;
+        case 'proxy_disabled':
+            easyDisabled();
+            break;
+        case 'proxy_enabled':
+            easyEnabled();
+            break;
     }
 });
 
 function easyOptionsInitial(response) {
     response({
         storage: {...easyDefault, ...easyStorage},
-        pac_script: easyPAC,
+        pac_script: easyMatch.script,
     });
 }
 
@@ -65,7 +70,7 @@ function easyMatchSubmit({storage, tabId}) {
 function easyMatchChanged({storage, removed = []}, response) {
     easyStorageUpdated(storage, response);
     chrome.storage.local.remove(removed);
-    response({storage: {...easyDefault, ...easyStorage}, pac_script: easyPAC});
+    response({storage: {...easyDefault, ...easyStorage}, pac_script: easyMatch.script});
 }
 
 function easyStorageUpdated(json) {
@@ -89,6 +94,24 @@ function easyTempoPurge({tabId}) {
 
 function easyReloadTab(id) {
     chrome.tabs.update(id, {url: easyMatch[id].url});
+}
+
+function easyEnabled() {
+    easyStorage.enabled = true;
+    chrome.storage.local.set(easyStorage);
+    chrome.proxy.settings.set({
+        value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },
+        scope: 'regular'
+    });
+}
+
+function easyDisabled() {
+    easyStorage.enabled = false;
+    chrome.storage.local.set(easyStorage);
+    chrome.proxy.settings.set({
+        value: { mode: "direct" },
+        scope: 'regular'
+    });
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
@@ -134,16 +157,6 @@ chrome.storage.local.get(null, (json) => {
     }
 });
 
-function setEasyProxy(data) {
-    chrome.proxy.settings.set({
-        value: {
-            mode: "pac_script",
-            pacScript: {data}
-        },
-        scope: 'regular'
-    });
-}
-
 function pacScriptConverter() {
     var pac_script = '';
     var tempo = '';
@@ -155,9 +168,9 @@ function pacScriptConverter() {
         pac_script += convertRegexp(proxy, easyStorage[proxy]);
         tempo += convertRegexp(proxy, easyTempo[proxy] ?? []);
     });
-    easyPAC = convertPacScript(pac_script);
-    easyPACX = convertPacScript(pac_script + tempo);
-    setEasyProxy(easyPACX);
+    easyMatch.script = convertPacScript(pac_script);
+    easyMatch.extend = convertPacScript(pac_script + tempo);
+    easyEnabled();
 }
 
 function convertRegexp(proxy, matches) {

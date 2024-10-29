@@ -1,3 +1,5 @@
+var easyStorage = {};
+var easyWatch;
 var easyMatch = {};
 var easyMatchTempo = {};
 var easyProxy;
@@ -10,7 +12,7 @@ var restore = {};
 var checkboxes = [];
 var manager = document.body.classList;
 
-var [output, proxies] = document.querySelectorAll('#output, select');
+var [output, proxies, statusBtn] = document.querySelectorAll('#output, select, #status');
 var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
 var hostLET = document.querySelector('.template > div');
 
@@ -24,6 +26,28 @@ document.addEventListener('keydown', (event) => {
 expandBtn.addEventListener('click', (event) => {
     manager.toggle('expand');
 });
+
+statusBtn.addEventListener('click', (event) => {
+    if (!manager.contains('disabled')) {
+        return chrome.runtime.sendMessage({action: 'proxy_disabled'}, easyMatchDisabled);
+    }
+    chrome.runtime.sendMessage({action: 'proxy_enabled'}, (response) => {
+        easyMatchEnabled();
+        if (!manager.contains('asleep')) {
+            easyMatchInit();
+        }
+    });
+});
+
+function easyMatchEnabled() {
+    manager.remove('disabled');
+    statusBtn.textContent = chrome.i18n.getMessage('popup_enabled');
+}
+
+function easyMatchDisabled() {
+    manager.add('disabled');
+    statusBtn.textContent = chrome.i18n.getMessage('popup_disabled');
+}
 
 submitBtn.addEventListener('click', (event) => {
     var manage = proxyChange('match', easyStorage, easyMatch);
@@ -91,7 +115,7 @@ function proxyChange(type, storage, logs) {
     return include.length !== 0 || exclude.length !== 0;
 }
 
-document.getElementById('output').addEventListener('change', (event) => {
+output.addEventListener('change', (event) => {
     var entry = event.target;
     var value = entry.value;
     var checked = entry.checked;
@@ -123,7 +147,7 @@ function easyMatchUpdate({tabId, host, match}) {
     if (easyProxy && tabId === easyTab) {
         easyMatchPattern(host, 'hostname');
         easyMatchPattern(match, 'wildcard');
-        manager.remove('hibernate');
+        manager.remove('asleep');
     }
 }
 
@@ -136,23 +160,27 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_initial', params: {tabId: easyTab}}, easyMatchInitial);
+    chrome.runtime.sendMessage({action: 'manager_initial', params: {tabId: easyTab}}, ({storage, tempo, result}) => {
+        easyWatch = result;
+        easyStorage = storage;
+        easyTempo = tempo;
+        easyStorage.proxies.forEach((proxy) => {
+            if (!easyStorage.pacs[proxy]) {
+                easyProxy ??= proxy;
+                easyProxyCeate(proxy);
+            }
+        });
+        storage.enabled ? easyMatchEnabled() : easyMatchDisabled();  
+        if (!easyProxy || !easyWatch) {
+            return manager.add('asleep');
+        }     
+        easyManagerInit();
+    });
 });
 
-function easyMatchInitial({storage, tempo, result}) {
-    easyStorage = storage;
-    easyTempo = tempo;
-    storage.proxies.forEach((proxy) => {
-        if (!storage.pacs[proxy]) {
-            easyProxy ??= proxy;
-            easyProxyCeate(proxy);
-        }
-    });
-    if (!easyProxy || !result) {
-        return manager.add('hibernate');
-    }
-    result.host.forEach((value) => easyMatchPattern(value, 'hostname'));
-    result.match.forEach((value) => easyMatchPattern(value, 'wildcard'));
+function easyManagerInit() {
+    easyWatch.host.forEach((value) => easyMatchPattern(value, 'hostname'));
+    easyWatch.match.forEach((value) => easyMatchPattern(value, 'wildcard'));
 }
 
 function easyProxyCeate(proxy) {
@@ -165,7 +193,7 @@ function easyProxyCeate(proxy) {
 
 function easyMatchPattern(value, type) {
     if (easyList[value]) {
-        return easyList[value].classList.add(type);
+        return;
     }
     var host = hostLET.cloneNode(true);
     host.classList.add(type);
