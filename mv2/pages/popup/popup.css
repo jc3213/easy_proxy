@@ -24,7 +24,7 @@ body.disabled > :nth-child(-n + 2) {
     display: none;
 }
 
-body.disabled #status {
+body.disabled > #menu > :first-child {
     background-color: red;
 }
 
