@@ -1,6 +1,6 @@
 body {
     margin: 8px;
-    min-width: 232px;
+    min-width: 212px;
 }
 
 input[type="checkbox"] {
@@ -15,6 +15,10 @@ label {
     flex: 1;
 }
 
+select {
+    width: 100%;
+}
+
 #output > div {
     padding: 3px;
     display: flex;
@@ -25,24 +29,18 @@ label {
     display: none;
 }
 
-#proxy, #menu {
+#menu, #proxy {
     display: flex;
     gap: 5px;
 }
 
-#proxy > select,
-#menu > button {
+#menu > button, #proxy > button {
     flex: 1;
 }
 
 #status {
-    padding: 3px;
-    text-align: center;
-    width: 25px;
-    border-radius: 50%;
     color: white;
     background-color: green;
-    content: "On";
 }
 
 #status:hover {
@@ -64,24 +62,28 @@ body.disabled #status {
     background-color: red;
 }
 
-.asleep > #proxy > *,
-.asleep > #menu > button:nth-child(-n+3),
-.disabled > #proxy > *,
-.disabled > #menu > button:nth-child(-n+3) {
+#menu {
+    margin: 5px 0px;
+}
+
+.asleep > #menu > :nth-child(2),
+.asleep > #proxy > button,
+.disabled > #menu > :nth-child(2),
+.disabled > #proxy > * {
     pointer-events: none;
     filter: contrast(25%);
 }
 
-.expand > #proxy > button {
+.expand > #menu > :nth-child(2) {
     border-style: inset;
 }
 
 .match {
-    color: #e76b4a;
+    color: #d44b31;
     display: flex !important;
 }
 
 .tempo {
-    color: #7ac2fc;
+    color: #59a8ff;
     display: flex !important;
 }
