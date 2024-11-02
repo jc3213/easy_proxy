@@ -1,6 +1,6 @@
 body {
     margin: 8px;
-    min-width: 212px;
+    min-width: 200px;
 }
 
 input[type="checkbox"] {
@@ -11,12 +11,37 @@ input[type="checkbox"] {
 
 label {
     text-align: center;
-    letter-spacing: 1px;
     flex: 1;
 }
 
 select {
     width: 100%;
+}
+
+body:not(.expand) > #output > :not(.wildcard),
+body.expand > #output > :not(.hostname),
+body.disabled > :nth-child(-n + 2) {
+    display: none;
+}
+
+body.disabled #status {
+    background-color: red;
+}
+
+body.asleep > #menu > :nth-child(2),
+body.asleep > #proxy > button,
+body.disabled > #menu > :nth-child(2),
+body.disabled > #proxy > * {
+    pointer-events: none;
+    filter: contrast(25%);
+}
+
+body.expand > #menu > :nth-child(2) {
+    border-style: inset;
+}
+
+#menu {
+    margin: 5px 0px;
 }
 
 #output > div {
@@ -38,44 +63,9 @@ select {
     flex: 1;
 }
 
-#status {
+#menu > :first-child {
     color: white;
     background-color: green;
-}
-
-#status:hover {
-    cursor: pointer;
-    filter: contrast(75%);
-}
-
-#status:active {
-    filter: contrast(45%);
-}
-
-body:not(.expand) > #output > :not(.wildcard),
-body.expand > #output > :not(.hostname),
-body.disabled > :nth-child(-n + 2) {
-    display: none;
-}
-
-body.disabled #status {
-    background-color: red;
-}
-
-#menu {
-    margin: 5px 0px;
-}
-
-.asleep > #menu > :nth-child(2),
-.asleep > #proxy > button,
-.disabled > #menu > :nth-child(2),
-.disabled > #proxy > * {
-    pointer-events: none;
-    filter: contrast(25%);
-}
-
-.expand > #menu > :nth-child(2) {
-    border-style: inset;
 }
 
 .match {
