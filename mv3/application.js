@@ -26,6 +26,6 @@ async function easyProxyMV3Persistent() {
 
 function persistentModeEnabled() {
     easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
-    chrome.action.setBadgeText({text: 'M'});
-    chrome.action.setBadgeBackgroundColor({color: '#f8c'});
+    chrome.action.setBadgeText({text: 'P'});
+    chrome.action.setBadgeBackgroundColor({color: '#b21824'});
 }
