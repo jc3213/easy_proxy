@@ -163,10 +163,10 @@ function pacScriptConverter() {
     easyStorage.proxies.forEach((proxy) => {
         if (easyStorage.pacs[proxy]) {
             pac_script += '\n    ' + easyStorage[proxy].replace(/^[^{]*{/, '').replace(/(return[^}]*)?}[^}]*$/, '').trim();
-            return;
+        } else {
+            pac_script += convertRegexp(proxy, easyStorage[proxy]);
+            tempo += convertRegexp(proxy, easyTempo[proxy] ?? []);
         }
-        pac_script += convertRegexp(proxy, easyStorage[proxy]);
-        tempo += convertRegexp(proxy, easyTempo[proxy] ?? []);
     });
     easyMatch.script = convertPacScript(pac_script);
     easyMatch.extend = convertPacScript(pac_script + tempo);

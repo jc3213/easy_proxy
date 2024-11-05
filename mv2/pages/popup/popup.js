@@ -7,8 +7,8 @@ var easyTab;
 var easyId = 0;
 var easyHosts = [];
 var easyList = {};
+var easyHistory = {};
 var changes = {};
-var restore = {};
 var checkboxes = [];
 var manager = document.body.classList;
 
@@ -17,26 +17,38 @@ var [statusBtn, expandBtn, optionsBtn, submitBtn, tempoBtn] = document.querySele
 var hostLET = document.querySelector('.template > div');
 
 document.addEventListener('keydown', (event) => {
-    if (event.ctrlKey && event.key === 's') {
-        event.preventDefault();
-        submitBtn.click();
+    if (event.ctrlKey) {
+        switch(event.key) {
+            case 's':
+                event.preventDefault();
+                submitBtn.click();
+            break;
+            case 't':
+                event.preventDefault();
+                tempoBtn.click();
+            break;
+        }
     }
 });
 
 expandBtn.addEventListener('click', (event) => {
+    checkboxes.forEach((check) => {
+        check.checked = easyHistory[check.value];
+    });
     manager.toggle('expand');
 });
 
 statusBtn.addEventListener('click', (event) => {
-    if (!manager.contains('disabled')) {
-        return chrome.runtime.sendMessage({action: 'proxy_disabled'}, easyMatchDisabled);
+    if (manager.contains('disabled')) {
+        chrome.runtime.sendMessage({action: 'proxy_enabled'}, (response) => {
+            easyMatchEnabled();
+            if (!manager.contains('asleep')) {
+                easyMatchInit();
+            }
+        });
+    } else {
+        chrome.runtime.sendMessage({action: 'proxy_disabled'}, easyMatchDisabled);
     }
-    chrome.runtime.sendMessage({action: 'proxy_enabled'}, (response) => {
-        easyMatchEnabled();
-        if (!manager.contains('asleep')) {
-            easyMatchInit();
-        }
-    });
 });
 
 function easyMatchEnabled() {
@@ -64,9 +76,8 @@ tempoBtn.addEventListener('click', (event) => {
             match.parentNode.classList.remove('tempo');
             match.checked = easyMatch[match.value] === easyProxy ? true : false;
         });
-        return proxyStatusUpdate('manager_purge');
-    }
-    else {
+        proxyStatusUpdate('manager_purge');
+    } else {
         var manage = proxyChange('tempo', easyTempo, easyMatchTempo);
         if (manage) {
             proxyStatusUpdate('manager_tempo', {tempo: easyTempo});
@@ -92,24 +103,21 @@ function proxyChange(type, storage, logs) {
         var {value, checked} = check;
         var status = check.parentNode.classList[2];
         if (status && status !== type) {
-            check.checked = restore[value];
-            return;
-        }
-        if (checked && !logs[value]) {
+            check.checked = easyHistory[value];
+        } else if (checked && !logs[value]) {
             logs[value] = proxy;
             include.push(value);
             matches.push(value);
-            return check.parentNode.classList.add(type);
-        }
-        if (!checked && logs[value]) {
+            check.parentNode.classList.add(type);
+        } else if (!checked && logs[value]) {
             delete logs[value];
             matches.splice(matches.indexOf(value), 1);
             exclude.push(value);
-            return check.parentNode.classList.remove(type);
+            check.parentNode.classList.remove(type);
         }
     });
     changes = {};
-    restore = {};
+    easyHistory = {};
     checkboxes = [];
     storage[proxy] = matches;
     return include.length !== 0 || exclude.length !== 0;
@@ -120,7 +128,7 @@ output.addEventListener('change', (event) => {
     var value = entry.value;
     var checked = entry.checked;
     if (changes[value] === undefined) {
-        restore[value] = !checked;
+        easyHistory[value] = !checked;
         checkboxes.push(entry);
     }
     changes[value] = checked;
@@ -171,10 +179,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             }
         });
         storage.enabled ? easyMatchEnabled() : easyMatchDisabled();  
-        if (!easyProxy || !easyWatch) {
-            return manager.add('asleep');
-        }     
-        easyManagerInit();
+        !easyProxy || !easyWatch ? manager.add('asleep') : easyManagerInit();
     });
 });
 
@@ -209,8 +214,7 @@ function easyMatchPattern(value, type) {
         host.classList.add('match');
         easyList.lastMatch?.after(host) || output.insertBefore(host, output.children[0]);
         easyList.lastMatch = host;
-    }
-    else if (easyMatchTempo[value]) {
+    } else if (easyMatchTempo[value]) {
         host.classList.add('tempo');
         easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host) || output.insertBefore(host, output.children[0]);
         easyList.lastTempo = host;
