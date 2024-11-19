@@ -1,13 +1,17 @@
 var easyDefault = {
+    enabled: true,
     pacs: {},
-    proxies: [],
-    enabled: true
+    persistent: true,
+    proxies: []
 };
 var easyStorage = {};
 var easyTempo = {};
 var easyTempoLog = {};
 var easyMatch = {};
+var easyInspect = {};
 var easyMain = chrome.runtime.getManifest().manifest_version;
+
+chrome.action ??= chrome.browserAction;
 
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     switch (action) {
@@ -52,7 +56,7 @@ function easyMatchInitial(params, response) {
     response({
         storage: {...easyDefault, ...easyStorage},
         tempo: easyTempo,
-        result: easyMatch[params.tabId]
+        result: easyInspect[params.tabId]
     });
 }
 
@@ -93,11 +97,12 @@ function easyTempoPurge({tabId}) {
 }
 
 function easyReloadTab(id) {
-    chrome.tabs.update(id, {url: easyMatch[id].url});
+    chrome.tabs.update(id, {url: easyInspect[id].url});
 }
 
 function easyEnabled() {
     easyStorage.enabled = true;
+    persistentModeSwitch();
     chrome.storage.local.set(easyStorage);
     chrome.proxy.settings.set({
         value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },
@@ -107,6 +112,7 @@ function easyEnabled() {
 
 function easyDisabled() {
     easyStorage.enabled = false;
+    chrome.action.setBadgeBackgroundColor({color: '#D33A26'});
     chrome.storage.local.set(easyStorage);
     chrome.proxy.settings.set({
         value: { mode: "direct" },
@@ -118,15 +124,15 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var host = new URL(url).hostname;
         var match = MatchPattern(host);
-        easyMatch[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, url };
-        easyMatchSync(tabId, host, match);
+        easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, url };
+        easyInspectSync(tabId, host, match);
     }
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     var host = new URL(url).hostname;
     var match = MatchPattern(host);
-    var matched = easyMatch[tabId];
+    var matched = easyInspect[tabId];
     if (!match || !matched) {
         return;
     }
@@ -138,24 +144,28 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
         matched.match.push(match);
         matched.cache[match] = true;
     }
-    easyMatchSync(tabId, host, match);
+    easyInspectSync(tabId, host, match);
 }, {urls: ['http://*/*', 'https://*/*']});
 
-function easyMatchSync(tabId, host, match) {
+function easyInspectSync(tabId, host, match) {
     chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
+    chrome.action.setBadgeText({tabId, text: 'Go'});
 }
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {
-    delete easyMatch[tabId];
+    delete easyInspect[tabId];
 });
 
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
+    persistentModeSwitch();
     pacScriptConverter();
-    if (easyMain === 3) {
-        persistentModeEnabled();
-    }
 });
+
+function persistentModeSwitch() {
+   var color = easyStorage.persistent ? '#1C4CD4' : '#1c4c7f';
+   chrome.action.setBadgeBackgroundColor({color});
+}
 
 function pacScriptConverter() {
     var pac_script = '';
