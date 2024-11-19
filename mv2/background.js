@@ -1,7 +1,7 @@
 var easyDefault = {
     enabled: true,
     pacs: {},
-    persistent: true,
+    persistent: false,
     proxies: []
 };
 var easyStorage = {};
@@ -9,7 +9,6 @@ var easyTempo = {};
 var easyTempoLog = {};
 var easyMatch = {};
 var easyInspect = {};
-var easyMain = chrome.runtime.getManifest().manifest_version;
 
 chrome.action ??= chrome.browserAction;
 
