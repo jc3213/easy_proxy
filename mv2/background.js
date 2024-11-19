@@ -136,7 +136,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
         easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, url };
         easyInspectSync(tabId, host, match);
     }
-});
+}, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
     var host = new URL(url).hostname;
@@ -154,7 +154,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
         matched.cache[match] = true;
     }
     easyInspectSync(tabId, host, match);
-}, {urls: ['http://*/*', 'https://*/*']});
+}, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyInspectSync(tabId, host, match) {
     chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
