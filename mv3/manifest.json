@@ -23,7 +23,7 @@
         "128": "icons/128.png"
     },
     "background": {
-        "service_worker": "application.js"
+        "service_worker": "background.js"
     },
     "action": {
         "default_icon": {
