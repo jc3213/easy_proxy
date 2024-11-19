@@ -102,6 +102,7 @@ function easyReloadTab(id) {
 function easyEnabled() {
     easyStorage.enabled = true;
     persistentModeSwitch();
+    chrome.action.setBadgeText({text: 'Go'});
     chrome.storage.local.set(easyStorage);
     chrome.proxy.settings.set({
         value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },
@@ -112,12 +113,21 @@ function easyEnabled() {
 function easyDisabled() {
     easyStorage.enabled = false;
     chrome.action.setBadgeBackgroundColor({color: '#D33A26'});
+    chrome.action.setBadgeText({text: 'No'});
     chrome.storage.local.set(easyStorage);
     chrome.proxy.settings.set({
         value: { mode: "direct" },
         scope: 'regular'
     });
 }
+
+chrome.commands.onCommand.addListener((command) => {
+    switch (command) {
+        case 'persistent_mode':
+            persistentModeSwitch();
+            break;
+    }
+});
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
@@ -148,7 +158,6 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
 
 function easyInspectSync(tabId, host, match) {
     chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
-    chrome.action.setBadgeText({tabId, text: 'Go'});
 }
 
 chrome.tabs.onRemoved.addListener(({tabId}) => {
@@ -162,8 +171,8 @@ chrome.storage.local.get(null, (json) => {
 });
 
 function persistentModeSwitch() {
-   var color = easyStorage.persistent ? '#1C4CD4' : '#1c4c7f';
-   chrome.action.setBadgeBackgroundColor({color});
+    var color = chrome.runtime.getManifest().manifest_version === 3 && easyStorage.persistent ? '#6A1CD4' : '#1B7D76';
+    chrome.action.setBadgeBackgroundColor({color});
 }
 
 function pacScriptConverter() {
