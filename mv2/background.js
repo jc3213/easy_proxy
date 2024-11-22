@@ -160,9 +160,9 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
         inspect.cache[match] = true;
     }
     if (easyRegExp.test(host)) {
-        var count = easyInspect[tabId].index ++;
+        easyInspect[tabId].index ++;
         easyInspect[tabId].result.push(url);
-        chrome.action.setBadgeText({tabId, text: !count ? '' : count + ''});
+        chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
     }
     easyInspectSync(tabId, host, match);
     
