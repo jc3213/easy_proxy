@@ -4,14 +4,14 @@ body {
 }
 
 input[type="checkbox"] {
-    width: auto;
-    transform: scale(1.5);
     accent-color: #006cbe;
+    transform: scale(1.5);
+    width: auto;
 }
 
 label {
-    text-align: center;
     flex: 1;
+    text-align: center;
 }
 
 select {
@@ -29,14 +29,16 @@ body.disabled > #menu > :first-child {
 }
 
 body.asleep > #menu > :nth-child(2),
+body.asleep > #menu > :nth-child(3),
 body.asleep > #proxy > button,
 body.disabled > #menu > :nth-child(2),
-body.disabled > #proxy > * {
-    pointer-events: none;
+body.disabled > #menu > :nth-child(3),
+body.disabled > #proxy > button {
     filter: contrast(25%);
+    pointer-events: none;
 }
 
-body.expand > #menu > :nth-child(2) {
+body.expand > #proxy > button {
     border-style: inset;
 }
 
@@ -45,9 +47,10 @@ body.expand > #menu > :nth-child(2) {
 }
 
 #output > div {
-    padding: 3px;
     display: flex;
-    gap: 8px;
+    gap: 5px;
+    padding: 3px;
+    white-space: nowrap;
 }
 
 #output:empty + hr {
@@ -59,13 +62,13 @@ body.expand > #menu > :nth-child(2) {
     gap: 5px;
 }
 
-#menu > button, #proxy > button {
+#menu > button {
     flex: 1;
 }
 
 #menu > :first-child {
-    color: white;
     background-color: green;
+    color: white;
 }
 
 .match {

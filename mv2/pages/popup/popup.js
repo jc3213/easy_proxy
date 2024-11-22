@@ -13,7 +13,7 @@ var checkboxes = [];
 var manager = document.body.classList;
 
 var [output, proxies] = document.querySelectorAll('#output, select');
-var [statusBtn, expandBtn, optionsBtn, submitBtn, tempoBtn] = document.querySelectorAll('button');
+var [expandBtn, statusBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
 var hostLET = document.querySelector('.template > div');
 
 document.addEventListener('keydown', (event) => {
