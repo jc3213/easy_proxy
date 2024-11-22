@@ -10,6 +10,12 @@ var easyTempoLog = {};
 var easyMatch = {};
 var easyRegExp;
 var easyInspect = {};
+var easyPersistent;
+
+var manifest = chrome.runtime.getManifest().manifest_version;
+if (manifest === 3) {
+    importScripts('libs/matchpattern.js');
+}
 
 chrome.action ??= chrome.browserAction;
 
@@ -183,7 +189,13 @@ chrome.storage.local.get(null, (json) => {
 });
 
 function persistentModeSwitch() {
-    var color = chrome.runtime.getManifest().manifest_version === 3 && easyStorage.persistent ? '#6A1CD4' : '#1B7D76';
+    if (manifest === 3 && easyStorage.persistent) {
+        var color = '#6A1CD4';
+        easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
+    } else {
+        color = '#1B7D76';
+        clearInterval(easyPersistent);
+    }
     chrome.action.setBadgeBackgroundColor({color});
 }
 
