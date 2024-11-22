@@ -8,6 +8,7 @@ var easyStorage = {};
 var easyTempo = {};
 var easyTempoLog = {};
 var easyMatch = {};
+var easyRegExp;
 var easyInspect = {};
 
 chrome.action ??= chrome.browserAction;
@@ -102,7 +103,6 @@ function easyReloadTab(id) {
 function easyEnabled() {
     easyStorage.enabled = true;
     persistentModeSwitch();
-    chrome.action.setBadgeText({text: 'Go'});
     chrome.storage.local.set(easyStorage);
     chrome.proxy.settings.set({
         value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },
@@ -113,7 +113,6 @@ function easyEnabled() {
 function easyDisabled() {
     easyStorage.enabled = false;
     chrome.action.setBadgeBackgroundColor({color: '#D33A26'});
-    chrome.action.setBadgeText({text: 'No'});
     chrome.storage.local.set(easyStorage);
     chrome.proxy.settings.set({
         value: { mode: "direct" },
@@ -133,27 +132,40 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var host = new URL(url).hostname;
         var match = MatchPattern(host);
-        easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, url };
+        easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, index: 0, result: [], url };
         easyInspectSync(tabId, host, match);
     }
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
-chrome.webRequest.onBeforeRequest.addListener(({tabId, url}) => {
+chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
+    if (easyInspect?.[tabId]?.url !== url) {
+        easyInspect[tabId].index = 0;
+        easyInspect[tabId].result = [];
+    }
+}, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
+
+chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     var host = new URL(url).hostname;
     var match = MatchPattern(host);
-    var matched = easyInspect[tabId];
-    if (!match || !matched) {
+    var inspect = easyInspect[tabId];
+    if (!match || !inspect) {
         return;
     }
-    if (!matched.cache[host]) {
-        matched.host.push(host);
-        matched.cache[host] = true;
+    if (!inspect.cache[host]) {
+        inspect.host.push(host);
+        inspect.cache[host] = true;
     }
-    if (!matched.cache[match]) {
-        matched.match.push(match);
-        matched.cache[match] = true;
+    if (!inspect.cache[match]) {
+        inspect.match.push(match);
+        inspect.cache[match] = true;
+    }
+    if (easyRegExp.test(host)) {
+        var count = easyInspect[tabId].index ++;
+        easyInspect[tabId].result.push(url);
+        chrome.action.setBadgeText({tabId, text: !count ? '' : count + ''});
     }
     easyInspectSync(tabId, host, match);
+    
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyInspectSync(tabId, host, match) {
@@ -178,6 +190,7 @@ function persistentModeSwitch() {
 function pacScriptConverter() {
     var pac_script = '';
     var tempo = '';
+    easyRegExp = '';
     easyStorage.proxies.forEach((proxy) => {
         if (easyStorage.pacs[proxy]) {
             pac_script += '\n    ' + easyStorage[proxy].replace(/^[^{]*{/, '').replace(/(return[^}]*)?}[^}]*$/, '').trim();
@@ -188,11 +201,14 @@ function pacScriptConverter() {
     });
     easyMatch.script = convertPacScript(pac_script);
     easyMatch.extend = convertPacScript(pac_script + tempo);
+    easyRegExp = new RegExp('^(' + easyRegExp.slice(1) + ')$', 'i');
     easyEnabled();
 }
 
 function convertRegexp(proxy, matches) {
-    return matches.length === 0 ? '' : '\n    if (/^(' + matches.join('|').replace(/\./g, '\\.').replace(/\\?\.?\*\\?\.?/g, '.*') + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
+    var regexp = matches.join('|').replace(/\./g, '\\.').replace(/\\?\.?\*\\?\.?/g, '.*');
+    easyRegExp += '|' + regexp;
+    return matches.length === 0 ? '' : '\n    if (/^(' + regexp + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
 }
 
 function convertPacScript(pac_script) {
