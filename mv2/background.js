@@ -218,7 +218,7 @@ function pacScriptConverter() {
 }
 
 function convertRegexp(proxy, matches) {
-    var regexp = matches.join('|').replace(/\./g, '\\.').replace(/\\?\.?\*\\?\.?/g, '.*');
+    var regexp = matches.join('|').replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\.\*\\\./g, '([^.]+\\.)*').replace(/\\\.\.\*/g, '(\\.[^.]+)*');
     easyRegExp += '|' + regexp;
     return matches.length === 0 ? '' : '\n    if (/^(' + regexp + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
 }
