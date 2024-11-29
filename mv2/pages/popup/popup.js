@@ -185,10 +185,8 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         easyStorage = storage;
         easyTempo = tempo;
         easyStorage.proxies.forEach((proxy) => {
-            if (!easyStorage.pacs[proxy]) {
-                easyProxy ??= proxy;
-                easyProxyCeate(proxy);
-            }
+            easyProxy ??= proxy;
+            easyProxyCeate(proxy);
         });
         var direct = storage.direct;
         var mode = easyMode[direct];
