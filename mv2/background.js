@@ -5,12 +5,15 @@ var easyDefault = {
     proxies: []
 };
 var easyStorage = {};
+var easyMode;
+var easyPersistent;
+
+var easyMatch = {};
 var easyTempo = {};
 var easyTempoLog = {};
-var easyMatch = {};
+
 var easyRegExp;
 var easyInspect = {};
-var easyPersistent;
 
 var manifest = chrome.runtime.getManifest().manifest_version;
 if (manifest === 3) {
@@ -104,7 +107,14 @@ function easyReloadTab(id) {
 }
 
 function easyProxyStatus(params) {
-    switch (params) {
+    easyProxyMode(params);
+    easyStorage.direct = params;
+    chrome.storage.local.set(easyStorage);
+}
+
+function easyProxyMode(mode) {
+    easyMode = mode;
+    switch (mode) {
         case 'autopac':
             easyProxyAutopac();
             break;
@@ -112,11 +122,9 @@ function easyProxyStatus(params) {
             easyProxyDirect();
             break;
         default:
-            easyProxyGlobal(params);
+            easyProxyGlobal(mode);
             break;
     };
-    easyStorage.direct = params;
-    chrome.storage.local.set(easyStorage);
 }
 
 function easyProxyAutopac() {
@@ -208,6 +216,9 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyProxyIndicator(tabId, host, url) {
+    if (easyMode === 'direct' || easyMode === 'autopac' && !easyRegExp.test(host)) {
+        return;
+    }
     easyInspect[tabId].index ++;
     easyInspect[tabId].result.push(url);
     chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
@@ -235,7 +246,6 @@ function persistentModeSwitch() {
     } else {
         clearInterval(easyPersistent);
     }
-    chrome.action.setBadgeBackgroundColor({color});
 }
 
 function pacScriptConverter() {
@@ -253,7 +263,7 @@ function pacScriptConverter() {
     easyMatch.script = convertPacScript(pac_script);
     easyMatch.extend = convertPacScript(pac_script + tempo);
     easyRegExp = new RegExp('^(' + easyRegExp.slice(1) + ')$', 'i');
-    easyProxyStatus(easyStorage.direct);
+    easyProxyMode(easyStorage.direct);
 }
 
 function convertRegexp(proxy, matches) {
