@@ -39,26 +39,26 @@ expandBtn.addEventListener('click', (event) => {
 });
 
 statusBtn.addEventListener('click', (event) => {
-    if (manager.contains('disabled')) {
-        chrome.runtime.sendMessage({action: 'proxy_enabled'}, (response) => {
-            easyMatchEnabled();
+    if (manager.contains('direct')) {
+        chrome.runtime.sendMessage({action: 'proxy_state', params: 'autopac'}, (response) => {
+            easyProxyPAC();
             if (!manager.contains('asleep')) {
                 easyMatchInit();
             }
         });
     } else {
-        chrome.runtime.sendMessage({action: 'proxy_disabled'}, easyMatchDisabled);
+        chrome.runtime.sendMessage({action: 'proxy_disabled', params: 'direct'}, easyMatchDirect);
     }
 });
 
-function easyMatchEnabled() {
-    manager.remove('disabled');
-    statusBtn.textContent = chrome.i18n.getMessage('popup_enabled');
+function easyProxyPAC() {
+    manager.remove('direct');
+    statusBtn.textContent = chrome.i18n.getMessage('proxy_autopac');
 }
 
-function easyMatchDisabled() {
-    manager.add('disabled');
-    statusBtn.textContent = chrome.i18n.getMessage('popup_disabled');
+function easyMatchDirect() {
+    manager.add('direct');
+    statusBtn.textContent = chrome.i18n.getMessage('proxy_direct');
 }
 
 submitBtn.addEventListener('click', (event) => {
@@ -178,7 +178,16 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
                 easyProxyCeate(proxy);
             }
         });
-        storage.enabled ? easyMatchEnabled() : easyMatchDisabled();  
+        switch (storage.direct) {
+            case 'pac':
+                easyProxyPAC();
+                break;
+            case 'direct':
+                easyProxyDirect();
+                break;
+            default:
+                break;
+        };
         !easyProxy || !easyWatch ? manager.add('asleep') : easyManagerInit();
     });
 });

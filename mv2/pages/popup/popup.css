@@ -19,20 +19,20 @@ select {
 
 body:not(.expand) > #output > :not(.wildcard),
 body.expand > #output > :not(.hostname),
-body.disabled > :nth-child(-n + 2) {
+body.direct > :nth-child(-n + 2) {
     display: none;
 }
 
-body.disabled > #menu > :first-child {
+body.direct > #menu > :first-child {
     background-color: red;
 }
 
 body.asleep > #menu > :nth-child(2),
 body.asleep > #menu > :nth-child(3),
 body.asleep > #proxy > *,
-body.disabled > #menu > :nth-child(2),
-body.disabled > #menu > :nth-child(3),
-body.disabled > #proxy > * {
+body.direct > #menu > :nth-child(2),
+body.direct > #menu > :nth-child(3),
+body.direct > #proxy > * {
     filter: contrast(25%);
     pointer-events: none;
 }

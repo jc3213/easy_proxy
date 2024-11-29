@@ -1,4 +1,6 @@
 (() => {
+    const version = 0.2;
+
     const tlds = {
         'aero': true,
         'app': true,
@@ -39,21 +41,7 @@
 
     const caches = {};
 
-    const make = (host) => {
-        if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
-            return host.replace(/\d+\.\d+$/, '*');
-        }
-
-        const [hostname, sbd, sld, tld] = host.match(/(?:([^\.]+)\.)?([^\.]+)\.([^\.]+)$/);
-
-        if (!sbd || !tlds[sld]) {
-            return '*.' + sld + '.' + tld;
-        }
-
-        return '*.' + sbd + '.' + sld + '.' + tld;
-    };
-    
-    self.MatchPattern = (string) => {
+    const create = (string) => {
         if (caches[string]) {
             return caches[string];
         }
@@ -61,7 +49,7 @@
         const test = string.match(/^(?:http|ftp|ws)?s?:?(?:\/\/)?((?:[^\./:]+\.)+[^\./:]+):?(?:\d+)?\/?(?:[^\/]+\/?)*$/);
 
         if (!test) {
-            throw new Error ('"' + string + '" is either not a URL, or a valid MatchPattern');
+            throw new Error('"' + string + '" is either not a URL, or a valid MatchPattern');
         }
 
         const host = test[1];
@@ -70,10 +58,36 @@
             return caches[string] = caches[host];
         }
 
-        if (host.includes('*')) {
-            return caches[string] = host;
+        if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
+            return caches[string] = host.replace(/\d+\.\d+$/, '*');
         }
 
-        return caches[string] = make(host);
+        const [hostname, sbd, sld, tld] = host.match(/(?:([^\.]+)\.)?([^\.]+)\.([^\.]+)$/);
+
+        if (!sbd || !tlds[sld]) {
+            return caches[string] = '*.' + sld + '.' + tld;
+        }
+
+        return caches[string] = '*.' + sbd + '.' + sld + '.' + tld;
     };
+
+    const generate = (array) => {
+        if (!Array.isArray(array)) {
+            throw new Error('"' + array + '" must be an array of MatchPatterns');
+        }
+
+        if (array.length === 0) {
+            return { regexp: /!/, string: '' };
+        }
+
+        if (array.includes('<all-urls>')) {
+            return { regexp: /.*/, string: '.*' };
+        }
+
+        const string = '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\.\*\\\./g, '([^.]+\\.)*').replace(/\\\.\.\*/g, '(\\.[^.]+)*') + ')$';
+
+        return { regexp: new RegExp(string), string } ;
+    };
+
+    self.MatchPattern = { create, generate, version };
 })();

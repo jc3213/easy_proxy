@@ -44,14 +44,17 @@
     "match_remove": {
         "message": "Remove this match pattern"
     },
+    "proxy_direct": {
+        "message": "Direct"
+    },
+    "proxy_autopac": {
+        "message": "PAC"
+    },
+    "proxy_global": {
+        "message": "Global"
+    },
     "popup_title": {
         "message": "Easy Proxy Manager"
-    },
-    "popup_enabled": {
-        "message": "On"
-    },
-    "popup_disabled": {
-        "message": "Off"
     },
     "popup_status": {
         "message": "Enable or disable \"Easy Proxy\""

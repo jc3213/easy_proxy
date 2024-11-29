@@ -1,5 +1,5 @@
 var easyDefault = {
-    enabled: true,
+    direct: 'autopac',
     pacs: {},
     persistent: false,
     proxies: []
@@ -42,11 +42,8 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
         case 'manager_purge':
             easyTempoPurge(params);
             break;
-        case 'proxy_disabled':
-            easyDisabled();
-            break;
-        case 'proxy_enabled':
-            easyEnabled();
+        case 'proxy_state':
+            easyProxyStatus(params);
             break;
     }
 });
@@ -106,22 +103,47 @@ function easyReloadTab(id) {
     chrome.tabs.update(id, {url: easyInspect[id].url});
 }
 
-function easyEnabled() {
-    easyStorage.enabled = true;
-    persistentModeSwitch();
+function easyProxyStatus(params) {
+    switch (params) {
+        case 'autopac':
+            easyProxyPAC();
+            break;
+        case 'direct':
+            easyProxyDirect();
+            break;
+        default:
+            easyProxyServer(params);
+    };
+    easyStorage.direct = params;
     chrome.storage.local.set(easyStorage);
+}
+
+function easyProxyPAC() {
+    persistentModeSwitch();
     chrome.proxy.settings.set({
         value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },
         scope: 'regular'
     });
 }
 
-function easyDisabled() {
-    easyStorage.enabled = false;
+function easyProxyDirect() {
     chrome.action.setBadgeBackgroundColor({color: '#D33A26'});
-    chrome.storage.local.set(easyStorage);
     chrome.proxy.settings.set({
         value: { mode: "direct" },
+        scope: 'regular'
+    });
+}
+
+function easyProxyGlobal(proxy) {
+    var [scheme, host, port] = proxy.split(/[\s:]/);
+    chrome.proxy.settings.set({
+        value: {
+            mode: "fixed_servers",
+            rules: {
+                singleProxy: { scheme: scheme.toLowerCase(), host, port },
+                bypassList: ['localhost']
+            }
+        },
         scope: 'regular'
     });
 }
@@ -137,7 +159,7 @@ chrome.commands.onCommand.addListener((command) => {
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
         var host = new URL(url).hostname;
-        var match = MatchPattern(host);
+        var match = MatchPattern.create(host);
         easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, index: 0, result: [], url };
         easyInspectSync(tabId, host, match);
     }
@@ -152,7 +174,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     var host = new URL(url).hostname;
-    var match = MatchPattern(host);
+    var match = MatchPattern.create(host);
     var inspect = easyInspect[tabId];
     if (!match || !inspect) {
         return;
@@ -214,13 +236,16 @@ function pacScriptConverter() {
     easyMatch.script = convertPacScript(pac_script);
     easyMatch.extend = convertPacScript(pac_script + tempo);
     easyRegExp = new RegExp('^(' + easyRegExp.slice(1) + ')$', 'i');
-    easyEnabled();
+    easyProxyStatus(easyStorage.direct);
 }
 
 function convertRegexp(proxy, matches) {
-    var regexp = matches.join('|').replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\.\*\\\./g, '([^.]+\\.)*').replace(/\\\.\.\*/g, '(\\.[^.]+)*');
+    if (matches.length === 0) {
+        return '';
+    }
+    var regexp = MatchPattern.generate(matches).string;
     easyRegExp += '|' + regexp;
-    return matches.length === 0 ? '' : '\n    if (/^(' + regexp + ')$/i.test(host)) {\n        return "' + proxy + '";\n    }';
+    return '\n    if (/' + regexp + '/i.test(host)) {\n        return "' + proxy + '";\n    }';
 }
 
 function convertPacScript(pac_script) {
