@@ -38,24 +38,24 @@ function fileExporter(data, type, filename, filetype) {
     exporter.click();
 }
 
-easyProxy.host.addEventListener('keydown', (event) => {
+easyProxy.host.addEventListener('keydown', newProfileShortcut);
+easyProxy.port.addEventListener('keydown', newProfileShortcut);
+
+function newProfileShortcut(event) {
     if (event.key === 'Enter') {
         submitBtn.click();
     }
-});
+}
 
 submitBtn.addEventListener('click', (event) => {
-    var proxy = easyProxy.proxy.value;
-    if (/([^\.]+\.){1,}[^:]+(:\d+)?/.test(proxy)) {
-        var profile = easyProxy.scheme.value + ' ' + proxy;
-        easyStorage[profile] = [];
-        easyStorage.proxies.push(profile);
-        createMatchProfile(profile);
-        easyProxy.scheme.value = 'PROXY';
-        easyProxy.proxy.value = '';
-        document.body.classList.remove('new_profile');
-        saveBtn.disabled = false;
-    }
+    var profile = easyProxy.scheme.value + ' ' + easyProxy.host.value + ':' + easyProxy.port.value;
+    easyStorage[profile] = [];
+    easyStorage.proxies.push(profile);
+    createMatchProfile(profile);
+    easyProxy.scheme.value = 'PROXY';
+    easyProxy.host.value = easyProxy.port.value = '';
+    document.body.classList.remove('new_profile');
+    saveBtn.disabled = false;
 });
 
 document.getElementById('import-options').addEventListener('change', async (event) => {
