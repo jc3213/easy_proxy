@@ -8,13 +8,18 @@ var easyId = 0;
 var easyHosts = [];
 var easyList = {};
 var easyHistory = {};
+var easyMode = {
+    'autopac': easyProxyAutopac,
+    'direct': easyProxyDirect,
+    'global': easyProxyGlobal
+};
+
 var changes = {};
 var checkboxes = [];
 var manager = document.body.classList;
 
-var [output, proxies] = document.querySelectorAll('#output, select');
+var [output, proxies, statMenu] = document.querySelectorAll('#output, select');
 var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
-var [statusTxt] = document.querySelectorAll('span');
 var hostLET = document.querySelector('.template > div');
 
 document.addEventListener('keydown', (event) => {
@@ -39,16 +44,15 @@ expandBtn.addEventListener('click', (event) => {
     manager.toggle('expand');
 });
 
-document.getElementById('status').addEventListener('click', (event) => {
-    var {mode} = event.target.dataset;
-    var params = mode === 'Global' ? proxies.value : mode.toLowerCase();
-    easyStorage.direct = params;
-    chrome.runtime.sendMessage({action: 'proxy_state', params}, (response) => window['easyProxy' + mode](proxy));
+document.getElementById('status').addEventListener('change', (event) => {
+    var value = event.target.value;
+    var proxy = proxies.value;
+    var params = value === 'global' ? proxy : value;
+    chrome.runtime.sendMessage({action: 'proxy_state', params}, (response) => easyMode[value](proxy));
 });
 
-function easyProxyAutoPAC() {
+function easyProxyAutopac() {
     manager.remove('direct', 'global');
-    statusTxt.textContent = chrome.i18n.getMessage('proxy_autopac');
     if (!manager.contains('asleep')) {
         easyManagerInit();
     }
@@ -57,13 +61,11 @@ function easyProxyAutoPAC() {
 function easyProxyDirect() {
     manager.remove('global');
     manager.add('direct');
-    statusTxt.textContent = chrome.i18n.getMessage('proxy_direct');
 }
 
-function easyProxyGlobal() {
+function easyProxyGlobal(proxy) {
     manager.remove('direct');
     manager.add('global');
-    statusTxt.textContent = chrome.i18n.getMessage('proxy_global');
 }
 
 submitBtn.addEventListener('click', (event) => {
@@ -141,7 +143,7 @@ output.addEventListener('change', (event) => {
 
 proxies.addEventListener('change', (event) => {
     easyProxy = event.target.value;
-    if (easyStorage.direct === 'autopac') {
+    if (easyMode === 'autopac') {
         easyHosts.forEach((match) => {
             var host = match.value;
             match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
@@ -188,18 +190,16 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
                 easyProxyCeate(proxy);
             }
         });
-        switch (storage.direct) {
-            case 'autopac':
-                easyProxyAutoPAC();
-                break;
-            case 'direct':
-                easyProxyDirect();
-                break;
-            default:
-                easyProxyGlobal(storage.direct);
-                proxies.value = easyStorage.direct;
-                break;
-        };
+        var direct = storage.direct;
+        var mode = easyMode[direct];
+        if (mode) {
+            statMenu.value = direct;
+            mode();
+        } else {
+            proxies.value = direct;
+            statMenu.value = 'global';
+            easyMode.global(direct);
+        }
         !easyProxy || !easyWatch ? manager.add('asleep') : easyManagerInit();
     });
 });

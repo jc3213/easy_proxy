@@ -106,7 +106,7 @@ function easyReloadTab(id) {
 function easyProxyStatus(params) {
     switch (params) {
         case 'autopac':
-            easyProxyAutoPAC();
+            easyProxyAutopac();
             break;
         case 'direct':
             easyProxyDirect();
@@ -119,7 +119,7 @@ function easyProxyStatus(params) {
     chrome.storage.local.set(easyStorage);
 }
 
-function easyProxyAutoPAC() {
+function easyProxyAutopac() {
     persistentModeSwitch();
     chrome.proxy.settings.set({
         value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },

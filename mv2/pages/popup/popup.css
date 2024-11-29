@@ -20,8 +20,7 @@ select {
 body:not(.expand) > #output > :not(.wildcard),
 body.expand > #output > :not(.hostname),
 body.direct > :nth-child(-n + 2),
-body.global > :nth-child(-n + 2),
-#status:not(:hover) > div {
+body.global > :nth-child(-n + 2) {
     display: none;
 }
 
@@ -51,41 +50,20 @@ body.expand > #proxy > button {
     flex: 1;
 }
 
-body.global #status > span {
+#status {
+    background-color: #2940D9;
+    border-width: 1px;
+    color: #FFFFFF;
+    cursor: pointer;
+    width: fit-content;
+}
+
+body.global #status {
     background-color: #208020;
 }
 
-body.direct #status > span {
+body.direct #status {
     background-color: #C1272D;
-}
-
-#status * {
-    border-width: 1px;
-    cursor: pointer;
-    text-align: center;
-}
-
-#status > span {
-    background-color: #2940D9;
-    border-style: inset;
-    color: white;
-    display: inline-block;
-    padding: 3px 5px;
-}
-
-#status div {
-    border-style: solid;
-    border-width: 1px;
-}
-
-#status > div {
-    bottom: 29px;
-    position: absolute;
-}
-
-#status > div > div {
-    border-radius: 0px;
-    padding: 3px 5px;
 }
 
 #output > div {

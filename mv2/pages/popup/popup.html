@@ -15,14 +15,11 @@
         </div>
         <hr>
         <div id="menu">
-            <div id="status">
-                <span i18n-tips="popup_status"></span>
-                <div>
-                    <div data-mode="Direct" i18n="proxy_direct">Direct</div>
-                    <div data-mode="AutoPAC" i18n="proxy_autopac">PAC</div>
-                    <div data-mode="Global" i18n="proxy_global">Global</div>
-                </div>
-            </div>
+            <select id="status">
+                <option value="direct" i18n="proxy_direct">Direct</option>
+                <option value="autopac" i18n="proxy_autopac">PAC</option>
+                <option value="global" i18n="proxy_global">Global</option>
+            </select>
             <button i18n="popup_submit">Submit</button>
             <button i18n="popup_tempo">Tempo</button>
             <button i18n="popup_options">Options</button>
