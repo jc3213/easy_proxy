@@ -223,19 +223,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
         inspect.match.push(match);
         inspect.cache[match] = true;
     }
-    switch (easyStorage.direct) {
-        case 'direct':
-            break;
-        case 'autopac':
-            if (easyRegExp.test(host)) {
-                easyProxyIndicator(tabId, host, url);
-            }
-            beak;
-        default:
-            easyProxyIndicator(tabId, host, url);
-            break;
-    };
-    easyProxyIndicator(host);
+    easyProxyIndicator(tabId, host, url);
     easyInspectSync(tabId, host, match);
     
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
