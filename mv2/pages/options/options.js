@@ -38,7 +38,7 @@ function fileExporter(data, type, filename, filetype) {
     exporter.click();
 }
 
-easyProxy.proxy.addEventListener('keydown', (event) => {
+easyProxy.host.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         submitBtn.click();
     }
@@ -62,28 +62,10 @@ document.getElementById('import-options').addEventListener('change', async (even
     var result = await fileReader(event.target.files[0]);
     var json = JSON.parse(result);
     var removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
-    easyStorage = json;
     manager.innerHTML = '';
-    easyOptionsSetup();
+    easyStorage = json;
+    easyStorage.proxies.forEach(createMatchProfile);
     optionsSaved();
-    event.target.value = '';
-});
-
-document.getElementById('import-pacs').addEventListener('change', async (event) => {
-    saveBtn.disabled = true;
-    await Promise.all([...event.target.files].map(async (file) => {
-        var result = await fileReader(file);
-        var pac = easyStorage.proxies.find((id) => easyStorage[id] === result);
-        if (!pac) {
-            var pacId = 'PAC ' + Date.now().toString(16);
-            easyStorage[pacId] = result;
-            easyStorage.pacs[pacId] = true;
-            easyStorage.proxies.push(pacId);
-            createPacScript(pacId);
-        }
-    }));
-    optionsSaved();
-    document.body.classList.remove('new_profile');
     event.target.value = '';
 });
 
@@ -98,26 +80,19 @@ function fileReader(file) {
 chrome.runtime.sendMessage({action: 'options_initial'}, (params) => {
     easyStorage = params.storage;
     easyPAC = params.pac_script;
-    easyOptionsSetup();
+    easyStorage.proxies.forEach(createMatchProfile);
 });
-
-function easyOptionsSetup() {
-    easyStorage.proxies.forEach((proxy) => {
-        easyStorage.pacs[proxy] ? createPacScript(proxy) : createMatchProfile(proxy);
-    });
-}
 
 function createMatchProfile(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, exportbtn, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button:not(:nth-child(6)), .matches');
-    profile.className = 'matchpattern';
+    var [proxy, exportbtn, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button, .matches');
     proxy.textContent = id;
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             addPattern(matches, id, entry);
         }
     });
-    exportbtn.addEventListener('click', (event) => exportPattern(id));
+    exportbtn.addEventListener('click', (event) => exportPacScript(id));
     addbtn.addEventListener('click', (event) => addPattern(matches, id, entry));
     sortbtn.addEventListener('click', (event) => resortPattern(matches, id));
     removebtn.addEventListener('click', (event) => profileRemove(id));
@@ -126,10 +101,17 @@ function createMatchProfile(id) {
     manager.appendChild(profile);
 }
 
-function exportPattern(proxy) {
+function exportPacScript(proxy) {
     chrome.runtime.sendMessage({action: 'options_pacscript', params: {proxy}}, ({pac_script}) => {
         fileExporter(pac_script, 'x-ns-proxy-autoconfig;', proxy.replace(/[\s:]/g, '_'), '.pac');
     });
+}
+
+function createPattern(list, id, value) {
+    var match = matchLET.cloneNode(true);
+    match.querySelector('div').textContent = match.title = value;
+    match.querySelector('button').addEventListener('click', (event) => removePattern(id, value, match));
+    list.appendChild(match);
 }
 
 function addPattern(list, id, entry) {
@@ -152,38 +134,10 @@ function resortPattern(list, id) {
     list.append(...resort);
 }
 
-function createPattern(list, id, value) {
-    var match = matchLET.cloneNode(true);
-    match.querySelector('div').textContent = match.title = value;
-    match.querySelector('button').addEventListener('click', (event) => removePattern(id, value, match));
-    list.appendChild(match);
-}
-
 function removePattern(id, value, match) {
     saveBtn.disabled = false;
     match.remove();
     easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
-}
-
-function createPacScript(id) {
-    var profile = profileLET.cloneNode(true);
-    var [proxy, exportbtn, detailbtn, removebtn, pac] = profile.querySelectorAll('.proxy, button:nth-child(2), button:nth-last-child(-n+2), .matches');
-    profile.className = 'pacscript';
-    proxy.textContent = id;
-    pac.innerHTML = easyStorage[id].replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
-    easyProfile[id] = profile;
-    exportbtn.addEventListener('click', (event) => exportPacScript(id, easyStorage[id]));
-    detailbtn.addEventListener('click', (event) => profileDetail(id));
-    removebtn.addEventListener('click', (event) => profileRemove(id));
-    manager.appendChild(profile);
-}
-
-function exportPacScript(id, pac_script) {
-    fileExporter(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[\s:]/g, '_'), '.pac');
-}
-
-function profileDetail(id) {
-    easyProfile[id].classList.toggle('expand');
 }
 
 function profileRemove(id) {

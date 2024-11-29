@@ -14,6 +14,10 @@ input[type="file"], a {
     display: none;
 }
 
+body:not(.new_profile) #profile {
+    display: none;
+}
+
 #menu {
     display: flex;
     gap: 3px;
@@ -49,11 +53,31 @@ input[type="file"], a {
     margin-bottom: 30px;
 }
 
-body:not(.new_profile) #profile {
-    display: none;
+#manager .menu > input {
+    margin-left: auto;
+    width: 40%;
 }
 
-.new_profile #new-profile, .expand .detail {
+#manager .matches {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-column-gap: 3px;
+    min-height: 25px;
+}
+
+#manager .matches > * {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    white-space: nowrap;
+    border-width: 1px;
+    border-style: outset;
+}
+
+#manager .matches > * > :first-child {
+    padding: 3px 5px;
+}
+
+.new_profile #new-profile {
     border-style: inset;
 }
 
@@ -73,47 +97,4 @@ body:not(.new_profile) #profile {
     border-style: inset;
     overflow-y: auto;
     max-height: 174px;
-}
-
-.matchpattern > .menu > input {
-    margin-left: auto;
-    width: 40%;
-}
-
-.matchpattern > .menu > button:nth-child(6),
-.pacscript > .menu > :nth-child(n+3):nth-child(-n+5) {
-    display: none;
-}
-
-.pacscript > .menu > button:nth-child(6) {
-    margin-left: auto;
-}
-
-.matchpattern > .matches {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-column-gap: 3px;
-    min-height: 25px;
-}
-
-.matchpattern > .matches > * {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    white-space: nowrap;
-    border-width: 1px;
-    border-style: outset;
-}
-
-.matchpattern > .matches > * > :first-child {
-    padding: 3px 5px;
-}
-
-.pacscript > .matches {
-    padding: 5px;
-    word-wrap: break-word;
-    grid-area: 2 / 1 / 3 / 4;
-}
-
-.pacscript.expand > .matches {
-    max-height: fit-content;
 }

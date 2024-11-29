@@ -22,10 +22,9 @@
                 <option value="SOCKS">SOCKS</option>
                 <option value="SOCKS5">SOCKS5</option>
             </select>
-            <input name="proxy" type="url">
+            <input name="host" type="text" placeholder="localhost">
+            <input name="port" type="number" placeholder="1080">
             <button i18n="options_submit">Submit</button>
-            <button><label for="import-pacs" i18n="options_autopac">PAC File</label></button>
-            <input id="import-pacs" type="file" accept=".pac" multiple>
         </div>
         <hr>
         <div id="manager"></div>
@@ -37,7 +36,6 @@
                     <input type="text">
                     <button i18n-tips="match_add">➕</button>
                     <button i18n-tips="profile_resort">🧲</button>
-                    <button i18n-tips="profile_detail">🔍</button>
                     <button i18n-tips="profile_remove">❌</button>
                 </div>
                 <div class="matches"></div>
