@@ -1,6 +1,5 @@
 var easyDefault = {
     direct: 'autopac',
-    pacs: {},
     persistent: false,
     proxies: []
 };
@@ -19,6 +18,32 @@ var manifest = chrome.runtime.getManifest().manifest_version;
 if (manifest === 3) {
     importScripts('libs/matchpattern.js');
 }
+
+chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
+    if (reason === 'update' && previousVersion === '1.0.0') {
+        chrome.storage.local.get(null, (json) => {
+            json.proxies = json.proxies.filter((proxy) => {
+                if (json?.pacs?.[proxy]) {
+                    delete json[proxy];
+                    return false;
+                }
+                return true;
+            });
+            Object.keys(json).forEach((key) => {
+                if (key.startsWith('PAC ')) {
+                    delete json[key];
+                }
+            });
+            delete json.pacs;
+            delete json.pac;
+            delete json.enabled;
+            chrome.storage.local.remove(['enabled', 'pac', 'pacs']);
+            chrome.storage.local.set(json);
+            easyStorage = json;
+            pacScriptConverter();
+        });
+    }
+});
 
 chrome.action ??= chrome.browserAction;
 
@@ -232,8 +257,6 @@ chrome.tabs.onRemoved.addListener(({tabId}) => {
     delete easyInspect[tabId];
 });
 
-chrome.storage.local.remove(['enabled', 'pac']);
-
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
     persistentModeSwitch();
@@ -253,12 +276,8 @@ function pacScriptConverter() {
     var tempo = '';
     easyRegExp = '';
     easyStorage.proxies.forEach((proxy) => {
-        if (easyStorage.pacs[proxy]) {
-            pac_script += '\n    ' + easyStorage[proxy].replace(/^[^{]*{/, '').replace(/(return[^}]*)?}[^}]*$/, '').trim();
-        } else {
-            pac_script += convertRegexp(proxy, easyStorage[proxy]);
-            tempo += convertRegexp(proxy, easyTempo[proxy] ?? []);
-        }
+        pac_script += convertRegexp(proxy, easyStorage[proxy]);
+        tempo += convertRegexp(proxy, easyTempo[proxy] ?? []);
     });
     easyMatch.script = convertPacScript(pac_script);
     easyMatch.extend = convertPacScript(pac_script + tempo);
