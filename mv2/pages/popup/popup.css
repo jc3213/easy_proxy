@@ -19,20 +19,17 @@ select {
 
 body:not(.expand) > #output > :not(.wildcard),
 body.expand > #output > :not(.hostname),
-body.direct > :nth-child(-n + 2) {
+body.direct > :nth-child(-n + 2),
+body.global > :nth-child(-n + 2),
+#status:not(:hover) > div {
     display: none;
 }
 
-body.direct > #menu > :first-child {
-    background-color: red;
-}
-
-body.asleep > #menu > :nth-child(2),
-body.asleep > #menu > :nth-child(3),
+body.asleep > #menu > button:nth-child(-n + 3),
 body.asleep > #proxy > *,
-body.direct > #menu > :nth-child(2),
-body.direct > #menu > :nth-child(3),
-body.direct > #proxy > * {
+body.direct > #menu > button:nth-child(-n + 3),
+body.direct > #proxy > *,
+body.global > #menu > button:nth-child(-n + 3) {
     filter: contrast(25%);
     pointer-events: none;
 }
@@ -41,8 +38,54 @@ body.expand > #proxy > button {
     border-style: inset;
 }
 
+#menu, #proxy {
+    display: flex;
+    gap: 5px;
+}
+
 #menu {
     margin: 5px 0px;
+}
+
+#menu > button {
+    flex: 1;
+}
+
+body.global #status > span {
+    background-color: #208020;
+}
+
+body.direct #status > span {
+    background-color: #C1272D;
+}
+
+#status * {
+    border-width: 1px;
+    cursor: pointer;
+    text-align: center;
+}
+
+#status > span {
+    background-color: #2940D9;
+    border-style: inset;
+    color: white;
+    display: inline-block;
+    padding: 3px 5px;
+}
+
+#status div {
+    border-style: solid;
+    border-width: 1px;
+}
+
+#status > div {
+    bottom: 29px;
+    position: absolute;
+}
+
+#status > div > div {
+    border-radius: 0px;
+    padding: 3px 5px;
 }
 
 #output > div {
@@ -54,20 +97,6 @@ body.expand > #proxy > button {
 
 #output:empty + hr {
     display: none;
-}
-
-#menu, #proxy {
-    display: flex;
-    gap: 5px;
-}
-
-#menu > button {
-    flex: 1;
-}
-
-#menu > :first-child {
-    background-color: green;
-    color: white;
 }
 
 .match {

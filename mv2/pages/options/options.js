@@ -1,8 +1,8 @@
 var easyProfile = {};
 var easyProxy = {};
 var removed = [];
-var [newBtn, saveBtn, , exportBtn, proxyserver, submitBtn] = document.querySelectorAll('#menu > button, #profile > input, #profile > button');
-var [exporter, profile, manager] = document.querySelectorAll('a, #profile, #manager');
+var [newBtn, saveBtn, importBtn, exportBtn, submitBtn] = document.querySelectorAll('#menu > button, #profile > button');
+var [exporter, manager] = document.querySelectorAll('a, #manager');
 var [profileLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
@@ -38,7 +38,7 @@ function fileExporter(data, type, filename, filetype) {
     exporter.click();
 }
 
-proxyserver.addEventListener('keydown', (event) => {
+easyProxy.proxy.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         submitBtn.click();
     }

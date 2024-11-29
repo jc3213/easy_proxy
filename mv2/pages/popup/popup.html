@@ -15,7 +15,14 @@
         </div>
         <hr>
         <div id="menu">
-            <button i18n-tips="popup_status"></button>
+            <div id="status">
+                <span i18n-tips="popup_status"></span>
+                <div>
+                    <div data-mode="Direct" i18n="proxy_direct">Direct</div>
+                    <div data-mode="AutoPAC" i18n="proxy_autopac">PAC</div>
+                    <div data-mode="Global" i18n="proxy_global">Global</div>
+                </div>
+            </div>
             <button i18n="popup_submit">Submit</button>
             <button i18n="popup_tempo">Tempo</button>
             <button i18n="popup_options">Options</button>

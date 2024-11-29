@@ -106,32 +106,34 @@ function easyReloadTab(id) {
 function easyProxyStatus(params) {
     switch (params) {
         case 'autopac':
-            easyProxyPAC();
+            easyProxyAutoPAC();
             break;
         case 'direct':
             easyProxyDirect();
             break;
         default:
-            easyProxyServer(params);
+            easyProxyGlobal(params);
+            break;
     };
     easyStorage.direct = params;
     chrome.storage.local.set(easyStorage);
 }
 
-function easyProxyPAC() {
+function easyProxyAutoPAC() {
     persistentModeSwitch();
     chrome.proxy.settings.set({
         value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },
         scope: 'regular'
     });
+    chrome.action.setBadgeBackgroundColor({color: '#2940D9'});
 }
 
 function easyProxyDirect() {
-    chrome.action.setBadgeBackgroundColor({color: '#D33A26'});
     chrome.proxy.settings.set({
         value: { mode: "direct" },
         scope: 'regular'
     });
+    chrome.action.setBadgeBackgroundColor({color: '#C1272D'});
 }
 
 function easyProxyGlobal(proxy) {
@@ -140,12 +142,13 @@ function easyProxyGlobal(proxy) {
         value: {
             mode: "fixed_servers",
             rules: {
-                singleProxy: { scheme: scheme.toLowerCase(), host, port },
+                singleProxy: { scheme: scheme.toLowerCase(), host, port: port | 0 },
                 bypassList: ['localhost']
             }
         },
         scope: 'regular'
     });
+    chrome.action.setBadgeBackgroundColor({color: '#208020'});
 }
 
 chrome.commands.onCommand.addListener((command) => {
@@ -187,14 +190,28 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
         inspect.match.push(match);
         inspect.cache[match] = true;
     }
-    if (easyRegExp.test(host)) {
-        easyInspect[tabId].index ++;
-        easyInspect[tabId].result.push(url);
-        chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
-    }
+    switch (easyStorage.direct) {
+        case 'direct':
+            break;
+        case 'autopac':
+            if (easyRegExp.test(host)) {
+                easyProxyIndicator(tabId, host, url);
+            }
+            beak;
+        default:
+            easyProxyIndicator(tabId, host, url);
+            break;
+    };
+    easyProxyIndicator(host);
     easyInspectSync(tabId, host, match);
     
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
+
+function easyProxyIndicator(tabId, host, url) {
+    easyInspect[tabId].index ++;
+    easyInspect[tabId].result.push(url);
+    chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
+}
 
 function easyInspectSync(tabId, host, match) {
     chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
@@ -204,6 +221,8 @@ chrome.tabs.onRemoved.addListener(({tabId}) => {
     delete easyInspect[tabId];
 });
 
+chrome.storage.local.remove(['enabled', 'pac']);
+
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
     persistentModeSwitch();
@@ -212,10 +231,8 @@ chrome.storage.local.get(null, (json) => {
 
 function persistentModeSwitch() {
     if (manifest === 3 && easyStorage.persistent) {
-        var color = '#6A1CD4';
         easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
     } else {
-        color = '#1B7D76';
         clearInterval(easyPersistent);
     }
     chrome.action.setBadgeBackgroundColor({color});
