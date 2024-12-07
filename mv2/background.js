@@ -21,27 +21,30 @@ if (manifest === 3) {
 
 chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
     if (reason === 'update' && previousVersion === '1.1.0') {
-        chrome.storage.local.get(null, (json) => {
-            delete json.fallback;
-            delete json.pacs;
-            delete json.enabled;
-            json.proxies = json.proxies.filter((proxy) => {
-                if (json?.pacs?.[proxy]) {
-                    delete json[proxy];
-                    return false;
-                }
-                return true;
+        setTimeout(() => {
+            chrome.storage.local.get(null, (json) => {
+                json.proxies = json.proxies.filter((proxy) => {
+                    if (json?.pacs?.[proxy]) {
+                        delete json[proxy];
+                        return false;
+                    }
+                    return true;
+                });
+                delete json.fallback;
+                delete json.pacs;
+                delete json.pac;
+                delete json.enabled;
+                Object.keys(json).forEach((key) => {
+                    if (key.startsWith('PAC ')) {
+                        delete json[key];
+                    }
+                });
+                chrome.storage.local.remove(['fallback', 'pacs', 'pac', 'enabled']);
+                chrome.storage.local.set(json);
+                easyStorage = json;
+                pacScriptConverter();
             });
-            Object.keys(json).forEach((key) => {
-                if (key.startsWith('PAC ')) {
-                    delete json[key];
-                }
-            });
-            chrome.storage.local.remove(['fallback', 'pacs', 'enabled']);
-            chrome.storage.local.set(json);
-            easyStorage = json;
-            pacScriptConverter();
-        });
+        }, 1000);
     }
 });
 
