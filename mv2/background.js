@@ -20,24 +20,10 @@ if (manifest === 3) {
 }
 
 chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
-    if (reason === 'update' && previousVersion === '1.0.0') {
+    if (reason === 'update' && previousVersion === '1.1.0') {
         chrome.storage.local.get(null, (json) => {
-            json.proxies = json.proxies.filter((proxy) => {
-                if (json?.pacs?.[proxy]) {
-                    delete json[proxy];
-                    return false;
-                }
-                return true;
-            });
-            Object.keys(json).forEach((key) => {
-                if (key.startsWith('PAC ')) {
-                    delete json[key];
-                }
-            });
-            delete json.pacs;
-            delete json.pac;
-            delete json.enabled;
-            chrome.storage.local.remove(['enabled', 'pac', 'pacs']);
+            delete json.fallback;
+            chrome.storage.local.remove(['fallback']);
             chrome.storage.local.set(json);
             easyStorage = json;
             pacScriptConverter();
@@ -187,26 +173,29 @@ function easyProxyGlobal(proxy) {
 chrome.commands.onCommand.addListener((command) => {
     switch (command) {
         case 'persistent_mode':
-            persistentModeSwitch();
+            ersistentModeHandler();
             break;
     }
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
-        var host = new URL(url).hostname;
-        var match = MatchPattern.create(host);
-        easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, index: 0, result: [], url };
-        easyInspectSync(tabId, host, match);
+        easyInspectInit(tabId, url);
     }
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
 chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
     if (easyInspect?.[tabId]?.url !== url) {
-        easyInspect[tabId].index = 0;
-        easyInspect[tabId].result = [];
+        easyInspectInit(tabId, url);
     }
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
+
+function easyInspectInit(tabId, url) {
+    var host = new URL(url).hostname;
+    var match = MatchPattern.create(host);
+    easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, index: 0, result: [], url };
+    easyInspectSync(tabId, host, match);
+}
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     var host = new URL(url).hostname;
@@ -250,6 +239,11 @@ chrome.storage.local.get(null, (json) => {
     persistentModeSwitch();
     pacScriptConverter();
 });
+
+function persistentModeHandler() {
+    easyStorage.persistent = !easyStorage.persistent;
+    persistentModeSwitch();
+}
 
 function persistentModeSwitch() {
     if (manifest === 3 && easyStorage.persistent) {
