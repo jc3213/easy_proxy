@@ -1,10 +1,14 @@
 var easyProfile = {};
 var easyProxy = {};
 var removed = [];
-var [newBtn, saveBtn, importBtn, exportBtn, submitBtn] = document.querySelectorAll('#menu > button, #profile > button');
+var [newBtn, persistBtn, saveBtn, importBtn, exportBtn, submitBtn] = document.querySelectorAll('#menu > button, #profile > button');
 var [exporter, manager] = document.querySelectorAll('a, #manager');
 var [profileLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
+
+if (chrome.runtime.getManifest().manifest_version === 2) {
+    persistBtn.style.display = 'none';
+}
 
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
@@ -15,6 +19,12 @@ document.addEventListener('keydown', (event) => {
 
 newBtn.addEventListener('click', (event) => {
     document.body.classList.toggle('new_profile');
+});
+
+persistBtn.addEventListener('click', (event) => {
+    chrome.runtime.sendMessage({action: 'persistent_mode'}, () => {
+        persistBtn.classList.toggle('checked');
+    });
 });
 
 saveBtn.addEventListener('click', optionsSaved);
@@ -81,6 +91,9 @@ chrome.runtime.sendMessage({action: 'options_initial'}, (params) => {
     easyStorage = params.storage;
     easyPAC = params.pac_script;
     easyStorage.proxies.forEach(createMatchProfile);
+    if (easyStorage.persistent) {
+        persistBtn.classList.add('checked');
+    }
 });
 
 function createMatchProfile(id) {

@@ -84,6 +84,10 @@ button:disabled {
     padding: 4px 6px;
 }
 
+button.checked {
+    border-style: inset;
+}
+
 .template {
     display: none;
 }

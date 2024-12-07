@@ -23,7 +23,7 @@ body:not(.new_profile) #profile {
     gap: 3px;
 }
 
-#menu > :nth-child(2) {
+#menu > :nth-child(3) {
     margin-left: auto;
 }
 
