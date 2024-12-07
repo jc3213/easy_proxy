@@ -23,9 +23,24 @@ chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
     if (reason === 'update' && previousVersion === '1.1.0') {
         chrome.storage.local.get(null, (json) => {
             delete json.fallback;
-            chrome.storage.local.remove(['fallback']);
+            delete json.pacs;
+            delete json.enabled;
+            json.proxies = json.proxies.filter((proxy) => {
+                if (json?.pacs?.[proxy]) {
+                    delete json[proxy];
+                    return false;
+                }
+                return true;
+            });
+            Object.keys(json).forEach((key) => {
+                if (key.startsWith('PAC ')) {
+                    delete json[key];
+                }
+            });
+            chrome.storage.local.remove(['fallback', 'pacs', 'enabled']);
             chrome.storage.local.set(json);
             easyStorage = json;
+            pacScriptConverter();
         });
     }
 });
@@ -57,6 +72,9 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             break;
         case 'proxy_state':
             easyProxyStatus(params);
+            break;
+        case 'persistent_mode':
+            persistentModeHandler();
             break;
     }
 });
@@ -168,14 +186,6 @@ function easyProxyGlobal(proxy) {
     });
     chrome.action.setBadgeBackgroundColor({color: '#208020'});
 }
-
-chrome.commands.onCommand.addListener((command) => {
-    switch (command) {
-        case 'persistent_mode':
-            ersistentModeHandler();
-            break;
-    }
-});
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {

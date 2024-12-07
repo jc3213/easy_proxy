@@ -1,7 +1,7 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "manifest_version": 3,
     "permissions": [
         "proxy",
@@ -40,12 +40,6 @@
             "suggested_key": {
                 "default": "Alt+Shift+P"
             }
-        },
-        "persistent_mode": {
-            "suggested_key": {
-                "default": "Alt+Shift+M"
-            },
-            "description": "Persistent mode"
         }
     }
 }
