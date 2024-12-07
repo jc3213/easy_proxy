@@ -59,6 +59,9 @@ function newProfileShortcut(event) {
 
 submitBtn.addEventListener('click', (event) => {
     var profile = easyProxy.scheme.value + ' ' + easyProxy.host.value + ':' + easyProxy.port.value;
+    if (easyStorage[profile]) {
+        return;
+    }
     easyStorage[profile] = [];
     easyStorage.proxies.push(profile);
     createMatchProfile(profile);
@@ -157,9 +160,6 @@ function profileRemove(id) {
     saveBtn.disabled = false;
     easyProfile[id].remove();
     easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
-    delete easyStorage.pacs[id];
-    if (!removed.includes(id)) {
-        removed.push(id);
-    }
+    removed.push(id);
     delete easyStorage[id];
 }
