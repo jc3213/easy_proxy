@@ -23,9 +23,11 @@ chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
     if (reason === 'update' && previousVersion === '1.1.0') {
         setTimeout(() => {
             chrome.storage.local.get(null, (json) => {
+                var remove = ['fallback', 'pacs', 'pac', 'enabled'];
                 json.proxies = json.proxies.filter((proxy) => {
                     if (json?.pacs?.[proxy]) {
                         delete json[proxy];
+                        remove.push(proxy);
                         return false;
                     }
                     return true;
@@ -34,12 +36,13 @@ chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
                 delete json.pacs;
                 delete json.pac;
                 delete json.enabled;
-                Object.keys(json).forEach((key) => {
-                    if (key.startsWith('PAC ')) {
-                        delete json[key];
+                Object.keys(json).forEach((pac) => {
+                    if (pac.startsWith('PAC ')) {
+                        delete json[pac];
+                        remove.push(pac);
                     }
                 });
-                chrome.storage.local.remove(['fallback', 'pacs', 'pac', 'enabled']);
+                chrome.storage.local.remove(remove);
                 chrome.storage.local.set(json);
                 easyStorage = json;
                 pacScriptConverter();
