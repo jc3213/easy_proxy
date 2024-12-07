@@ -26,7 +26,6 @@ chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
             chrome.storage.local.remove(['fallback']);
             chrome.storage.local.set(json);
             easyStorage = json;
-            pacScriptConverter();
         });
     }
 });
