@@ -56,8 +56,11 @@
     "popup_title": {
         "message": "Easy Proxy Manager"
     },
-    "popup_status": {
-        "message": "Enable or disable \"Easy Proxy\""
+    "persistent_mode": {
+        "message": "Persistent Mode"
+    },
+    "persistent_title": {
+        "message": "Prevent \"ServiceWorker\" from hibernating\n\nThis will cost a little more cpu power"
     },
     "popup_submit": {
         "message": "Submit"

@@ -53,11 +53,14 @@
     "proxy_global": {
         "message": "全局"
     },
+    "persistent_mode": {
+        "message": "永驻后台"
+    },
+    "persistent_title": {
+        "message": "使得ServiceWorker不再休眠\n\n此功能将额外耗费微量的处理器性能"
+    },
     "popup_title": {
         "message": "简易代理管理"
-    },
-    "popup_status": {
-        "message": "启用或停用简易代理"
     },
     "popup_submit": {
         "message": "添加"
