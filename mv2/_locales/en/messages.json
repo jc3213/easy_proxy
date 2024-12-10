@@ -23,17 +23,11 @@
     "options_submit": {
         "message": "Submit"
     },
-    "options_autopac": {
-        "message": "PAC File"
-    },
     "profile_export": {
         "message": "Export this proxy profile to PAC script"
     },
     "profile_resort": {
         "message": "Resort match patterns"
-    },
-    "profile_detail": {
-        "message": "Show full PAC script"
     },
     "profile_remove": {
         "message": "Remove this proxy profile"
