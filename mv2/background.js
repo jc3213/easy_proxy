@@ -83,6 +83,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             persistentModeHandler();
             break;
     }
+    return true;
 });
 
 function easyOptionsInitial(response) {
