@@ -20,26 +20,15 @@ if (manifest === 3) {
 }
 
 chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
-    if (reason === 'update' && previousVersion === '1.1.0') {
+    if (reason === 'update' && previousVersion === '1.1.1') {
         setTimeout(() => {
             chrome.storage.local.get(null, (json) => {
-                var remove = ['fallback', 'pacs', 'pac', 'enabled'];
-                json.proxies = json.proxies.filter((proxy) => {
-                    if (json?.pacs?.[proxy]) {
-                        delete json[proxy];
-                        remove.push(proxy);
-                        return false;
-                    }
-                    return true;
-                });
-                delete json.fallback;
-                delete json.pacs;
-                delete json.pac;
-                delete json.enabled;
-                Object.keys(json).forEach((pac) => {
-                    if (pac.startsWith('PAC ')) {
-                        delete json[pac];
-                        remove.push(pac);
+                var remove = [];
+                var proxies = json.proxies;
+                Object.keys(json).forEach((key) => {
+                    if (!easyDefault.hasOwnProperty(key) && !proxies.includes(key)) {
+                        delete json[key];
+                        remove.push(key);
                     }
                 });
                 chrome.storage.local.remove(remove);
