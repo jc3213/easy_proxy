@@ -1,5 +1,6 @@
 var easyProfile = {};
 var easyProxy = {};
+var easyModes = ['direct', 'autopac', 'global'];
 var removed = [];
 
 var extension = document.body.classList;
@@ -94,28 +95,44 @@ persistMenu.addEventListener('change', (event) => {
 });
 
 modeMenu.addEventListener('change', (event) => {
-    var value = event.target.value;
-    var proxy = proxies.value;
-    var params = value === 'global' ? proxy : value;
-    chrome.runtime.sendMessage({action: 'proxy_state', params}, (response) => easyMode[value](proxy));
+    var mode = event.target.value;
+    var hide = easyModes.filter((key) => key !== mode);
+    extension.add(mode);
+    extension.remove(...hide);
+    easyStorage.direct = mode === 'global' ? proxyMenu.value : mode;
+    saveBtn.disabled = false;
+});
+
+proxyMenu.addEventListener('change', (event) => {
+    easyStorage.direct = proxyMenu.value;
+    saveBtn.disabled = false;
 });
 
 chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, pac_script, manifest}) => {
+    var mode = storage.direct;
     easyStorage = storage;
     easyPAC = pac_script;
     easyStorage.proxies.forEach(createMatchProfile);
-    if (manifest === 2) {
-        persistMenu.parentNode.remove();
+    if (mode === 'direct' || mode === 'autopac') {
+        modeMenu.value = mode;
+        extension.add(mode);
     } else {
+        modeMenu.value = 'global';
+        proxyMenu.value = mode;
+        extension.add('global');
+    }
+    if (manifest === 3) {
         persistMenu.checked = easyStorage.persistent;
+    } else {
+        persistMenu.parentNode.remove();
     }
 });
 
 function createMatchProfile(id) {
     var profile = profileLET.cloneNode(true);
     var [proxy, exportbtn, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button, .matches');
-    var dropdown = document.createElement('option');
-    proxy.textContent = dropdown.value = dropdown.textContent = id;
+    var server = document.createElement('option');
+    proxy.textContent = server.value = server.textContent = id;
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             addPattern(matches, id, entry);
@@ -127,8 +144,7 @@ function createMatchProfile(id) {
     removebtn.addEventListener('click', (event) => profileRemove(id));
     easyStorage[id].forEach((value) => createPattern(matches, id, value));
     easyProfile[id] = profile;
-    console.log(id, dropdown, proxyMenu);
-    proxyMenu.appendChild(dropdown);
+    proxyMenu.appendChild(server);
     manager.appendChild(profile);
 }
 
