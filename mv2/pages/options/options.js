@@ -64,7 +64,7 @@ submitBtn.addEventListener('click', (event) => {
     easyStorage[profile] = [];
     easyStorage.proxies.push(profile);
     createMatchProfile(profile);
-    easyProxy.scheme.value = 'PROXY';
+    easyProxy.scheme.value = 'HTTP';
     easyProxy.host.value = easyProxy.port.value = '';
     document.body.classList.remove('new_profile');
     saveBtn.disabled = false;
