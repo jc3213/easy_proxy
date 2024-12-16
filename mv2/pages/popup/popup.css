@@ -47,22 +47,6 @@ body.expand > #proxy > button {
     margin: 5px 0px;
 }
 
-#status {
-    background-color: #2940D9;
-    border-width: 1px;
-    color: #FFFFFF;
-    cursor: pointer;
-    width: fit-content;
-}
-
-body.global #status {
-    background-color: #208020;
-}
-
-body.direct #status {
-    background-color: #C1272D;
-}
-
 #output > div {
     display: flex;
     gap: 5px;
