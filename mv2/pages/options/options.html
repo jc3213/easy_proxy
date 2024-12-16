@@ -9,7 +9,7 @@
     <body>
         <div id="menu" class="flex">
             <button id="new-profile" i18n="options_profile">New Profile</button>
-            <button id="persistent" i18n="persistent_mode" i18n-tips="persistent_title">Persistent Mode</button>
+            <button id="set-options" i18n="options_advance">Options</button>
             <button i18n="options_save" disabled>Save</button>
             <button><label for="import-options" i18n="options_import">Import</label></button>
             <button i18n="options_export">Export</button>
@@ -26,6 +26,21 @@
             <input name="host" type="text" placeholder="localhost">
             <input name="port" type="number" placeholder="1080">
             <button i18n="options_submit">Submit</button>
+        </div>
+        <div id="options">
+            <div i18n-tips="persistent_title">
+                <input type="checkbox" id="persistent">
+                <label for="persistent" i18n="persistent_mode">Persistent Background</label>
+            </div>
+            <div>
+                <label i18n="options_modes">Proxy Mode</label>
+                <select id="work-mode">
+                    <option value="direct" i18n="proxy_direct">Direct</option>
+                    <option value="autopac" i18n="proxy_autopac">PAC</option>
+                    <option value="global" i18n="proxy_global">Global</option>
+                </select>
+                <select id="proxy-server"></select>
+            </div>
         </div>
         <hr>
         <div id="manager"></div>

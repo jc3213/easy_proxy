@@ -54,6 +54,12 @@ input, option {
     padding: 3px 5px;
 }
 
+input[type="checkbox"] {
+    accent-color: #006cbe;
+    transform: scale(1.5);
+    width: auto;
+}
+
 select {
     padding: 2px 5px;
 }
@@ -90,4 +96,20 @@ button.checked {
 
 .template {
     display: none;
+}
+
+#work-mode {
+    background-color: #2940D9;
+    border-width: 1px;
+    color: #FFFFFF;
+    cursor: pointer;
+    width: fit-content;
+}
+
+body.global #work-mode {
+    background-color: #208020;
+}
+
+body.direct #work-mode {
+    background-color: #C1272D;
 }

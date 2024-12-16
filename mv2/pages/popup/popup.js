@@ -18,7 +18,7 @@ var changes = {};
 var checkboxes = [];
 var manager = document.body.classList;
 
-var [output, proxies, statMenu] = document.querySelectorAll('#output, select');
+var [output, proxies, modeMenu] = document.querySelectorAll('#output, select');
 var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
 var hostLET = document.querySelector('.template > div');
 
@@ -44,7 +44,7 @@ expandBtn.addEventListener('click', (event) => {
     manager.toggle('expand');
 });
 
-document.getElementById('status').addEventListener('change', (event) => {
+document.getElementById('work-mode').addEventListener('change', (event) => {
     var value = event.target.value;
     var proxy = proxies.value;
     var params = value === 'global' ? proxy : value;
@@ -191,11 +191,11 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         var direct = storage.direct;
         var mode = easyMode[direct];
         if (mode) {
-            statMenu.value = direct;
+            modeMenu.value = direct;
             mode();
         } else {
             proxies.value = direct;
-            statMenu.value = 'global';
+            modeMenu.value = 'global';
             easyMode.global(direct);
         }
         !easyProxy || !easyWatch ? manager.add('asleep') : easyManagerInit();

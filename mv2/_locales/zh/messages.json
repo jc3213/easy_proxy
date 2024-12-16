@@ -11,6 +11,9 @@
     "options_profile": {
         "message": "新档案"
     },
+    "options_advance": {
+        "message": "选项"
+    },
     "options_save": {
         "message": "保存"
     },
@@ -22,6 +25,9 @@
     },
     "options_submit": {
         "message": "提交"
+    },
+    "options_modes": {
+        "message": "代理模式"
     },
     "profile_export": {
         "message": "将此代理导出为PAC脚本"

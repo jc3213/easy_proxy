@@ -66,7 +66,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             easyTempoPurge(params);
             break;
         case 'proxy_state':
-            easyProxyStatus(params);
+            easyProxyStatus(params, response);
             break;
         case 'persistent_mode':
             persistentModeHandler();
@@ -130,10 +130,11 @@ function easyReloadTab(id) {
     chrome.tabs.update(id, {url: easyInspect[id].url});
 }
 
-function easyProxyStatus(params) {
+function easyProxyStatus(params, response) {
     easyProxyMode(params);
     easyStorage.direct = params;
     chrome.storage.local.set(easyStorage);
+    response(true);
 }
 
 function easyProxyMode(mode) {

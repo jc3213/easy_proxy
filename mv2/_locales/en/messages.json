@@ -11,6 +11,9 @@
     "options_profile": {
         "message": "New Profile"
     },
+    "options_advance": {
+        "message": "Options"
+    },
     "options_save": {
         "message": "Save"
     },
@@ -22,6 +25,9 @@
     },
     "options_submit": {
         "message": "Submit"
+    },
+    "options_modes": {
+        "message": "Proxy Mode"
     },
     "profile_export": {
         "message": "Export this proxy profile to PAC script"

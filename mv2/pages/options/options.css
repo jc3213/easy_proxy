@@ -6,15 +6,13 @@ body > div {
     padding: 10px;
 }
 
-input {
-    width: auto;
-}
-
 input[type="file"], a {
     display: none;
 }
 
-body:not(.new_profile) #profile {
+body:not(.new_profile) > #profile,
+body:not(.set_options) > #options,
+body.persistent > #options > :first-child {
     display: none;
 }
 
@@ -27,12 +25,28 @@ body:not(.new_profile) #profile {
     margin-left: auto;
 }
 
-#profile {
+#profile, #options {
     border-style: inset;
     border-width: 2px;
     display: grid;
-    grid-template-columns: auto 1fr auto auto;
     grid-gap: 3px;
+}
+
+#profile {
+    grid-template-columns: auto 1fr auto auto;
+}
+
+#options {
+    grid-template-columns: repeat(2, 1fr);
+    white-space: nowrap;
+}
+
+#options > :first-child {
+    padding: 5px;
+}
+
+#options label {
+    font-weight: bold;
 }
 
 #manager button {
@@ -77,7 +91,8 @@ body:not(.new_profile) #profile {
     padding: 3px 5px;
 }
 
-.new_profile #new-profile {
+.new_profile #new-profile,
+.set_options #set-options {
     border-style: inset;
 }
 
