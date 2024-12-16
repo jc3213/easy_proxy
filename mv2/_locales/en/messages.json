@@ -57,7 +57,7 @@
         "message": "Easy Proxy Manager"
     },
     "persistent_mode": {
-        "message": "Persistent Mode"
+        "message": "Persistent Background"
     },
     "persistent_title": {
         "message": "Prevent \"ServiceWorker\" from hibernating\n\nThis will cost a little more cpu power"

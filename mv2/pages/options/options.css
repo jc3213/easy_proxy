@@ -12,7 +12,7 @@ input[type="file"], a {
 
 body:not(.new_profile) > #profile,
 body:not(.set_options) > #options,
-body.persistent > #options > :first-child {
+body:not(.global) #proxy-server {
     display: none;
 }
 

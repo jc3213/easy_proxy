@@ -79,6 +79,7 @@ function easyOptionsInitial(response) {
     response({
         storage: {...easyDefault, ...easyStorage},
         pac_script: easyMatch.script,
+        manifest
     });
 }
 

@@ -25,12 +25,6 @@ optionsBtn.addEventListener('click', (event) => {
     extension.toggle('set_options');
 });
 
-//persistBtn.addEventListener('click', (event) => {
-//    chrome.runtime.sendMessage({action: 'persistent_mode'}, () => {
-//        persistBtn.classList.toggle('checked');
-//    });
-//});
-
 saveBtn.addEventListener('click', optionsSaved);
 
 function optionsSaved() {
@@ -94,18 +88,27 @@ function fileReader(file) {
     });
 }
 
-document.getElementById('work-mode').addEventListener('change', (event) => {
+persistMenu.addEventListener('change', (event) => {
+    easyStorage.persistent = !easyStorage.persistent;
+    saveBtn.disabled = false;
+});
+
+modeMenu.addEventListener('change', (event) => {
     var value = event.target.value;
     var proxy = proxies.value;
     var params = value === 'global' ? proxy : value;
     chrome.runtime.sendMessage({action: 'proxy_state', params}, (response) => easyMode[value](proxy));
 });
 
-chrome.runtime.sendMessage({action: 'options_initial'}, (params) => {
-    easyStorage = params.storage;
-    easyPAC = params.pac_script;
+chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, pac_script, manifest}) => {
+    easyStorage = storage;
+    easyPAC = pac_script;
     easyStorage.proxies.forEach(createMatchProfile);
-    persistMenu.checked = easyStorage.persistent;
+    if (manifest === 2) {
+        persistMenu.parentNode.remove();
+    } else {
+        persistMenu.checked = easyStorage.persistent;
+    }
 });
 
 function createMatchProfile(id) {

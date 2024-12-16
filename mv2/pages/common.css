@@ -100,9 +100,7 @@ button.checked {
 
 #work-mode {
     background-color: #2940D9;
-    border-width: 1px;
     color: #FFFFFF;
-    cursor: pointer;
     width: fit-content;
 }
 
