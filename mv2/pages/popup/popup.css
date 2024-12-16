@@ -40,14 +40,11 @@ body.expand > #proxy > button {
 #menu, #proxy {
     display: flex;
     gap: 5px;
+    white-space: nowrap;
 }
 
 #menu {
     margin: 5px 0px;
-}
-
-#menu > button {
-    flex: 1;
 }
 
 #status {
