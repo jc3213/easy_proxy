@@ -42,7 +42,7 @@ expandBtn.addEventListener('click', (event) => {
     manager.toggle('expand');
 });
 
-document.getElementById('work-mode').addEventListener('change', (event) => {
+modeMenu.addEventListener('change', (event) => {
     var mode = event.target.value;
     var proxy = proxyMenu.value;
     var params = mode === 'global' ? proxy : mode;
