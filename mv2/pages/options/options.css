@@ -68,7 +68,7 @@ body:not(.global) #proxy-server {
 }
 
 #manager .menu > input {
-    margin-left: auto;
+    margin: 1px 0px 0px auto;
     width: 40%;
 }
 
@@ -85,10 +85,6 @@ body:not(.global) #proxy-server {
     white-space: nowrap;
     border-width: 1px;
     border-style: outset;
-}
-
-#manager .matches > * > :first-child {
-    padding: 3px 5px;
 }
 
 .new_profile #new-profile,
