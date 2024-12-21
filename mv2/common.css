@@ -1,0 +1,109 @@
+@media (prefers-color-scheme: light) {
+    body, div {
+        background-color: #FFFFFF;
+    }
+
+    button, input, select, option {
+        background-color: #F3F3F3;
+    }
+
+    body, div, button, input, select, option {
+        color: #000000;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body, div {
+        background-color: #202124;
+    }
+    
+    button, input, select, option {
+        background-color: #56585D;
+    }
+
+    body, div, button, input, select, option {
+        color: #FFFFFF;
+    }
+}
+
+* {
+    border-color: #AAB0B6;
+    border-radius: 3px;
+}
+
+body, button, input, select {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 16px;
+}
+
+body, div {
+    user-select: none;
+    position: relative;
+}
+
+body {
+    margin: auto;
+}
+
+input, option {
+    border-width: 1px;
+    border-style: inset;
+}
+
+input, option {
+    padding: 3px 5px;
+}
+
+input[type="checkbox"] {
+    accent-color: #006cbe;
+    transform: scale(1.5);
+    width: auto;
+}
+
+select {
+    padding: 2px 5px;
+}
+
+option:checked {
+    font-weight: bold;
+}
+
+button {
+    border-width: 1px;
+    border-style: outset;
+    padding: 3px 5px;
+}
+
+button:enabled:hover {
+    cursor: pointer;
+    filter: contrast(80%);
+}
+
+button:enabled:active {
+    border-style: inset;
+    filter: contrast(60%);
+}
+
+button:disabled {
+    border-width: 0px;
+    filter: contrast(40%);
+    padding: 4px 6px;
+}
+
+.template {
+    display: none;
+}
+
+#work-mode {
+    background-color: #2940D9;
+    color: #FFFFFF;
+    width: fit-content;
+}
+
+body.global #work-mode {
+    background-color: #208020;
+}
+
+body.direct #work-mode {
+    background-color: #C1272D;
+}

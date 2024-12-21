@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title i18n="options_title">Easy Proxy Options</title>
+        <link rel="stylesheet" href="/pages/common.css">
+        <link rel="stylesheet" href="options.css">
+    </head>
+    <body>
+        <div id="menu" class="flex">
+            <button id="new-profile" i18n="options_profile">New Profile</button>
+            <button id="set-options" i18n="options_advance">Options</button>
+            <button i18n="options_save" disabled>Save</button>
+            <button><label for="import-options" i18n="options_import">Import</label></button>
+            <button i18n="options_export">Export</button>
+            <input id="import-options" type="file" accept=".json">
+            <a></a>
+        </div>
+        <div id="profile">
+            <select name="scheme">
+                <option value="HTTP" selected>HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+                <option value="SOCKS">SOCKS</option>
+                <option value="SOCKS5">SOCKS5</option>
+            </select>
+            <input name="host" type="text" placeholder="localhost">
+            <input name="port" type="number" placeholder="1080">
+            <button i18n="options_submit">Submit</button>
+        </div>
+        <div id="options">
+            <div i18n-tips="persistent_title">
+                <input type="checkbox" id="persistent">
+                <label for="persistent" i18n="persistent_mode">Persistent Background</label>
+            </div>
+            <div>
+                <label i18n="options_modes">Proxy Mode</label>
+                <select id="work-mode">
+                    <option value="direct" i18n="proxy_direct">Direct</option>
+                    <option value="autopac" i18n="proxy_autopac">PAC</option>
+                    <option value="global" i18n="proxy_global">Global</option>
+                </select>
+                <select id="proxy-server"></select>
+            </div>
+        </div>
+        <hr>
+        <div id="manager"></div>
+        <div class="template">
+            <div>
+                <div class="menu">
+                    <div class="proxy"></div>
+                    <button i18n-tips="profile_export">💾</button>
+                    <input type="text">
+                    <button i18n-tips="match_add">➕</button>
+                    <button i18n-tips="profile_resort">🧲</button>
+                    <button i18n-tips="profile_remove">❌</button>
+                </div>
+                <div class="matches"></div>
+            </div>
+            <div>
+                <div></div>
+                <button i18n-tips="match_remove">❌</button>
+            </div>
+        </div>
+        <script src="/pages/common.js"></script>
+        <script src="options.js"></script>
+    </body>
+</html>
