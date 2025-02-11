@@ -21,17 +21,14 @@ var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('bu
 var hostLET = document.querySelector('.template > div');
 
 document.addEventListener('keydown', (event) => {
-    if (event.ctrlKey) {
-        switch(event.key) {
-            case 's':
-                event.preventDefault();
-                submitBtn.click();
+    event.preventDefault();
+    switch(event.key) {
+        case 'z':
+            expandBtn.click();
             break;
-            case 't':
-                event.preventDefault();
-                tempoBtn.click();
+        case 'Enter':
+            submitBtn.click();
             break;
-        }
     }
 });
 
