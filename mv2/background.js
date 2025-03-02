@@ -1,5 +1,6 @@
 var easyDefault = {
     direct: 'autopac',
+    inicator: false,
     persistent: false,
     proxies: []
 };
@@ -219,9 +220,10 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
         inspect.match.push(match);
         inspect.cache[match] = true;
     }
-    easyProxyIndicator(tabId, host, url);
+    if (easyStorage.indicator) {
+        easyProxyIndicator(tabId, host, url);
+    }
     easyInspectSync(tabId, host, match);
-    
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyProxyIndicator(tabId, host, url) {

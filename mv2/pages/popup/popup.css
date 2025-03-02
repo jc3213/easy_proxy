@@ -2,12 +2,6 @@ body {
     margin: 8px;
 }
 
-input[type="checkbox"] {
-    accent-color: #006cbe;
-    transform: scale(1.5);
-    width: auto;
-}
-
 label {
     flex: 1;
     text-align: center;
@@ -40,18 +34,20 @@ body.expand > #proxy > button {
 #menu, #proxy {
     display: flex;
     gap: 5px;
-    white-space: nowrap;
 }
 
 #menu {
     margin: 5px 0px;
 }
 
+#menu > select {
+    flex: 1;
+}
+
 #output > div {
     display: flex;
     gap: 5px;
     padding: 3px;
-    white-space: nowrap;
 }
 
 #output:empty + hr {

@@ -80,11 +80,11 @@
             return '!';
         }
 
-        if (array.includes('<all-urls>')) {
+        if (array.includes('<all-urls>') || array.includes('.*')) {
             return '.*';
         }
 
-        return '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\.\*\\\./g, '([^.]+\\.)*').replace(/\\\.\.\*/g, '(\\.[^.]+)*') + ')$';
+        return '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
     };
 
     const regexp = (array) => {
