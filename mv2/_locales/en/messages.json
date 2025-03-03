@@ -29,10 +29,10 @@
     "options_modes": {
         "message": "Proxy Mode"
     },
-    "options_Indicator": {
+    "options_indicator": {
         "message": "Network Indicator"
     },
-    "options_persistent_title": {
+    "options_indicator_title": {
         "message": "Indicate proxied network traffic for each tab\n\nThis won't work for \"Direct\" mode"
     },
     "options_persistent": {
