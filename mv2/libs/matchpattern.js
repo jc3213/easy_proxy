@@ -80,7 +80,7 @@
             return '!';
         }
 
-        if (array.includes('<all-urls>') || array.includes('.*')) {
+        if (array.includes('<all-urls>') || array.includes('*')) {
             return '.*';
         }
 
