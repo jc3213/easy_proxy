@@ -40,8 +40,12 @@ input[type="file"], a {
     grid-template-columns: repeat(2, 1fr);
 }
 
-.checkbox {
-    padding: 5px;
+#options > :first-child {
+    grid-column: span 2;
+}
+
+#options > :nth-child(n+2) {
+    margin-top: 5px;
 }
 
 #options label {
@@ -50,10 +54,10 @@ input[type="file"], a {
 
 #manager button {
     font-size: 12px;
-    padding: 3px;
+    height: 23px;
     margin-top: auto;
     margin-bottom: auto;
-    height: 23px;
+    padding: 3px;
 }
 
 #manager input {
@@ -73,22 +77,26 @@ input[type="file"], a {
 
 #manager .matches {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     grid-column-gap: 3px;
+    grid-template-columns: repeat(3, 1fr);
     min-height: 25px;
 }
 
 #manager .matches > * {
+    border-style: outset;
+    border-width: 1px;
     display: grid;
     grid-template-columns: 1fr auto;
     white-space: nowrap;
-    border-width: 1px;
-    border-style: outset;
 }
 
 .new_profile #new-profile,
 .set_options #set-options {
     border-style: inset;
+}
+
+.checkbox {
+    padding: 5px;
 }
 
 .menu {
@@ -103,8 +111,8 @@ input[type="file"], a {
 }
 
 .matches {
-    border-width: 1px;
     border-style: inset;
-    overflow-y: auto;
+    border-width: 1px;
     max-height: 174px;
+    overflow-y: auto;
 }
