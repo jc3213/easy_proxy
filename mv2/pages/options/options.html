@@ -28,10 +28,6 @@
             <button i18n="options_submit">Submit</button>
         </div>
         <div id="options">
-            <div i18n-tips="persistent_title">
-                <input type="checkbox" id="persistent">
-                <label for="persistent" i18n="persistent_mode">Persistent Background</label>
-            </div>
             <div>
                 <label i18n="options_modes">Proxy Mode</label>
                 <select id="work-mode">
@@ -40,6 +36,14 @@
                     <option value="global" i18n="proxy_global">Global</option>
                 </select>
                 <select id="proxy-server"></select>
+            </div>
+            <div class="checkbox" i18n-tips="options_indicator_title">
+                <input type="checkbox" id="indicator">
+                <label for="indicator" i18n="options_indicator">Traffic Indicator</label>
+            </div>
+            <div class="checkbox" i18n-tips="options_persistent_title">
+                <input type="checkbox" id="persistent">
+                <label for="persistent" i18n="options_persistent">Persistent Background</label>
             </div>
         </div>
         <hr>

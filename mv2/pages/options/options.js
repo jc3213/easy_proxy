@@ -5,7 +5,7 @@ var removed = [];
 
 var extension = document.body.classList;
 var [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, submitBtn] = document.querySelectorAll('#menu > button, #profile > button');
-var [exporter, persistMenu, modeMenu, proxyMenu, manager] = document.querySelectorAll('a, #options [id], #manager');
+var [exporter, modeMenu, proxyMenu, indicatorMenu, persistMenu, manager] = document.querySelectorAll('a, #options [id], #manager');
 var [profileLET, matchLET] = document.querySelectorAll('.template > *');
 document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
 
@@ -89,11 +89,6 @@ function fileReader(file) {
     });
 }
 
-persistMenu.addEventListener('change', (event) => {
-    easyStorage.persistent = !easyStorage.persistent;
-    saveBtn.disabled = false;
-});
-
 modeMenu.addEventListener('change', (event) => {
     var mode = event.target.value;
     var hide = easyModes.filter((key) => key !== mode);
@@ -105,6 +100,16 @@ modeMenu.addEventListener('change', (event) => {
 
 proxyMenu.addEventListener('change', (event) => {
     easyStorage.direct = proxyMenu.value;
+    saveBtn.disabled = false;
+});
+
+indicatorMenu.addEventListener('change', (event) => {
+    easyStorage.indicator = event.target.checked;
+    saveBtn.disabled = false;
+});
+
+persistMenu.addEventListener('change', (event) => {
+    easyStorage.persistent = event.target.checked;
     saveBtn.disabled = false;
 });
 
@@ -121,6 +126,7 @@ chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, pac_script, m
         proxyMenu.value = mode;
         extension.add('global');
     }
+    indicatorMenu.checked = easyStorage.indicator;
     if (manifest === 3) {
         persistMenu.checked = easyStorage.persistent;
     } else {

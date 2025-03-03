@@ -6,13 +6,13 @@ body > div {
     padding: 10px;
 }
 
-input[type="file"], a {
-    display: none;
-}
-
 body:not(.new_profile) > #profile,
 body:not(.set_options) > #options,
 body:not(.global) #proxy-server {
+    display: none;
+}
+
+input[type="file"], a {
     display: none;
 }
 
@@ -38,10 +38,9 @@ body:not(.global) #proxy-server {
 
 #options {
     grid-template-columns: repeat(2, 1fr);
-    white-space: nowrap;
 }
 
-#options > :first-child {
+.checkbox {
     padding: 5px;
 }
 

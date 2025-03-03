@@ -38,6 +38,18 @@
     "profile_remove": {
         "message": "移除此代理"
     },
+    "options_indicator": {
+        "message": "请求计数器"
+    },
+    "options_indicator_title": {
+        "message": "记录各标签页已代理的网络交通\n\n此功能\"直连\"模式不会生效"
+    },
+    "options_persistent": {
+        "message": "永驻后台"
+    },
+    "options_persistent_title": {
+        "message": "使得ServiceWorker不再休眠\n\n此功能将额外消耗部分CPU性能"
+    },
     "match_add": {
         "message": "添加新规则"
     },
@@ -52,12 +64,6 @@
     },
     "proxy_global": {
         "message": "全局"
-    },
-    "persistent_mode": {
-        "message": "永驻后台"
-    },
-    "persistent_title": {
-        "message": "使得ServiceWorker不再休眠\n\n此功能将额外耗费微量的处理器性能"
     },
     "popup_title": {
         "message": "简易代理管理"
