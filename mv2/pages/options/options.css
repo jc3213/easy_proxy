@@ -45,7 +45,7 @@ input[type="file"], a {
 }
 
 #options > :nth-child(n+2) {
-    margin-top: 5px;
+    margin-top: 10px;
 }
 
 #options label {
