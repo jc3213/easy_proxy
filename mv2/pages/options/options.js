@@ -7,7 +7,15 @@ var extension = document.body.classList;
 var [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, submitBtn] = document.querySelectorAll('#menu > button, #profile > button');
 var [exporter, modeMenu, proxyMenu, indicatorMenu, persistMenu, manager] = document.querySelectorAll('a, #options [id], #manager');
 var [profileLET, matchLET] = document.querySelectorAll('.template > *');
-document.querySelectorAll('#profile > [name]').forEach((item) => easyProxy[item.name] = item);
+var [schemeEntry, hostEntry, portEntry] = document.querySelectorAll('#profile > [name]');
+
+document.querySelectorAll('[i18n]').forEach((node) => {
+    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
+});
+
+document.querySelectorAll('[i18n-tips]').forEach((node) => {
+    node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
+});
 
 document.addEventListener('keydown', (event) => {
     if (event.ctrlKey && event.key === 's') {
@@ -37,18 +45,18 @@ function optionsSaved() {
 }
 
 exportBtn.addEventListener('click', (event) => {
-    fileExporter(JSON.stringify(easyStorage, null, 4), 'json', 'easy_proxy', '.json');
+    fileSaver(JSON.stringify(easyStorage, null, 4), 'json', 'easy_proxy', '.json');
 });
 
-function fileExporter(data, type, filename, filetype) {
+function fileSaver(data, type, filename, filetype) {
     var blob = new Blob([data], {type: 'application/' + type + ';charset=utf-8;'});
     exporter.href = URL.createObjectURL(blob);
     exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_') + filetype;
     exporter.click();
 }
 
-easyProxy.host.addEventListener('keydown', newProfileShortcut);
-easyProxy.port.addEventListener('keydown', newProfileShortcut);
+hostEntry.addEventListener('keydown', newProfileShortcut);
+portEntry.addEventListener('keydown', newProfileShortcut);
 
 function newProfileShortcut(event) {
     if (event.key === 'Enter') {
@@ -57,37 +65,32 @@ function newProfileShortcut(event) {
 }
 
 submitBtn.addEventListener('click', (event) => {
-    var profile = easyProxy.scheme.value + ' ' + easyProxy.host.value + ':' + easyProxy.port.value;
+    var profile = schemeEntry.value + ' ' + hostEntry.value + ':' + portEntry.value;
     if (easyStorage[profile]) {
         return;
     }
     easyStorage[profile] = [];
     easyStorage.proxies.push(profile);
     createMatchProfile(profile);
-    easyProxy.scheme.value = 'HTTP';
-    easyProxy.host.value = easyProxy.port.value = '';
+    schemeEntry.value = 'HTTP';
+    hostEntry.value = portEntry.value = '';
     document.body.classList.remove('new_profile');
     saveBtn.disabled = false;
 });
 
-document.getElementById('import-options').addEventListener('change', async (event) => {
-    var result = await fileReader(event.target.files[0]);
-    var json = JSON.parse(result);
-    var removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
-    manager.innerHTML = '';
-    easyStorage = json;
-    easyStorage.proxies.forEach(createMatchProfile);
-    optionsSaved();
-    event.target.value = '';
+document.getElementById('import-options').addEventListener('change', (event) => {
+    var reader = new FileReader();
+    reader.onload = (event) => {
+        var json = JSON.parse(reader.result);
+        var removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
+        manager.innerHTML = '';
+        easyStorage = json;
+        easyStorage.proxies.forEach(createMatchProfile);
+        optionsSaved();
+        event.target.value = '';
+    };
+    reader.readAsText(event.target.files[0]);
 });
-
-function fileReader(file) {
-    return new Promise((resolve) => {
-        var reader = new FileReader();
-        reader.onload = (event) => resolve(reader.result);
-        reader.readAsText(file);
-    });
-}
 
 modeMenu.addEventListener('change', (event) => {
     var mode = event.target.value;
@@ -141,62 +144,52 @@ function createMatchProfile(id) {
     proxy.textContent = server.value = server.textContent = id;
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
-            addPattern(matches, id, entry);
+            addbtn.click();
         }
     });
-    exportbtn.addEventListener('click', (event) => exportPacScript(id));
-    addbtn.addEventListener('click', (event) => addPattern(matches, id, entry));
-    sortbtn.addEventListener('click', (event) => resortPattern(matches, id));
-    removebtn.addEventListener('click', (event) => profileRemove(id));
-    easyStorage[id].forEach((value) => createPattern(matches, id, value));
+    exportbtn.addEventListener('click', (event) => {
+        chrome.runtime.sendMessage({action: 'options_pacscript', params: id}, (pac_script) => {
+            fileSaver(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[\s:]/g, '_'), '.pac');
+        });
+    });
+    addbtn.addEventListener('click', (event) => {
+        saveBtn.disabled = false;
+        var storage = easyStorage[id];
+        entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
+            if (value && !storage.includes(value)) {
+                createMatchPattern(matches, id, value);
+                storage.push(value);
+            }
+        });
+        entry.value = '';
+        matches.scrollTop = matches.scrollHeight;
+    });
+    sortbtn.addEventListener('click', (event) => {
+        saveBtn.disabled = false;
+        easyStorage[id].sort();
+        var resort = [...matches.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
+        matches.append(...resort);
+    });
+    removebtn.addEventListener('click', (event) => {
+        saveBtn.disabled = false;
+        easyProfile[id].remove();
+        easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
+        removed.push(id);
+        delete easyStorage[id];
+    });
+    easyStorage[id].forEach((value) => createMatchPattern(matches, id, value));
     easyProfile[id] = profile;
     proxyMenu.appendChild(server);
     manager.appendChild(profile);
 }
 
-function exportPacScript(proxy) {
-    chrome.runtime.sendMessage({action: 'options_pacscript', params: {proxy}}, ({pac_script}) => {
-        fileExporter(pac_script, 'x-ns-proxy-autoconfig;', proxy.replace(/[\s:]/g, '_'), '.pac');
-    });
-}
-
-function createPattern(list, id, value) {
+function createMatchPattern(list, id, value) {
     var match = matchLET.cloneNode(true);
     match.querySelector('div').textContent = match.title = value;
-    match.querySelector('button').addEventListener('click', (event) => removePattern(id, value, match));
-    list.appendChild(match);
-}
-
-function addPattern(list, id, entry) {
-    saveBtn.disabled = false;
-    var storage = easyStorage[id];
-    entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
-        if (value && !storage.includes(value)) {
-            createPattern(list, id, value);
-            storage.push(value);
-        }
+    match.querySelector('button').addEventListener('click', (event) => {
+        saveBtn.disabled = false;
+        match.remove();
+        easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
     });
-    entry.value = '';
-    list.scrollTop = list.scrollHeight;
-}
-
-function resortPattern(list, id) {
-    saveBtn.disabled = false;
-    easyStorage[id].sort();
-    var resort = [...list.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
-    list.append(...resort);
-}
-
-function removePattern(id, value, match) {
-    saveBtn.disabled = false;
-    match.remove();
-    easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
-}
-
-function profileRemove(id) {
-    saveBtn.disabled = false;
-    easyProfile[id].remove();
-    easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
-    removed.push(id);
-    delete easyStorage[id];
+    list.appendChild(match);
 }

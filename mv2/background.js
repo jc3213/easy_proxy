@@ -92,10 +92,8 @@ function easyMatchInitial(params, response) {
     });
 }
 
-function easyPacscriptMaker({proxy}, response) {
-    response({
-        pac_script: convertPacScript(convertRegexp(proxy, easyStorage[proxy]))
-    });
+function easyPacscriptMaker(proxy, response) {
+    response(convertPacScript(convertRegexp(proxy, easyStorage[proxy])));
 }
 
 function easyMatchSubmit({storage, tabId}) {

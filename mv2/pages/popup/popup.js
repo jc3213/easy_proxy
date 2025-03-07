@@ -20,6 +20,14 @@ var [output, proxyMenu, modeMenu] = document.querySelectorAll('#output, select')
 var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
 var hostLET = document.querySelector('.template > div');
 
+document.querySelectorAll('[i18n]').forEach((node) => {
+    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
+});
+
+document.querySelectorAll('[i18n-tips]').forEach((node) => {
+    node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
+});
+
 document.addEventListener('keydown', (event) => {
     event.preventDefault();
     switch(event.key) {
