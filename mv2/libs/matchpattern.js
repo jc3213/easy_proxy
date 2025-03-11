@@ -1,7 +1,39 @@
-(() => {
-    const version = '0.3';
-
-    const tlds = {
+class MatchPattern {
+    constructor () {
+        this.data = [];
+        this.proxy = 'DIRECT';
+        MatchPattern.instances.push(this);
+    }
+    version = '0.5';
+    add (...args) {
+        args.flat().forEach((arg) => {
+            let result = MatchPattern.make(arg);
+            if (!this.data.includes(result)) {
+                this.data.push(result);
+            }
+        });
+        this.text = MatchPattern.stringnify(this.data);
+        this.regexp = new RegExp(this.text);
+    }
+    remove (...args) {
+        args.flat().forEach((arg) => {
+            let index = this.data.indexOf(arg);
+            if (index !== -1) {
+                this.data.splice(index, 1);
+            }
+        });
+        this.text = MatchPattern.stringnify(this.data);
+        this.regexp = new RegExp(this.text);
+    }
+    test (host) {
+        return this.regexp.test(host);
+    }
+    get pac_script () {
+        return 'function FindProxyForURL(url, host) {\n    if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n    return "DIRECT";\n}';
+    }
+    static instances = [];
+    static caches = {};
+    static tlds = {
         'aero': true,
         'app': true,
         'arpa': true,
@@ -38,64 +70,51 @@
         'xxx': true,
         'xyz': true
     };
-
-    const caches = {};
-
-    const create = (string) => {
-        if (caches[string]) {
-            return caches[string];
+    static make (string) {
+        let result = MatchPattern.caches[string];
+        if (result) {
+            return result;
         }
-
-        const test = string.match(/^(?:https?|ftps?|wss?)?:?(?:\/\/)?((?:[^\./:]+\.)+[^\./:]+):?(?:\d+)?\/?(?:[^\/]+\/?)*$/);
-
+        let test = string.match(/^(?:https?|ftps?|wss?)?:?(?:\/\/)?((?:[^./:]+\.)+[^./:]+):?(?:\d+)?\/?(?:[^\/]+\/?)*$/);
         if (!test) {
             throw new Error('"' + string + '" is either not a URL, or a valid MatchPattern');
         }
-
-        const host = test[1];
-        
-        if (caches[host]) {
-            return caches[string] = caches[host];
+        let host = test[1];
+        if (MatchPattern.caches[host]) {
+            return MatchPattern.caches[string] = host;
         }
-
         if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
-            return caches[string] = host.replace(/\d+\.\d+$/, '*');
+            return MatchPattern.caches[string] = MatchPattern.caches[host] = host.replace(/\d+\.\d+$/, '*');
         }
-
-        const [hostname, sbd, sld, tld] = host.match(/(?:([^\.]+)\.)?([^\.]+)\.([^\.]+)$/);
-
-        if (!sbd || !tlds[sld]) {
-            return caches[string] = '*.' + sld + '.' + tld;
-        }
-
-        return caches[string] = '*.' + sbd + '.' + sld + '.' + tld;
-    };
-
-    const stringify = (array) => {
-        if (!Array.isArray(array)) {
-            throw new Error('"' + array + '" must be an array of MatchPatterns');
-        }
-
+        let [_, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
+        return MatchPattern.caches[string] = MatchPattern.caches[host] = '*.' + (sbd && MatchPattern.tlds[sld] ? sbd + '.' : '') + sld + '.' + tld;
+    }
+    static stringnify (array) {
         if (array.length === 0) {
             return '!';
         }
-
         if (array.includes('<all-urls>') || array.includes('*')) {
             return '.*';
         }
-
         return '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
-    };
-
-    const regexp = (array) => {
-        const string = stringify(array);
-        return new RegExp(string);
-    };
-
-    const generate = (array) => {
-        const string = stringify(array);
-        return { regexp: new RegExp(string), string } ;
-    };
-
-    self.MatchPattern = { create, regexp, generate, version };
-})();
+    }
+    static remove (...args) {
+        let proxy = args.flat();
+        MatchPattern.instances = MatchPattern.instances.filter((instance) => !proxy.includes(instance.proxy));
+    }
+    static merge () {
+        if (MatchPattern.instances.length === 0) {
+            return {regexp: /!/, pac_script: 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'};
+        }
+        let result = '';
+        let pac = '';
+        MatchPattern.instances.forEach((instance) => {
+            let text = MatchPattern.stringnify(instance.data);
+            result += text + '|';
+            pac += '\n    if (/' + text + '/i.test(host)) {\n        return "' + instance.proxy + '";\n    }';
+        });
+        let regexp = new RegExp('(' + result.slice(0, -1) + ')');
+        let pac_script = 'function FindProxyForURL(url, host) {' + pac + '\n    return "DIRECT";\n}';
+        return { regexp , pac_script };
+    }
+};

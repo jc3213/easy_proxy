@@ -4,42 +4,21 @@ var easyDefault = {
     persistent: false,
     proxies: []
 };
-var easyStorage = {};
-var easyMode;
-var easyPersistent;
 
+var easyStorage = {};
 var easyMatch = {};
 var easyTempo = {};
-var easyTempoLog = {};
-
 var easyRegExp;
+var easyScript;
+
+var easyMode;
+var easyPersistent;
 var easyInspect = {};
 
 var manifest = chrome.runtime.getManifest().manifest_version;
 if (manifest === 3) {
     importScripts('libs/matchpattern.js');
 }
-
-chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
-    if (reason === 'update' && previousVersion === '1.1.1') {
-        setTimeout(() => {
-            chrome.storage.local.get(null, (json) => {
-                var remove = [];
-                var proxies = json.proxies;
-                Object.keys(json).forEach((key) => {
-                    if (!easyDefault.hasOwnProperty(key) && !proxies.includes(key)) {
-                        delete json[key];
-                        remove.push(key);
-                    }
-                });
-                chrome.storage.local.remove(remove);
-                chrome.storage.local.set(json);
-                easyStorage = json;
-                pacScriptConverter();
-            });
-        }, 1000);
-    }
-});
 
 chrome.action ??= chrome.browserAction;
 
@@ -77,11 +56,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
 });
 
 function easyOptionsInitial(response) {
-    response({
-        storage: {...easyDefault, ...easyStorage},
-        pac_script: easyMatch.script,
-        manifest
-    });
+    response({ storage: {...easyDefault, ...easyStorage}, manifest });
 }
 
 function easyMatchInitial(params, response) {
@@ -102,27 +77,29 @@ function easyMatchSubmit({storage, tabId}) {
 }
 
 function easyMatchChanged({storage, removed = []}, response) {
-    easyStorageUpdated(storage, response);
+    MatchPattern.instances = [];
     chrome.storage.local.remove(removed);
-    response({storage: {...easyDefault, ...easyStorage}, pac_script: easyMatch.script});
+    easyStorageUpdated(storage, response);
+    response({storage: {...easyDefault, ...easyStorage}});
 }
 
 function easyStorageUpdated(json) {
     easyStorage = json;
-    pacScriptConverter();
+    easyProxySetup();
     chrome.storage.local.set(json);
 }
 
 function easyTempoUpdate({tempo, tabId}) {
     easyTempo = tempo;
-    pacScriptConverter();
+    easyProxyScript();
     easyReloadTab(tabId);
 }
 
 function easyTempoPurge({tabId}) {
-    easyTempo = {};
-    easyTempoLog = {};
-    pacScriptConverter();
+    easyStorage.proxies.forEach((proxy) => {
+        easyTempo[proxy].data = [];
+    });
+    easyProxyScript();
     easyReloadTab(tabId);
 }
 
@@ -155,7 +132,7 @@ function easyProxyMode(mode) {
 function easyProxyAutopac() {
     persistentModeSwitch();
     chrome.proxy.settings.set({
-        value: { mode: "pac_script", pacScript: { data: easyMatch.extend } },
+        value: { mode: 'pac_script', pacScript: { data: easyScript } },
         scope: 'regular'
     });
     chrome.action.setBadgeBackgroundColor({color: '#2940D9'});
@@ -163,7 +140,7 @@ function easyProxyAutopac() {
 
 function easyProxyDirect() {
     chrome.proxy.settings.set({
-        value: { mode: "direct" },
+        value: { mode: 'direct' },
         scope: 'regular'
     });
     chrome.action.setBadgeBackgroundColor({color: '#C1272D'});
@@ -173,7 +150,7 @@ function easyProxyGlobal(proxy) {
     var [scheme, host, port] = proxy.split(/[\s:]/);
     chrome.proxy.settings.set({
         value: {
-            mode: "fixed_servers",
+            mode: 'fixed_servers',
             rules: {
                 singleProxy: { scheme: scheme.toLowerCase(), host, port: port | 0 },
                 bypassList: ['localhost']
@@ -186,26 +163,26 @@ function easyProxyGlobal(proxy) {
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
     if (frameId === 0) {
-        easyInspectInit(tabId, url);
+        easyInspectSetup(tabId, url);
     }
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
 chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
     if (easyInspect?.[tabId]?.url !== url) {
-        easyInspectInit(tabId, url);
+        easyInspectSetup(tabId, url);
     }
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
-function easyInspectInit(tabId, url) {
+function easyInspectSetup(tabId, url) {
     var host = new URL(url).hostname;
-    var match = MatchPattern.create(host);
+    var match = MatchPattern.make(host);
     easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, index: 0, result: [], url };
     easyInspectSync(tabId, host, match);
 }
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     var host = new URL(url).hostname;
-    var match = MatchPattern.create(host);
+    var match = MatchPattern.make(host);
     var inspect = easyInspect[tabId];
     if (!match || !inspect) {
         return;
@@ -234,6 +211,7 @@ function easyProxyIndicator(tabId, host, url) {
 }
 
 function easyInspectSync(tabId, host, match) {
+    console.log(host, match);
     chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
 }
 
@@ -244,7 +222,7 @@ chrome.tabs.onRemoved.addListener(({tabId}) => {
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
     persistentModeSwitch();
-    pacScriptConverter();
+    easyProxySetup();
 });
 
 function persistentModeHandler() {
@@ -260,29 +238,21 @@ function persistentModeSwitch() {
     }
 }
 
-function pacScriptConverter() {
-    var pac_script = '';
-    var tempo = '';
-    easyRegExp = '';
+function easyProxySetup() {
     easyStorage.proxies.forEach((proxy) => {
-        pac_script += convertRegexp(proxy, easyStorage[proxy]);
-        tempo += convertRegexp(proxy, easyTempo[proxy] ?? []);
+        var match = new MatchPattern();
+        var tempo = new MatchPattern();
+        match.add(easyStorage[proxy]);
+        match.proxy = tempo.proxy = proxy;
+        easyMatch[proxy] = match;
+        easyTempo[proxy] = tempo;
     });
-    easyMatch.script = convertPacScript(pac_script);
-    easyMatch.extend = convertPacScript(pac_script + tempo);
-    easyRegExp = new RegExp('^(' + easyRegExp.slice(1) + ')$', 'i');
+    easyProxyScript();
+}
+
+function easyProxyScript() {
+    var merge = MatchPattern.merge();
+    easyRegExp = merge.regexp;
+    easyScript = merge.pac_script;
     easyProxyMode(easyStorage.direct);
-}
-
-function convertRegexp(proxy, matches) {
-    if (matches.length === 0) {
-        return '';
-    }
-    var regexp = MatchPattern.generate(matches).string;
-    easyRegExp += '|' + regexp;
-    return '\n    if (/' + regexp + '/i.test(host)) {\n        return "' + proxy + '";\n    }';
-}
-
-function convertPacScript(pac_script) {
-    return 'function FindProxyForURL(url, host) {' + pac_script + '\n    return "DIRECT";\n}';
 }

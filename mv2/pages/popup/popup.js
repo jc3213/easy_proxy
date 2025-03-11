@@ -204,7 +204,7 @@ function easyProxyCeate(proxy) {
     menu.textContent = menu.title = menu.value = proxy;
     proxyMenu.append(menu);
     easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
-    easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
+    easyTempo[proxy].data?.forEach((match) => easyMatchTempo[match] = proxy);
 }
 
 function easyMatchPattern(value, type) {
