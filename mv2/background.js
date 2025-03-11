@@ -71,33 +71,34 @@ function easyPacscriptMaker(proxy, response) {
     response(convertPacScript(convertRegexp(proxy, easyStorage[proxy])));
 }
 
-function easyMatchSubmit({storage, tabId}) {
-    easyStorageUpdated(storage);
-    easyReloadTab(tabId);
-}
-
 function easyMatchChanged({storage, removed = []}, response) {
     MatchPattern.instances = [];
     chrome.storage.local.remove(removed);
-    easyStorageUpdated(storage, response);
+    easyStorage = storage;
+    easyProxySetup();
+    chrome.storage.local.set(storage);
     response({storage: {...easyDefault, ...easyStorage}});
 }
 
-function easyStorageUpdated(json) {
-    easyStorage = json;
-    easyProxySetup();
-    chrome.storage.local.set(json);
+function easyMatchSubmit({add = [], remove = [], proxy, tabId}) {
+    easyMatch[proxy].add(...add);
+    easyMatch[proxy].remove(...remove);
+    easyStorage[proxy] = easyMatch[proxy].data;
+    easyProxyScript();
+    easyReloadTab(tabId);
+    chrome.storage.local.set(easyStorage);
 }
 
-function easyTempoUpdate({tempo, tabId}) {
-    easyTempo = tempo;
+function easyTempoUpdate({add = [], remove = [], proxy, tabId}) {
+    easyTempo[proxy].add(...add);
+    easyTempo[proxy].remove(...remove);
     easyProxyScript();
     easyReloadTab(tabId);
 }
 
 function easyTempoPurge({tabId}) {
     easyStorage.proxies.forEach((proxy) => {
-        easyTempo[proxy].data = [];
+        easyTempo[proxy].clear();
     });
     easyProxyScript();
     easyReloadTab(tabId);
@@ -211,7 +212,6 @@ function easyProxyIndicator(tabId, host, url) {
 }
 
 function easyInspectSync(tabId, host, match) {
-    console.log(host, match);
     chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
 }
 

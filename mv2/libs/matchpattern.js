@@ -1,7 +1,7 @@
 class MatchPattern {
     constructor () {
-        this.data = [];
         this.proxy = 'DIRECT';
+        this.clear();
         MatchPattern.instances.push(this);
     }
     version = '0.5';
@@ -24,6 +24,11 @@ class MatchPattern {
         });
         this.text = MatchPattern.stringnify(this.data);
         this.regexp = new RegExp(this.text);
+    }
+    clear () {
+        this.data = [];
+        this.text = '!';
+        this.regexp = /!/;
     }
     test (host) {
         return this.regexp.test(host);
@@ -98,7 +103,7 @@ class MatchPattern {
         }
         return '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
     }
-    static remove (...args) {
+    static purge (...args) {
         let proxy = args.flat();
         MatchPattern.instances = MatchPattern.instances.filter((instance) => !proxy.includes(instance.proxy));
     }
