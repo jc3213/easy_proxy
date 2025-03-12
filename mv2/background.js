@@ -22,10 +22,6 @@ if (manifest === 3) {
 
 chrome.action ??= chrome.browserAction;
 
-// hotfix
-chrome.storage.local.remove(['inicator']);
-//
-
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     switch (action) {
         case 'options_initial':
@@ -84,8 +80,9 @@ function easyMatchUpdate(json) {
             return true;
         }
     });
-    MatchPattern.erase(removed);
+    easyStorage = json;
     easyProxySetup();
+    MatchPattern.erase(removed);
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
 }
