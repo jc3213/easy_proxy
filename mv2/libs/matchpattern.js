@@ -103,7 +103,7 @@ class MatchPattern {
         }
         return '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
     }
-    static purge (...args) {
+    static erase (...args) {
         let proxy = args.flat();
         MatchPattern.instances = MatchPattern.instances.filter((instance) => !proxy.includes(instance.proxy));
     }

@@ -1,10 +1,9 @@
 var easyProfile = {};
 var easyProxy = {};
 var easyModes = ['direct', 'autopac', 'global'];
-var removed = [];
 
 var extension = document.body.classList;
-var [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, submitBtn] = document.querySelectorAll('#menu > button, #profile > button');
+var [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, submitBtn] = document.querySelectorAll('#menu > button, #menu > input, #profile > button');
 var [exporter, modeMenu, proxyMenu, indicatorMenu, persistMenu, manager] = document.querySelectorAll('a, #options [id], #manager');
 var [profileLET, matchLET] = document.querySelectorAll('.template > *');
 var [schemeEntry, hostEntry, portEntry] = document.querySelectorAll('#profile > [name]');
@@ -38,10 +37,7 @@ saveBtn.addEventListener('click', optionsSaved);
 
 function optionsSaved() {
     saveBtn.disabled = true;
-    chrome.runtime.sendMessage({action: 'options_onchange', params: {storage: easyStorage, removed}}, (params) => {
-        easyPAC = params.pac_script;
-        removed = [];
-    });
+    chrome.runtime.sendMessage({action: 'options_onchange', params: easyStorage});
 }
 
 exportBtn.addEventListener('click', (event) => {
@@ -78,11 +74,10 @@ submitBtn.addEventListener('click', (event) => {
     saveBtn.disabled = false;
 });
 
-document.getElementById('import-options').addEventListener('change', (event) => {
+importEntry.addEventListener('change', (event) => {
     var reader = new FileReader();
     reader.onload = (event) => {
         var json = JSON.parse(reader.result);
-        var removed = easyStorage.proxies.filter((proxy) => !json[proxy]);
         manager.innerHTML = '';
         easyStorage = json;
         easyStorage.proxies.forEach(createMatchProfile);
@@ -116,10 +111,9 @@ persistMenu.addEventListener('change', (event) => {
     saveBtn.disabled = false;
 });
 
-chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, pac_script, manifest}) => {
+chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, manifest}) => {
     var mode = storage.direct;
     easyStorage = storage;
-    easyPAC = pac_script;
     easyStorage.proxies.forEach(createMatchProfile);
     if (mode === 'direct' || mode === 'autopac') {
         modeMenu.value = mode;
@@ -139,7 +133,7 @@ chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, pac_script, m
 
 function createMatchProfile(id) {
     var profile = profileLET.cloneNode(true);
-    var [proxy, exportbtn, entry, addbtn, sortbtn, removebtn, matches] = profile.querySelectorAll('.proxy, input, button, .matches');
+    var [proxy, exportbtn,, entry, addbtn, sortbtn, removebtn, matches] = profile.children;
     var server = document.createElement('option');
     proxy.textContent = server.value = server.textContent = id;
     entry.addEventListener('keydown', (event) => {
@@ -174,7 +168,6 @@ function createMatchProfile(id) {
         saveBtn.disabled = false;
         easyProfile[id].remove();
         easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
-        removed.push(id);
         delete easyStorage[id];
     });
     easyStorage[id].forEach((value) => createMatchPattern(matches, id, value));

@@ -1,6 +1,6 @@
 var easyDefault = {
     direct: 'autopac',
-    inicator: false,
+    indicator: false,
     persistent: false,
     proxies: []
 };
@@ -22,19 +22,23 @@ if (manifest === 3) {
 
 chrome.action ??= chrome.browserAction;
 
+// hotfix
+chrome.storage.local.remove(['inicator']);
+//
+
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     switch (action) {
         case 'options_initial':
-            easyOptionsInitial(response);
+            response({ storage: {...easyDefault, ...easyStorage}, manifest });
             break;
         case 'options_onchange':
-            easyMatchChanged(params, response);
+            easyMatchUpdate(params);
             break;
         case 'options_pacscript':
-            easyPacscriptMaker(params, response);
+            response(easyMatch[params].pac_script);
             break;
         case 'manager_initial':
-            easyMatchInitial(params, response);
+            response({ storage: {...easyDefault, ...easyStorage}, tempo: easyTempo, result: easyInspect[params.tabId] });
             break;
         case 'manager_submit':
             easyMatchSubmit(params);
@@ -55,29 +59,35 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     return true;
 });
 
-function easyOptionsInitial(response) {
-    response({ storage: {...easyDefault, ...easyStorage}, manifest });
-}
-
-function easyMatchInitial(params, response) {
-    response({
-        storage: {...easyDefault, ...easyStorage},
-        tempo: easyTempo,
-        result: easyInspect[params.tabId]
+function easyMatchUpdate(json) {
+    var invalid = [];
+    Object.keys(json).forEach((key) => {
+        if (key in easyDefault) {
+            return;
+        }
+        if (!json.proxies.includes(key)) {
+            delete json[key];
+            invalid.push(key);
+            return;
+        }
+        if (easyStorage.proxies.includes(key)) {
+            easyMatch[key].clear();
+        } else {
+            easyMatch[key] = new MatchPattern();
+        }
+        easyMatch[key].add(json[key]);
     });
-}
-
-function easyPacscriptMaker(proxy, response) {
-    response(convertPacScript(convertRegexp(proxy, easyStorage[proxy])));
-}
-
-function easyMatchChanged({storage, removed = []}, response) {
-    MatchPattern.instances = [];
-    chrome.storage.local.remove(removed);
-    easyStorage = storage;
+    var removed = easyStorage.proxies.filter((proxy) => {
+        if (!json[proxy]) {
+            delete easyMatch[proxy];
+            delete easyTempo[proxy];
+            return true;
+        }
+    });
+    MatchPattern.erase(removed);
     easyProxySetup();
-    chrome.storage.local.set(storage);
-    response({storage: {...easyDefault, ...easyStorage}});
+    chrome.storage.local.remove([...invalid, ...removed]);
+    chrome.storage.local.set(json);
 }
 
 function easyMatchSubmit({add = [], remove = [], proxy, tabId}) {
