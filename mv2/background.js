@@ -81,7 +81,7 @@ function easyMatchUpdate(json) {
         }
     });
     easyStorage = json;
-    easyProxySetup();
+    easyProxyScript();
     MatchPattern.erase(removed);
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
@@ -92,15 +92,15 @@ function easyMatchSubmit({add = [], remove = [], proxy, tabId}) {
     easyMatch[proxy].remove(...remove);
     easyStorage[proxy] = easyMatch[proxy].data;
     easyProxyScript();
-    easyReloadTab(tabId);
     chrome.storage.local.set(easyStorage);
+    chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
 
 function easyTempoUpdate({add = [], remove = [], proxy, tabId}) {
     easyTempo[proxy].add(...add);
     easyTempo[proxy].remove(...remove);
     easyProxyScript();
-    easyReloadTab(tabId);
+    chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
 
 function easyTempoPurge({tabId}) {
@@ -108,11 +108,7 @@ function easyTempoPurge({tabId}) {
         easyTempo[proxy].clear();
     });
     easyProxyScript();
-    easyReloadTab(tabId);
-}
-
-function easyReloadTab(id) {
-    chrome.tabs.update(id, {url: easyInspect[id].url});
+    chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
 
 function easyProxyStatus(params, response) {
@@ -228,9 +224,24 @@ chrome.tabs.onRemoved.addListener(({tabId}) => {
 
 chrome.storage.local.get(null, (json) => {
     easyStorage = {...easyDefault, ...json};
+    easyStorage.proxies.forEach((proxy) => {
+        var match = new MatchPattern();
+        var tempo = new MatchPattern();
+        match.add(easyStorage[proxy]);
+        match.proxy = tempo.proxy = proxy;
+        easyMatch[proxy] = match;
+        easyTempo[proxy] = tempo;
+    });
+    easyProxyScript();
     persistentModeSwitch();
-    easyProxySetup();
 });
+
+function easyProxyScript() {
+    var merge = MatchPattern.merge();
+    easyRegExp = merge.regexp;
+    easyScript = merge.pac_script;
+    easyProxyMode(easyStorage.direct);
+}
 
 function persistentModeHandler() {
     easyStorage.persistent = !easyStorage.persistent;
@@ -243,23 +254,4 @@ function persistentModeSwitch() {
     } else {
         clearInterval(easyPersistent);
     }
-}
-
-function easyProxySetup() {
-    easyStorage.proxies.forEach((proxy) => {
-        var match = new MatchPattern();
-        var tempo = new MatchPattern();
-        match.add(easyStorage[proxy]);
-        match.proxy = tempo.proxy = proxy;
-        easyMatch[proxy] = match;
-        easyTempo[proxy] = tempo;
-    });
-    easyProxyScript();
-}
-
-function easyProxyScript() {
-    var merge = MatchPattern.merge();
-    easyRegExp = merge.regexp;
-    easyScript = merge.pac_script;
-    easyProxyMode(easyStorage.direct);
 }
