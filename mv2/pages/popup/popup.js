@@ -1,6 +1,6 @@
 var easyStorage = {};
-var easyWatch;
 var easyMatch = {};
+var easyTempo = {};
 var easyMatchTempo = {};
 
 var easyHosts = [];
@@ -62,10 +62,7 @@ modeMenu.addEventListener('change', (event) => {
 });
 
 submitBtn.addEventListener('click', (event) => {
-    var manage = proxyStatusChanged('match', easyStorage, easyMatch);
-    if (manage) {
-        proxyStatusUpdate('manager_submit', manage);
-    }
+    proxyStatusChanged('manager_submit', 'match', easyStorage, easyMatch);
 });
 
 tempoBtn.addEventListener('click', (event) => {
@@ -76,27 +73,15 @@ tempoBtn.addEventListener('click', (event) => {
             match.parentNode.classList.remove('tempo');
             match.checked = easyMatch[match.value] === easyProxy ? true : false;
         });
-        proxyStatusUpdate('manager_purge');
+        chrome.runtime.sendMessage({action:'manager_purge', params: easyTab});
     } else {
-        var manage = proxyStatusChanged('tempo', easyTempo, easyMatchTempo);
-        if (manage) {
-            proxyStatusUpdate('manager_tempo', manage);
-        }
+        proxyStatusChanged('manager_tempo', 'tempo', easyTempo, easyMatchTempo);
     }
 });
 
-optionsBtn.addEventListener('click', (event) => {
-    chrome.runtime.openOptionsPage();
-});
-
-function proxyStatusUpdate(action, params = {}) {
-    params.tabId = easyTab;
-    chrome.runtime.sendMessage({action, params});
-}
-
-function proxyStatusChanged(type, storage, logs) {
+function proxyStatusChanged(action, type, storage, logs) {
     if (checkboxes.length === 0) {
-        return false;
+        return;
     }
     var proxy = proxyMenu.value;
     var add = [];
@@ -120,8 +105,12 @@ function proxyStatusChanged(type, storage, logs) {
         }
     });
     checkboxes = [];
-    return {add, remove, proxy};
+    chrome.runtime.sendMessage({ action, params: {add, remove, proxy, tabId: easyTab} });
 }
+
+optionsBtn.addEventListener('click', (event) => {
+    chrome.runtime.openOptionsPage();
+});
 
 outputPane.addEventListener('change', (event) => {
     var entry = event.target;
@@ -178,7 +167,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         easyStorage = storage;
         easyStorage.proxies.forEach((proxy) => {
             easyProxy ??= proxy;
-            easyTempo = tempo[proxy].data;
+            easyTempo[proxy] = tempo[proxy].data;
             easyProxyCeate(proxy);
         });
         var mode = storage.direct;

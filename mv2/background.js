@@ -97,16 +97,15 @@ function easyMatchSubmit({add = [], remove = [], proxy, tabId}) {
 }
 
 function easyTempoUpdate({add = [], remove = [], proxy, tabId}) {
+    console.log(add, remove, proxy, tabId);
     easyTempo[proxy].add(...add);
     easyTempo[proxy].remove(...remove);
     easyProxyScript();
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
 
-function easyTempoPurge({tabId}) {
-    easyStorage.proxies.forEach((proxy) => {
-        easyTempo[proxy].clear();
-    });
+function easyTempoPurge(tabId) {
+    easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
     easyProxyScript();
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
