@@ -97,7 +97,6 @@ function easyMatchSubmit({add = [], remove = [], proxy, tabId}) {
 }
 
 function easyTempoUpdate({add = [], remove = [], proxy, tabId}) {
-    console.log(add, remove, proxy, tabId);
     easyTempo[proxy].add(...add);
     easyTempo[proxy].remove(...remove);
     easyProxyScript();
