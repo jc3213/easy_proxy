@@ -1,12 +1,12 @@
-var easyProfile = {};
-var easyProxy = {};
-var easyModes = ['direct', 'autopac', 'global'];
+let easyProfile = {};
+let easyProxy = {};
+let easyModes = ['direct', 'autopac', 'global'];
 
-var extension = document.body.classList;
-var [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, submitBtn] = document.querySelectorAll('#menu > button, #menu > input, #profile > button');
-var [exporter, modeMenu, proxyMenu, indicatorMenu, persistMenu, manager] = document.querySelectorAll('a, #options [id], #manager');
-var [profileLET, matchLET] = document.querySelectorAll('.template > *');
-var [schemeEntry, hostEntry, portEntry] = document.querySelectorAll('#profile > [name]');
+let extension = document.body.classList;
+let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, submitBtn] = document.querySelectorAll('#menu > button, #menu > input, #profile > button');
+let [exporter, modeMenu, proxyMenu, indicatorMenu, persistMenu, manager] = document.querySelectorAll('a, #options [id], #manager');
+let [profileLET, matchLET] = document.querySelectorAll('.template > *');
+let [schemeEntry, hostEntry, portEntry] = document.querySelectorAll('#profile > [name]');
 
 document.querySelectorAll('[i18n]').forEach((node) => {
     node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
@@ -16,10 +16,15 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
     node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
 });
 
+const shortcutHandlers = {
+    's': saveBtn
+};
+
 document.addEventListener('keydown', (event) => {
-    if (event.ctrlKey && event.key === 's') {
+    let handler = shortcutHandlers[event.key];
+    if (event.ctrlKey && handler) {
         event.preventDefault();
-        saveBtn.click();
+        handler.click();
     }
 });
 
@@ -33,19 +38,17 @@ optionsBtn.addEventListener('click', (event) => {
     extension.toggle('set_options');
 });
 
-saveBtn.addEventListener('click', optionsSaved);
-
-function optionsSaved() {
+saveBtn.addEventListener('click', (event) => {
     saveBtn.disabled = true;
-    chrome.runtime.sendMessage({action: 'options_onchange', params: easyStorage});
-}
+    chrome.runtime.sendMessage({action: 'storage_update', params: easyStorage});
+});
 
 exportBtn.addEventListener('click', (event) => {
     fileSaver(JSON.stringify(easyStorage, null, 4), 'json', 'easy_proxy', '.json');
 });
 
 function fileSaver(data, type, filename, filetype) {
-    var blob = new Blob([data], {type: 'application/' + type + ';charset=utf-8;'});
+    let blob = new Blob([data], {type: 'application/' + type + ';charset=utf-8;'});
     exporter.href = URL.createObjectURL(blob);
     exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_') + filetype;
     exporter.click();
@@ -61,7 +64,7 @@ function newProfileShortcut(event) {
 }
 
 submitBtn.addEventListener('click', (event) => {
-    var profile = schemeEntry.value + ' ' + hostEntry.value + ':' + portEntry.value;
+    let profile = schemeEntry.value + ' ' + hostEntry.value + ':' + portEntry.value;
     if (easyStorage[profile]) {
         return;
     }
@@ -75,22 +78,23 @@ submitBtn.addEventListener('click', (event) => {
 });
 
 importEntry.addEventListener('change', (event) => {
-    var reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = (event) => {
-        var json = JSON.parse(reader.result);
+        let params = JSON.parse(reader.result);
         manager.innerHTML = '';
-        easyStorage = json;
+        easyStorage = params;
         easyStorage.proxies.forEach(createMatchProfile);
-        optionsSaved();
         event.target.value = '';
+        saveBtn.disabled = true;
+        chrome.runtime.sendMessage({action: 'storage_update', params});
     };
     reader.readAsText(event.target.files[0]);
 });
 
 modeMenu.addEventListener('change', (event) => {
-    var mode = event.target.value;
-    var hide = easyModes.filter((key) => key !== mode);
-    extension.add(mode);
+    let mode = event.target.value;
+    let hide = easyModes.filter((key) => key !== mode);
+    extension.add(...mode);
     extension.remove(...hide);
     easyStorage.direct = mode === 'global' ? proxyMenu.value : mode;
     saveBtn.disabled = false;
@@ -111,8 +115,8 @@ persistMenu.addEventListener('change', (event) => {
     saveBtn.disabled = false;
 });
 
-chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, manifest}) => {
-    var mode = storage.direct;
+chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
+    let mode = storage.direct;
     easyStorage = storage;
     easyStorage.proxies.forEach(createMatchProfile);
     if (mode === 'direct' || mode === 'autopac') {
@@ -132,9 +136,9 @@ chrome.runtime.sendMessage({action: 'options_initial'}, ({storage, manifest}) =>
 });
 
 function createMatchProfile(id) {
-    var profile = profileLET.cloneNode(true);
-    var [proxy, exportbtn,, entry, addbtn, sortbtn, removebtn, matches] = profile.children;
-    var server = document.createElement('option');
+    let profile = profileLET.cloneNode(true);
+    let [proxy, exportbtn,, entry, addbtn, sortbtn, removebtn, matches] = profile.children;
+    let server = document.createElement('option');
     proxy.textContent = server.value = server.textContent = id;
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
@@ -142,13 +146,13 @@ function createMatchProfile(id) {
         }
     });
     exportbtn.addEventListener('click', (event) => {
-        chrome.runtime.sendMessage({action: 'options_pacscript', params: id}, (pac_script) => {
+        chrome.runtime.sendMessage({action: 'pacscript_query', params: id}, (pac_script) => {
             fileSaver(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[\s:]/g, '_'), '.pac');
         });
     });
     addbtn.addEventListener('click', (event) => {
         saveBtn.disabled = false;
-        var storage = easyStorage[id];
+        let storage = easyStorage[id];
         entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
             if (value && !storage.includes(value)) {
                 createMatchPattern(matches, id, value);
@@ -161,7 +165,7 @@ function createMatchProfile(id) {
     sortbtn.addEventListener('click', (event) => {
         saveBtn.disabled = false;
         easyStorage[id].sort();
-        var resort = [...matches.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
+        let resort = [...matches.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
         matches.append(...resort);
     });
     removebtn.addEventListener('click', (event) => {
@@ -177,7 +181,7 @@ function createMatchProfile(id) {
 }
 
 function createMatchPattern(list, id, value) {
-    var match = matchLET.cloneNode(true);
+    let match = matchLET.cloneNode(true);
     match.querySelector('div').textContent = match.title = value;
     match.querySelector('button').addEventListener('click', (event) => {
         saveBtn.disabled = false;

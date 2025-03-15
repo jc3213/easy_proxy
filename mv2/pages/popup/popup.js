@@ -1,24 +1,24 @@
-var easyStorage = {};
-var easyMatch = {};
-var easyTempo = {};
-var easyMatchTempo = {};
+let easyStorage = {};
+let easyMatch = {};
+let easyTempo = {};
+let easyMatchTempo = {};
 
-var easyHosts = [];
-var easyList = {};
-var easyDefault = {};
+let easyHosts = [];
+let easyList = {};
+let easyDefault = {};
 
-var easyModes = ['direct', 'autopac', 'global'];
-var easyProxy;
-var easyTab;
-var easyId = 0;
+let easyModes = ['direct', 'autopac', 'global'];
+let easyProxy;
+let easyTab;
+let easyId = 0;
 
-var changes = {};
-var checkboxes = [];
-var manager = document.body.classList;
+let changes = {};
+let checkboxes = [];
+let manager = document.body.classList;
 
-var [outputPane, proxyMenu, modeMenu] = document.querySelectorAll('#output, select');
-var [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
-var hostLET = document.querySelector('.template > div');
+let [outputPane, proxyMenu, modeMenu] = document.querySelectorAll('#output, select');
+let [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
+let hostLET = document.querySelector('.template > div');
 
 document.querySelectorAll('[i18n]').forEach((node) => {
     node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
@@ -28,15 +28,16 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
     node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
 });
 
+const shortcutHandlers = {
+    'z': expandBtn,
+    'Enter': submitBtn
+};
+
 document.addEventListener('keydown', (event) => {
-    event.preventDefault();
-    switch(event.key) {
-        case 'z':
-            expandBtn.click();
-            break;
-        case 'Enter':
-            submitBtn.click();
-            break;
+    let handler = shortcutHandlers[event.key];
+    if (handler) {
+        event.preventDefault();
+        handler.click();
     }
 });
 
@@ -48,11 +49,11 @@ expandBtn.addEventListener('click', (event) => {
 });
 
 modeMenu.addEventListener('change', (event) => {
-    var mode = event.target.value;
-    var proxy = proxyMenu.value;
-    var params = mode === 'global' ? proxy : mode;
-    chrome.runtime.sendMessage({action: 'proxy_state', params}, (response) => {
-        var hide = easyModes.filter((key) => key !== mode);
+    let mode = event.target.value;
+    let proxy = proxyMenu.value;
+    let params = mode === 'global' ? proxy : mode;
+    chrome.runtime.sendMessage({action: 'easyproxy_mode', params}, (response) => {
+        let hide = easyModes.filter((key) => key !== mode);
         manager.add(mode);
         manager.remove(...hide);
         if (mode === 'autopac' && !manager.contains('asleep')) {
@@ -62,7 +63,7 @@ modeMenu.addEventListener('change', (event) => {
 });
 
 submitBtn.addEventListener('click', (event) => {
-    proxyStatusChanged('manager_submit', 'match', easyStorage, easyMatch);
+    proxyStatusChanged('manager_update', 'match', easyStorage, easyMatch);
 });
 
 tempoBtn.addEventListener('click', (event) => {
@@ -83,13 +84,13 @@ function proxyStatusChanged(action, type, storage, logs) {
     if (checkboxes.length === 0) {
         return;
     }
-    var proxy = proxyMenu.value;
-    var add = [];
-    var remove = [];
-    var matches = storage[proxy] ??= [];
+    let proxy = proxyMenu.value;
+    let add = [];
+    let remove = [];
+    let matches = storage[proxy] ??= [];
     checkboxes.forEach((check) => {
-        var {value, checked} = check;
-        var status = check.parentNode.classList[2];
+        let {value, checked} = check;
+        let status = check.parentNode.classList[2];
         if (status && status !== type) {
             check.checked = easyDefault[value];
         } else if (checked && !logs[value]) {
@@ -113,8 +114,8 @@ optionsBtn.addEventListener('click', (event) => {
 });
 
 outputPane.addEventListener('change', (event) => {
-    var entry = event.target;
-    var {value, checked} = entry;
+    let entry = event.target;
+    let {value, checked} = entry;
     if (easyDefault[value] === checked) {
         checkboxes = checkboxes.filter((node) => node !== entry);
     } else {
@@ -127,13 +128,13 @@ proxyMenu.addEventListener('change', (event) => {
     easyProxy = event.target.value;
     if (easyMode === 'autopac') {
         easyHosts.forEach((match) => {
-            var host = match.value;
+            let host = match.value;
             match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
             match.disabled = easyMatch[host] && easyMatch[host] !== proxy || easyMatchTempo[host] && easyMatchTempo[host] !== proxy;
         });
     } else {
         easyStorage.direct = easyProxy;
-        chrome.runtime.sendMessage({action: 'proxy_state', params: easyProxy});
+        chrome.runtime.sendMessage({action: 'easyproxy_mode', params: easyProxy});
     }
 });
 
@@ -162,7 +163,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_initial', params: {tabId: easyTab}}, ({storage, tempo, result}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: {tabId: easyTab}}, ({storage, tempo, result}) => {
         easyWatch = result;
         easyStorage = storage;
         easyStorage.proxies.forEach((proxy) => {
@@ -170,7 +171,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             easyTempo[proxy] = tempo[proxy].data;
             easyProxyCeate(proxy);
         });
-        var mode = storage.direct;
+        let mode = storage.direct;
         if (mode === 'direct' || mode === 'autopac') {
             modeMenu.value = mode;
             manager.add(mode);
@@ -189,7 +190,7 @@ function easyManagerSetup() {
 }
 
 function easyProxyCeate(proxy) {
-    var menu = document.createElement('option');
+    let menu = document.createElement('option');
     menu.textContent = menu.title = menu.value = proxy;
     proxyMenu.append(menu);
     easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
@@ -200,9 +201,9 @@ function easyMatchPattern(value, type) {
     if (easyList[value]) {
         return;
     }
-    var host = hostLET.cloneNode(true);
+    let host = hostLET.cloneNode(true);
     host.classList.add(type);
-    var [entry, label] = host.querySelectorAll('input, label');
+    let [entry, label] = host.children;
     entry.id = 'easyproxy_' + easyId;
     label.setAttribute('for', entry.id);
     host.title = label.textContent = entry.value = value;
