@@ -23,7 +23,7 @@ if (manifest === 3) {
 const messageHandlers = {
     'storage_query': (response) => response({ storage: {...easyDefault, ...easyStorage}, manifest }),
     'storage_update': easyStorageUpdated,
-    'pacscript_query': (response) => response(easyMatch[params].pac_script),
+    'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
     'manager_query': (response, params) => response({ storage: {...easyDefault, ...easyStorage}, tempo: easyTempo, result: easyInspect[params.tabId] }),
     'manager_update': (response, params) => easyMatchUpdated(params),
     'manager_tempo': (response, params) => easyMatchPattern(easyTempo, params),
