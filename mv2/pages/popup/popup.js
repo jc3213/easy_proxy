@@ -1,24 +1,20 @@
 let easyStorage = {};
-let easyMatch = {};
+let easyCache = {};
 let easyTempo = {};
-let easyMatchTempo = {};
-
+let easyTempoCache = {};
 let easyHosts = [];
 let easyList = {};
 let easyDefault = {};
-
 let easyModes = ['direct', 'autopac', 'global'];
 let easyProxy;
 let easyTab;
 let easyId = 0;
-
-let changes = {};
 let checkboxes = [];
-let manager = document.body.classList;
 
 let [outputPane, proxyMenu, modeMenu] = document.querySelectorAll('#output, select');
 let [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
 let hostLET = document.querySelector('.template > div');
+let manager = document.body.classList;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
     node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
@@ -63,20 +59,20 @@ modeMenu.addEventListener('change', (event) => {
 });
 
 submitBtn.addEventListener('click', (event) => {
-    proxyStatusChanged('manager_update', 'match', easyStorage, easyMatch);
+    proxyStatusChanged('manager_update', 'match', easyStorage, easyCache);
 });
 
 tempoBtn.addEventListener('click', (event) => {
     if (event.ctrlKey && event.altKey) {
-        easyMatchTempo = {};
+        easyTempoCache = {};
         easyTempo = {};
         easyHosts.forEach((match) => {
             match.parentNode.classList.remove('tempo');
-            match.checked = easyMatch[match.value] === easyProxy ? true : false;
+            match.checked = easyCache[match.value] === easyProxy ? true : false;
         });
         chrome.runtime.sendMessage({action:'manager_purge', params: easyTab});
     } else {
-        proxyStatusChanged('manager_tempo', 'tempo', easyTempo, easyMatchTempo);
+        proxyStatusChanged('manager_tempo', 'tempo', easyTempo, easyTempoCache);
     }
 });
 
@@ -121,7 +117,6 @@ outputPane.addEventListener('change', (event) => {
     } else {
         checkboxes.push(entry);
     }
-    changes[value] = checked;
 });
 
 proxyMenu.addEventListener('change', (event) => {
@@ -129,8 +124,8 @@ proxyMenu.addEventListener('change', (event) => {
     if (easyMode === 'autopac') {
         easyHosts.forEach((match) => {
             let host = match.value;
-            match.checked = easyMatch[host] === proxy || easyMatchTempo[host] === proxy;
-            match.disabled = easyMatch[host] && easyMatch[host] !== proxy || easyMatchTempo[host] && easyMatchTempo[host] !== proxy;
+            match.checked = easyCache[host] === proxy || easyTempoCache[host] === proxy;
+            match.disabled = easyCache[host] && easyCache[host] !== proxy || easyTempoCache[host] && easyTempoCache[host] !== proxy;
         });
     } else {
         easyStorage.direct = easyProxy;
@@ -138,21 +133,21 @@ proxyMenu.addEventListener('change', (event) => {
     }
 });
 
-chrome.runtime.onMessage.addListener(({action, params}) => {
-    switch (action) {
-        case 'manager_update':
-            easyMatchUpdate(params);
-            break;
-    }
-});
+const messageHandlers = {
+    'manager_update': easyMatchUpdated
+};
 
-function easyMatchUpdate({tabId, host, match}) {
+function easyMatchUpdated({tabId, host, match}) {
     if (easyProxy && tabId === easyTab) {
         easyMatchPattern(host, 'hostname');
         easyMatchPattern(match, 'wildcard');
         manager.remove('asleep');
     }
 }
+
+chrome.runtime.onMessage.addListener((message) => {
+    messageHandlers[message.action](message.params);
+});
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
     if (tabId === easyTab && frameId === 0) {
@@ -193,8 +188,8 @@ function easyProxyCeate(proxy) {
     let menu = document.createElement('option');
     menu.textContent = menu.title = menu.value = proxy;
     proxyMenu.append(menu);
-    easyStorage[proxy].forEach((match) => easyMatch[match] = proxy);
-    easyTempo[proxy]?.forEach((match) => easyMatchTempo[match] = proxy);
+    easyStorage[proxy].forEach((match) => easyCache[match] = proxy);
+    easyTempo[proxy]?.forEach((match) => easyTempoCache[match] = proxy);
 }
 
 function easyMatchPattern(value, type) {
@@ -208,16 +203,16 @@ function easyMatchPattern(value, type) {
     label.setAttribute('for', entry.id);
     host.title = label.textContent = entry.value = value;
     outputPane.append(host);
-    if (easyMatch[value]) {
+    if (easyCache[value]) {
         host.classList.add('match');
         easyList.lastMatch?.after(host) || outputPane.insertBefore(host, outputPane.children[0]);
         easyList.lastMatch = host;
-    } else if (easyMatchTempo[value]) {
+    } else if (easyTempoCache[value]) {
         host.classList.add('tempo');
         easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host) || outputPane.insertBefore(host, outputPane.children[0]);
         easyList.lastTempo = host;
     }
-    if (easyMatch[value] === easyProxy || easyMatchTempo[value] === easyProxy) {
+    if (easyCache[value] === easyProxy || easyTempoCache[value] === easyProxy) {
         entry.checked = true;
     }
     easyHosts.push(entry);
