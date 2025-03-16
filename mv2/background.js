@@ -29,7 +29,7 @@ const messageHandlers = {
     'manager_tempo': (response, params) => easyMatchPattern(easyTempo, params),
     'manager_purge': easyTempoPurged,
     'easyproxy_mode': easyModeChanger,
-    'persistent_mode': persistentModeHandler
+    'persistent_mode': persistentModeSwitcher
 };
 
 function easyStorageUpdated(response, json) {
@@ -91,16 +91,18 @@ function easyModeChanger(response, params) {
     response(true);
 }
 
+function persistentModeSwitcher() {
+    easyStorage.persistent = !easyStorage.persistent;
+    persistentModeHandler();
+}
+
 chrome.runtime.onMessage.addListener((message, sender, response) => {
     messageHandlers[message.action](response, message.params ?? sender);
     return true;
 });
 
 const proxyHandlers = {
-    'autopac': () => {
-        persistentModeSwitch();
-        return { mode: 'pac_script', color: '#2940D9', params: { pacScript: {data: easyScript} } };
-    },
+    'autopac': () => ({ mode: 'pac_script', color: '#2940D9', params: { pacScript: {data: easyScript} } }),
     'direct': () => ({ mode: 'direct', color: '#C1272D' }),
     'global': (direct) => {
         let [scheme, host, port] = direct.split(/[\s:]/);
@@ -196,7 +198,7 @@ chrome.storage.local.get(null, (json) => {
         easyTempo[proxy] = tempo;
     });
     easyProxyScript();
-    persistentModeSwitch();
+    persistentModeHandler();
 });
 
 function easyProxyScript() {
@@ -207,11 +209,6 @@ function easyProxyScript() {
 }
 
 function persistentModeHandler() {
-    easyStorage.persistent = !easyStorage.persistent;
-    persistentModeSwitch();
-}
-
-function persistentModeSwitch() {
     if (manifest === 3 && easyStorage.persistent) {
         easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
     } else {
