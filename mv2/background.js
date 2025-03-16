@@ -99,25 +99,22 @@ chrome.runtime.onMessage.addListener((message, sender, response) => {
 const proxyHandlers = {
     'autopac': () => {
         persistentModeSwitch();
-        easyProxyHandler('pac_script', '#2940D9', { pacScript: {data: easyScript} });
+        return { mode: 'pac_script', color: '#2940D9', params: { pacScript: {data: easyScript} } };
     },
-    'direct': () => easyProxyHandler('direct', '#C1272D'),
-    'global': (mode) => {
-        let [scheme, host, port] = proxy.split(/[\s:]/);
+    'direct': () => ({ mode: 'direct', color: '#C1272D' }),
+    'global': (direct) => {
+        let [scheme, host, port] = direct.split(/[\s:]/);
         let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-        easyProxyHandler('pac_script', '#208020', { singleProxy, bypassList: ['localhost', '127.0.0.1'] });
+        return { mode: 'fixed_servers', color: '#208020', params: { rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } } };
     }
 };
 
-function easyProxyHandler(mode, color, params = {}) {
+function easyProxyMode(direct) {
+    easyMode = direct;
+    let handler = proxyHandlers[direct] ?? proxyHandlers.global;
+    let {mode, color, params = {}} = handler(direct);
     chrome.proxy.settings.set({ value: { mode, ...params }, scope: 'regular' });
     chrome.action.setBadgeBackgroundColor({color});
-}
-
-function easyProxyMode(mode) {
-    easyMode = mode;
-    let handler = proxyHandlers[mode] ?? proxyHandlers.global;
-    handler(mode);
 }
 
 chrome.action ??= chrome.browserAction;
