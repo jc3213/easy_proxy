@@ -111,15 +111,14 @@ class MatchPattern {
         if (MatchPattern.instances.length === 0) {
             return {regexp: /!/, pac_script: 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'};
         }
-        let result = '';
-        let pac = '';
+        let text = [];
+        let pac = [];
         MatchPattern.instances.forEach((instance) => {
-            let text = MatchPattern.stringnify(instance.data);
-            result += text + '|';
-            pac += '\n    if (/' + text + '/i.test(host)) {\n        return "' + instance.proxy + '";\n    }';
+            text.push(instance.text);
+            pac.push('\n    if (/' + instance.text + '/i.test(host)) {\n        return "' + instance.proxy + '";\n    }');
         });
-        let regexp = new RegExp('(' + result.slice(0, -1) + ')');
-        let pac_script = 'function FindProxyForURL(url, host) {' + pac + '\n    return "DIRECT";\n}';
+        let regexp = new RegExp('(' + text.join('|') + ')');
+        let pac_script = 'function FindProxyForURL(url, host) {' + pac.join('') + '\n    return "DIRECT";\n}';
         return { regexp , pac_script };
     }
 };
