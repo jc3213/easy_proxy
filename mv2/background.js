@@ -24,8 +24,8 @@ const messageHandlers = {
     'storage_query': (response) => response({ storage: {...easyDefault, ...easyStorage}, manifest }),
     'storage_update': easyStorageUpdated,
     'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
-    'manager_query': (response, params) => response({ storage: {...easyDefault, ...easyStorage}, tempo: easyTempo, result: easyInspect[params.tabId] }),
-    'manager_update': (response, params) => easyMatchUpdated(params),
+    'manager_query': (response, params) => response({ storage: easyStorage, tempo: easyTempo, inspect: easyInspect[params.tabId] }),
+    'manager_update': easyMatchUpdated,
     'manager_tempo': (response, params) => easyMatchPattern(easyTempo, params),
     'manager_purge': easyTempoPurged,
     'easyproxy_mode': easyModeChanger,
@@ -64,7 +64,7 @@ function easyStorageUpdated(response, json) {
     chrome.storage.local.set(json);
 }
 
-function easyMatchUpdated({add, remove, proxy, tabId}) {
+function easyMatchUpdated(response, {add, remove, proxy, tabId}) {
     easyMatchPattern(easyMatch, {add, remove, proxy, tabId});
     easyStorage[proxy] = easyMatch[proxy].data;
     chrome.storage.local.set(easyStorage);
@@ -121,12 +121,12 @@ chrome.action ??= chrome.browserAction;
 
 chrome.tabs.query({}, (tabs) => {
     tabs.forEach(({id, url}) => {
-        easyInspect[id] = { host: [], match: [], cache: {}, index: 0, result: [], url };
+        easyInspect[id] = { host: [], match: [], cache: {}, index: 0, url };
     });
 });
 
 chrome.tabs.onCreated.addListener(({id, url}) => {
-    easyInspect[id] = { host: [], match: [], cache: {}, index: 0, result: [], url };
+    easyInspect[id] = { host: [], match: [], cache: {}, index: 0, url };
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -178,7 +178,6 @@ function easyProxyIndicator(tabId, host, url) {
         return;
     }
     easyInspect[tabId].index ++;
-    easyInspect[tabId].result.push(url);
     chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
 }
 
