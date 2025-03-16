@@ -28,8 +28,7 @@ const messageHandlers = {
     'manager_update': easyMatchUpdated,
     'manager_tempo': (response, params) => easyMatchPattern(easyTempo, params),
     'manager_purge': easyTempoPurged,
-    'easyproxy_mode': easyModeChanger,
-    'persistent_mode': persistentModeSwitcher
+    'easyproxy_mode': easyModeChanger
 };
 
 function easyStorageUpdated(response, json) {
@@ -57,9 +56,10 @@ function easyStorageUpdated(response, json) {
             return true;
         }
     });
+    MatchPattern.erase(removed);
     easyStorage = json;
     easyProxyScript();
-    MatchPattern.erase(removed);
+    persistentModeHandler();
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
 }
@@ -89,11 +89,6 @@ function easyModeChanger(response, params) {
     easyStorage.direct = params;
     chrome.storage.local.set(easyStorage);
     response(true);
-}
-
-function persistentModeSwitcher() {
-    easyStorage.persistent = !easyStorage.persistent;
-    persistentModeHandler();
 }
 
 chrome.runtime.onMessage.addListener((message, sender, response) => {
