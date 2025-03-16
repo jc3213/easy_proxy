@@ -2,9 +2,10 @@ let easyStorage = {};
 let easyCache = {};
 let easyTempo = {};
 let easyTempoCache = {};
+let easyInspect = {};
 let easyHosts = [];
-let easyList = {};
 let easyDefault = {};
+let easyList = {};
 let easyModes = ['direct', 'autopac', 'global'];
 let easyProxy;
 let easyTab;
@@ -158,11 +159,11 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: {tabId: easyTab}}, ({storage, tempo, result}) => {
-        easyWatch = result;
+    chrome.runtime.sendMessage({action: 'manager_query', params: {tabId: easyTab}}, ({storage, tempo, inspect}) => {
+        easyInspect = inspect;
         easyStorage = storage;
+        easyProxy = easyStorage.proxies[0];
         easyStorage.proxies.forEach((proxy) => {
-            easyProxy ??= proxy;
             easyTempo[proxy] = tempo[proxy].data;
             easyProxyCeate(proxy);
         });
@@ -175,13 +176,13 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             proxyMenu.value = mode;
             manager.add('global');
         }
-        !easyProxy || !easyWatch ? manager.add('asleep') : easyManagerSetup();
+        inspect.host.length === 0 && inspect.match.length === 0 || !easyProxy ? manager.add('asleep') : easyManagerSetup();
     });
 });
 
 function easyManagerSetup() {
-    easyWatch.host.forEach((value) => easyMatchPattern(value, 'hostname'));
-    easyWatch.match.forEach((value) => easyMatchPattern(value, 'wildcard'));
+    easyInspect.host.forEach((value) => easyMatchPattern(value, 'hostname'));
+    easyInspect.match.forEach((value) => easyMatchPattern(value, 'wildcard'));
 }
 
 function easyProxyCeate(proxy) {
