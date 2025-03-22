@@ -97,20 +97,20 @@ chrome.runtime.onMessage.addListener((message, sender, response) => {
 });
 
 const proxyHandlers = {
-    'autopac': () => ({ mode: 'pac_script', color: '#2940D9', params: { pacScript: {data: easyScript} } }),
-    'direct': () => ({ mode: 'direct', color: '#C1272D' }),
+    'autopac': () => ({ color: '#2940D9', value: { mode: 'pac_script', pacScript: {data: easyScript} } }),
+    'direct': () => ({ color: '#C1272D', value: { mode: 'direct' } }),
     'global': (direct) => {
         let [scheme, host, port] = direct.split(/[\s:]/);
         let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-        return { mode: 'fixed_servers', color: '#208020', params: { rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } } };
+        return { color: '#208020', value: { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } } };
     }
 };
 
 function easyProxyMode(direct) {
     easyMode = direct;
     let handler = proxyHandlers[direct] ?? proxyHandlers.global;
-    let {mode, color, params = {}} = handler(direct);
-    chrome.proxy.settings.set({ value: { mode, ...params }, scope: 'regular' });
+    let {color, value} = handler(direct);
+    chrome.proxy.settings.set({ value, scope: 'regular' });
     chrome.action.setBadgeBackgroundColor({color});
 }
 
