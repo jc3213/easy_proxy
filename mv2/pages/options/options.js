@@ -19,7 +19,7 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
 const shortcutHandlers = {
     's': saveBtn,
     'f': newBtn,
-    'q': optionsBtn
+    'g': optionsBtn
 };
 
 document.addEventListener('keydown', (event) => {
@@ -30,24 +30,31 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-newBtn.addEventListener('click', (event) => {
+const menuEventHandlers = {
+    'options_profile': menuEventNewProf,
+    'options_advance': menuEventAdvance,
+    'options_save': menuEventSave,
+    'options_export': menuEventExport
+};
+
+function menuEventNewProf() {
     extension.remove('set_options');
     extension.toggle('new_profile');
-});
+}
 
-optionsBtn.addEventListener('click', (event) => {
+function menuEventAdvance() {
     extension.remove('new_profile');
     extension.toggle('set_options');
-});
+}
 
-saveBtn.addEventListener('click', (event) => {
+function menuEventSave() {
     saveBtn.disabled = true;
     chrome.runtime.sendMessage({action: 'storage_update', params: easyStorage});
-});
+}
 
-exportBtn.addEventListener('click', (event) => {
+function menuEventExport() {
     fileSaver(JSON.stringify(easyStorage, null, 4), 'json', 'easy_proxy', '.json');
-});
+}
 
 function fileSaver(data, type, filename, filetype) {
     let blob = new Blob([data], {type: 'application/' + type + ';charset=utf-8;'});
@@ -55,6 +62,13 @@ function fileSaver(data, type, filename, filetype) {
     exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_') + filetype;
     exporter.click();
 }
+
+menuPane.addEventListener('click', (event) => {
+    let handler = menuEventHandlers[event.target.getAttribute('i18n')];
+    if (handler) {
+        handler();
+    }
+});
 
 submitBtn.addEventListener('click', (event) => {
     let profile = schemeEntry.value + ' ' + hostEntry.value + ':' + portEntry.value;
