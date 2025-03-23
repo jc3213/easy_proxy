@@ -18,12 +18,12 @@ body.global > :nth-child(-n + 2) {
     display: none;
 }
 
-body.asleep > #menu > button:nth-child(-n + 3),
+body.asleep > #menu button:nth-child(-n + 2),
 body.asleep > #proxy > *,
-body.direct > #menu > button:nth-child(-n + 3),
+body.direct > #menu button:nth-child(-n + 2),
 body.direct > #proxy > *,
-body.global > #menu > button:nth-child(-n + 3) {
-    filter: contrast(25%);
+body.global > #menu button:nth-child(-n + 2) {
+    filter: contrast(40%);
     pointer-events: none;
 }
 
@@ -52,6 +52,18 @@ body.expand > #proxy > button {
 
 #output:empty + hr {
     display: none;
+}
+
+.hover > :last-child {
+    bottom: 102%;
+    display: none;
+    left: 0px;
+    position: absolute;
+    width: 100%;
+}
+
+.hover:hover > :last-child {
+    display: block;
 }
 
 .match {

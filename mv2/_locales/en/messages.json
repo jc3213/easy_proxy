@@ -60,7 +60,7 @@
         "message": "Direct"
     },
     "proxy_autopac": {
-        "message": "PAC"
+        "message": "Auto"
     },
     "proxy_global": {
         "message": "Global"
@@ -73,6 +73,9 @@
     },
     "popup_tempo": {
         "message": "Tempo"
+    },
+    "popup_purge": {
+        "message": "Purge"
     },
     "popup_options": {
         "message": "Options"

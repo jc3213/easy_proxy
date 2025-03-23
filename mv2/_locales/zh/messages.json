@@ -74,6 +74,9 @@
     "popup_tempo": {
         "message": "临时"
     },
+    "popup_purge": {
+        "message": "清除"
+    },
     "popup_options": {
         "message": "设置"
     },
