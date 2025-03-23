@@ -1,6 +1,5 @@
 let easyProfile = {};
 let easyProxy = {};
-let easyModes = ['direct', 'autopac', 'global'];
 
 let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
@@ -91,28 +90,27 @@ profilePane.addEventListener('keydown', (event) => {
     }
 });
 
-modeMenu.addEventListener('change', (event) => {
-    let mode = event.target.value;
-    let hide = easyModes.filter((key) => key !== mode);
-    extension.add(...mode);
+const optionHandlers = {
+    'work-mode': optionProxyMode,
+    'proxy-server': () => easyStorage.direct = proxyMenu.value,
+    'indicator': ({checked}) => easyStorage.indicator = checked,
+    'persistent': ({checked}) => easyStorage.persistent = checked
+};
+const optionModes = ['direct', 'autopac', 'global'];
+
+function optionProxyMode({value}) {
+    let hide = optionModes.filter((key) => key !== value);
+    extension.add(value);
     extension.remove(...hide);
-    easyStorage.direct = mode === 'global' ? proxyMenu.value : mode;
-    saveBtn.disabled = false;
-});
+    easyStorage.direct = value === 'global' ? proxyMenu.value : value;
+}
 
-proxyMenu.addEventListener('change', (event) => {
-    easyStorage.direct = proxyMenu.value;
-    saveBtn.disabled = false;
-});
-
-indicatorMenu.addEventListener('change', (event) => {
-    easyStorage.indicator = event.target.checked;
-    saveBtn.disabled = false;
-});
-
-persistMenu.addEventListener('change', (event) => {
-    easyStorage.persistent = event.target.checked;
-    saveBtn.disabled = false;
+optionsPane.addEventListener('change', (event) => {
+    let handler = optionHandlers[event.target.id];
+    if (handler) {
+        handler(event.target);
+        saveBtn.disabled = false;
+    }
 });
 
 chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
