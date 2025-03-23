@@ -3,10 +3,11 @@ let easyProxy = {};
 let easyModes = ['direct', 'autopac', 'global'];
 
 let extension = document.body.classList;
-let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, submitBtn] = document.querySelectorAll('#menu > button, #menu > input, #profile > button');
-let [exporter, modeMenu, proxyMenu, indicatorMenu, persistMenu, manager] = document.querySelectorAll('a, #options [id], #manager');
-let [profileLET, matchLET] = document.querySelectorAll('.template > *');
-let [schemeEntry, hostEntry, portEntry] = document.querySelectorAll('#profile > [name]');
+let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
+let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
+let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
+let [modeMenu, proxyMenu, indicatorMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [profileLET, matchLET] = template.children;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
     node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
@@ -17,7 +18,9 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
 });
 
 const shortcutHandlers = {
-    's': saveBtn
+    's': saveBtn,
+    'f': newBtn,
+    'q': optionsBtn
 };
 
 document.addEventListener('keydown', (event) => {
@@ -54,18 +57,9 @@ function fileSaver(data, type, filename, filetype) {
     exporter.click();
 }
 
-hostEntry.addEventListener('keydown', newProfileShortcut);
-portEntry.addEventListener('keydown', newProfileShortcut);
-
-function newProfileShortcut(event) {
-    if (event.key === 'Enter') {
-        submitBtn.click();
-    }
-}
-
 submitBtn.addEventListener('click', (event) => {
     let profile = schemeEntry.value + ' ' + hostEntry.value + ':' + portEntry.value;
-    if (easyStorage[profile]) {
+    if (!hostEntry.value || !portEntry.value || easyStorage[profile]) {
         return;
     }
     easyStorage[profile] = [];
@@ -81,7 +75,7 @@ importEntry.addEventListener('change', (event) => {
     let reader = new FileReader();
     reader.onload = (event) => {
         let params = JSON.parse(reader.result);
-        manager.innerHTML = '';
+        managePane.innerHTML = '';
         easyStorage = params;
         easyStorage.proxies.forEach(createMatchProfile);
         event.target.value = '';
@@ -89,6 +83,12 @@ importEntry.addEventListener('change', (event) => {
         chrome.runtime.sendMessage({action: 'storage_update', params});
     };
     reader.readAsText(event.target.files[0]);
+});
+
+profilePane.addEventListener('keydown', (event) => {
+    if (event.target.localName === 'input' && event.key === 'Enter') {
+        submitBtn.click();
+    }
 });
 
 modeMenu.addEventListener('change', (event) => {
@@ -119,13 +119,17 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     let mode = storage.direct;
     easyStorage = storage;
     easyStorage.proxies.forEach(createMatchProfile);
-    if (mode === 'direct' || mode === 'autopac') {
-        modeMenu.value = mode;
-        extension.add(mode);
-    } else {
-        modeMenu.value = 'global';
-        proxyMenu.value = mode;
-        extension.add('global');
+    switch (mode) {
+        case 'direct':
+        case 'autopac':
+            modeMenu.value = mode;
+            extension.add(mode);
+            break;
+        default:
+            modeMenu.value = 'global';
+            proxyMenu.value = mode;
+            extension.add('global');
+            break;
     }
     indicatorMenu.checked = easyStorage.indicator;
     if (manifest === 3) {
@@ -135,58 +139,80 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     }
 });
 
-function createMatchProfile(id) {
-    let profile = profileLET.cloneNode(true);
-    let [proxy, exportbtn,, entry, addbtn, sortbtn, removebtn, matches] = profile.children;
-    let server = document.createElement('option');
-    proxy.textContent = server.value = server.textContent = id;
-    entry.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            addbtn.click();
+const profileHandlers = {
+    'profile_export': profileExport,
+    'profile_resort': profileResort,
+    'profile_remove': profileRemove,
+    'match_add': matchAddNew,
+    'match_remove': matchRemove
+};
+
+function profileExport(id) {
+    chrome.runtime.sendMessage({action: 'pacscript_query', params: id}, (pac_script) => {
+        fileSaver(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[\s:]/g, '_'), '.pac');
+    });
+}
+
+function profileResort(id, list) {
+    saveBtn.disabled = false;
+    easyStorage[id].sort();
+    let resort = [...list.children].sort((a, b) => a.title.localeCompare(b.title));
+    list.append(...resort);
+}
+
+function profileRemove(id) {
+    saveBtn.disabled = false;
+    easyProfile[id].remove();
+    easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
+    delete easyStorage[id];
+}
+
+function matchAddNew(id, list, entry) {
+    saveBtn.disabled = false;
+    let storage = easyStorage[id];
+    entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
+        if (value && !storage.includes(value)) {
+            createMatchPattern(list, id, value);
+            storage.push(value);
         }
     });
-    exportbtn.addEventListener('click', (event) => {
-        chrome.runtime.sendMessage({action: 'pacscript_query', params: id}, (pac_script) => {
-            fileSaver(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[\s:]/g, '_'), '.pac');
-        });
+    entry.value = '';
+    list.scrollTop = list.scrollHeight;
+}
+
+function matchRemove(id, list, entry, event) {
+    saveBtn.disabled = false;
+    let match = event.target.parentNode;
+    let value = match.title;
+    match.remove();
+    easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
+}
+
+function createMatchProfile(id) {
+    let profile = profileLET.cloneNode(true);
+    let [proxy,, entry,,,, list] = profile.children;
+    let server = document.createElement('option');
+    proxy.textContent = server.value = server.textContent = id;
+    profile.addEventListener('click', (event) => {
+        let handler = profileHandlers[event.target.getAttribute('i18n-tips')];
+        if (handler) {
+            handler(id, list, entry, event);
+        }
     });
-    addbtn.addEventListener('click', (event) => {
-        saveBtn.disabled = false;
-        let storage = easyStorage[id];
-        entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
-            if (value && !storage.includes(value)) {
-                createMatchPattern(matches, id, value);
-                storage.push(value);
-            }
-        });
-        entry.value = '';
-        matches.scrollTop = matches.scrollHeight;
+    entry.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            matchAddNew(id, list, entry);
+        }
     });
-    sortbtn.addEventListener('click', (event) => {
-        saveBtn.disabled = false;
-        easyStorage[id].sort();
-        let resort = [...matches.children].sort((a, b) => a.textContent.localeCompare(b.textContent));
-        matches.append(...resort);
-    });
-    removebtn.addEventListener('click', (event) => {
-        saveBtn.disabled = false;
-        easyProfile[id].remove();
-        easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
-        delete easyStorage[id];
-    });
-    easyStorage[id].forEach((value) => createMatchPattern(matches, id, value));
+    easyStorage[id].forEach((value) => createMatchPattern(list, id, value));
     easyProfile[id] = profile;
     proxyMenu.appendChild(server);
-    manager.appendChild(profile);
+    managePane.appendChild(profile);
 }
 
 function createMatchPattern(list, id, value) {
     let match = matchLET.cloneNode(true);
-    match.querySelector('div').textContent = match.title = value;
-    match.querySelector('button').addEventListener('click', (event) => {
-        saveBtn.disabled = false;
-        match.remove();
-        easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
-    });
+    let name = match.children[0];
+    name.textContent = match.title = value;
     list.appendChild(match);
 }
