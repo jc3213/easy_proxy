@@ -50,20 +50,9 @@ body.expand > #proxy > button {
     padding: 3px;
 }
 
-#output:empty + hr {
+#output:empty + hr,
+.hidden {
     display: none;
-}
-
-.hover > :last-child {
-    bottom: 102%;
-    display: none;
-    left: 0px;
-    position: absolute;
-    width: 100%;
-}
-
-.hover:hover > :last-child {
-    display: block;
 }
 
 .match {
