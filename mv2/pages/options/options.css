@@ -60,12 +60,6 @@ input[type="file"], a {
     padding: 3px;
 }
 
-#manager input {
-    height: 16px;
-    position: relative;
-    top: 5px;
-}
-
 .new_profile #new-profile,
 .set_options #set-options {
     border-style: inset;
@@ -82,8 +76,15 @@ input[type="file"], a {
 }
 
 .profile > input {
+    height: 16px;
     margin-left: auto;
-    width: 250px;
+    position: relative;
+    top: 6px;
+    width: 220px;
+}
+
+.profile > button:last-of-type {
+    margin-left: auto;
 }
 
 .proxy {
