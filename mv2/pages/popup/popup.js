@@ -12,10 +12,11 @@ let easyTab;
 let easyId = 0;
 let checkboxes = [];
 
-let [outputPane, proxyMenu, modeMenu] = document.querySelectorAll('#output, select');
-let [expandBtn, submitBtn, tempoBtn, optionsBtn] = document.querySelectorAll('button');
-let hostLET = document.querySelector('.template > div');
 let manager = document.body.classList;
+let [outputPane,, proxyPane,, menuPane, template] = document.body.children;
+let [proxyMenu, expandBtn] = proxyPane.children;
+let [modeMenu, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
+let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
     node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
@@ -38,13 +39,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-expandBtn.addEventListener('click', (event) => {
-    checkboxes.forEach((check) => {
-        check.checked = easyDefault[check.value];
-    });
-    manager.toggle('expand');
-});
-
 modeMenu.addEventListener('change', (event) => {
     let mode = event.target.value;
     let proxy = proxyMenu.value;
@@ -57,6 +51,13 @@ modeMenu.addEventListener('change', (event) => {
             easyManagerSetup();
         }
     });
+});
+
+expandBtn.addEventListener('click', (event) => {
+    checkboxes.forEach((check) => {
+        check.checked = easyDefault[check.value];
+    });
+    manager.toggle('expand');
 });
 
 submitBtn.addEventListener('click', (event) => {
@@ -134,20 +135,16 @@ proxyMenu.addEventListener('change', (event) => {
     }
 });
 
-const messageHandlers = {
-    'manager_update': easyMatchUpdated
-};
-
-function easyMatchUpdated({tabId, host, match}) {
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action !== 'manager_update') {
+        return;
+    }
+    let {tabId, host, match} = message.params;
     if (easyProxy && tabId === easyTab) {
         easyMatchPattern(host, 'hostname');
         easyMatchPattern(match, 'wildcard');
         manager.remove('asleep');
     }
-}
-
-chrome.runtime.onMessage.addListener((message) => {
-    messageHandlers[message.action](message.params);
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
