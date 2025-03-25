@@ -180,9 +180,9 @@ function profileRemove(id) {
 }
 
 function matchAddNew(id, list, entry) {
-    saveBtn.disabled = false;
     let result = entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g);
     if (result) {
+        saveBtn.disabled = false;
         let storage = easyStorage[id];
         result.forEach((value) => {
             if (value && !storage.includes(value)) {
