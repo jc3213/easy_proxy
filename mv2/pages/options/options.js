@@ -181,15 +181,18 @@ function profileRemove(id) {
 
 function matchAddNew(id, list, entry) {
     saveBtn.disabled = false;
-    let storage = easyStorage[id];
-    entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g)?.forEach((value) => {
-        if (value && !storage.includes(value)) {
-            createMatchPattern(list, id, value);
-            storage.push(value);
-        }
-    });
-    entry.value = '';
-    list.scrollTop = list.scrollHeight;
+    let result = entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g);
+    if (result) {
+        let storage = easyStorage[id];
+        result.forEach((value) => {
+            if (value && !storage.includes(value)) {
+                createMatchPattern(list, id, value);
+                storage.push(value);
+            }
+        });
+        entry.value = '';
+        list.scrollTop = list.scrollHeight;
+    }
 }
 
 function matchRemove(id, list, entry, event) {
