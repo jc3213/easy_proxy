@@ -3,7 +3,7 @@ let easyCache = {};
 let easyTempo = {};
 let easyTempoCache = {};
 let easyInspect = {};
-let easyHosts = [];
+let easyChecks = [];
 let easyDefault = {};
 let easyList = {};
 let easyProxy;
@@ -12,17 +12,17 @@ let easyId = 0;
 let checkboxes = [];
 
 let manager = document.body.classList;
-let [outputPane,, proxyPane,, menuPane, template] = document.body.children;
+let [outputPane, contextPane, proxyPane,, menuPane, template] = document.body.children;
 let [proxyMenu, expandBtn] = proxyPane.children;
 let [modeMenu, submitBtn, tempoBtn, purgeBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
-    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
+    node.textContent ||= chrome.i18n.getMessage(node.getAttribute('i18n'));
 });
 
 document.querySelectorAll('[i18n-tips]').forEach((node) => {
-    node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
+    node.title ||= chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
 });
 
 const shortcutHandlers = {
@@ -33,12 +33,58 @@ const shortcutHandlers = {
 };
 
 document.addEventListener('keydown', (event) => {
-    console.log(event.key);
     let handler = shortcutHandlers[event.key];
     if (handler) {
         event.preventDefault();
         handler.click();
     }
+});
+
+outputPane.addEventListener('change', (event) => {
+    let entry = event.target;
+    let {value, checked} = entry;
+    if (easyDefault[value] === checked) {
+        checkboxes = checkboxes.filter((node) => node !== entry);
+    } else {
+        checkboxes.push(entry);
+    }
+});
+
+const contextHandlers = {
+    'popup_all': (check) => check.checked = true,
+    'popup_none': (check) => check.checked = false,
+    'popup_default': (check) => check.checked = easyDefault[check.value]
+};
+
+contextPane.addEventListener('click', (event) => {
+    let handler = contextHandlers[event.target.getAttribute('i18n')];
+    if (handler) {
+        let type = manager.contains('expand') ? 'hostname' : 'wildcard';
+        easyChecks.forEach((check) => {
+            let css = check.parentNode.classList;
+            if (css.length !== 1 || css.contains(type)) {
+                handler(check);
+            }
+        });
+    }
+});
+
+proxyMenu.addEventListener('change', (event) => {
+    easyProxy = event.target.value;
+    if (easyMode === 'autopac') {
+        easyChecks.forEach((check) => {
+            let host = check.value;
+            check.checked = easyCache[host] === proxy || easyTempoCache[host] === proxy;
+            check.disabled = easyCache[host] && easyCache[host] !== proxy || easyTempoCache[host] && easyTempoCache[host] !== proxy;
+        });
+    } else {
+        easyStorage.direct = easyProxy;
+        chrome.runtime.sendMessage({action: 'easyproxy_mode', params: easyProxy});
+    }
+});
+
+expandBtn.addEventListener('click', (event) => {
+    manager.toggle('expand');
 });
 
 const optionModes = ['direct', 'autopac', 'global'];
@@ -57,18 +103,11 @@ modeMenu.addEventListener('change', (event) => {
     });
 });
 
-expandBtn.addEventListener('click', (event) => {
-    checkboxes.forEach((check) => {
-        check.checked = easyDefault[check.value];
-    });
-    manager.toggle('expand');
-});
-
 const menuEventHandlers = {
     'popup_submit': () => proxyStatusChanged('manager_update', 'match', easyStorage, easyCache),
     'popup_tempo': () => proxyStatusChanged('manager_tempo', 'tempo', easyTempo, easyTempoCache),
     'popup_purge': menuEventPurge,
-    'pupop_options': () => chrome.runtime.openOptionsPage()
+    'popup_options': () => chrome.runtime.openOptionsPage()
 };
 
 function proxyStatusChanged(action, type, storage, logs) {
@@ -103,9 +142,9 @@ function proxyStatusChanged(action, type, storage, logs) {
 function menuEventPurge() {
     easyTempoCache = {};
     easyTempo = {};
-    easyHosts.forEach((match) => {
-        match.parentNode.classList.remove('tempo');
-        match.checked = easyCache[match.value] === easyProxy ? true : false;
+    easyChecks.forEach((check) => {
+        check.parentNode.classList.remove('tempo');
+        check.checked = easyCache[check.value] === easyProxy ? true : false;
     });
     chrome.runtime.sendMessage({action:'manager_purge', params: easyTab});
 }
@@ -114,30 +153,6 @@ menuPane.addEventListener('click', (event) => {
     let handler = menuEventHandlers[event.target.getAttribute('i18n')];
     if (handler) {
         handler();
-    }
-});
-
-outputPane.addEventListener('change', (event) => {
-    let entry = event.target;
-    let {value, checked} = entry;
-    if (easyDefault[value] === checked) {
-        checkboxes = checkboxes.filter((node) => node !== entry);
-    } else {
-        checkboxes.push(entry);
-    }
-});
-
-proxyMenu.addEventListener('change', (event) => {
-    easyProxy = event.target.value;
-    if (easyMode === 'autopac') {
-        easyHosts.forEach((match) => {
-            let host = match.value;
-            match.checked = easyCache[host] === proxy || easyTempoCache[host] === proxy;
-            match.disabled = easyCache[host] && easyCache[host] !== proxy || easyTempoCache[host] && easyTempoCache[host] !== proxy;
-        });
-    } else {
-        easyStorage.direct = easyProxy;
-        chrome.runtime.sendMessage({action: 'easyproxy_mode', params: easyProxy});
     }
 });
 
@@ -202,10 +217,10 @@ function easyMatchPattern(value, type) {
     }
     let host = hostLET.cloneNode(true);
     host.classList.add(type);
-    let [entry, label] = host.children;
-    entry.id = 'easyproxy_' + easyId;
-    label.setAttribute('for', entry.id);
-    host.title = label.textContent = entry.value = value;
+    let [check, label] = host.children;
+    check.id = 'easyproxy_' + easyId;
+    label.setAttribute('for', check.id);
+    host.title = label.textContent = check.value = value;
     outputPane.append(host);
     if (easyCache[value]) {
         host.classList.add('match');
@@ -217,10 +232,10 @@ function easyMatchPattern(value, type) {
         easyList.lastTempo = host;
     }
     if (easyCache[value] === easyProxy || easyTempoCache[value] === easyProxy) {
-        entry.checked = true;
+        check.checked = true;
     }
-    easyHosts.push(entry);
+    easyChecks.push(check);
     easyId ++;
     easyList[value] = host;
-    easyDefault[value] = entry.checked;
+    easyDefault[value] = check.checked;
 }

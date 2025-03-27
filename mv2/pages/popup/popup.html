@@ -8,7 +8,11 @@
     </head>
     <body>
         <div id="output"></div>
-        <hr>
+        <div id="context">
+            <div i18n="popup_all">All</div>
+            <div i18n="popup_none">None</div>
+            <div i18n="popup_default">Default</div>
+        </div>
         <div id="proxy">
             <select id="proxy-server"></select>
             <button i18n-tips="full_host">⚙</button>
@@ -22,7 +26,7 @@
             </select>
             <button i18n="popup_submit">Submit</button>
             <button i18n="popup_tempo">Tempo</button>
-            <button class="hidden" i18n="popup_purge">Purge</button>
+            <button style="display: none;" i18n="popup_purge">Purge</button>
             <button i18n="popup_options">Options</button>
         </div>
         <div class="template">

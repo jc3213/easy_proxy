@@ -1,5 +1,5 @@
 body {
-    margin: 8px;
+    margin: 4px;
 }
 
 label {
@@ -50,8 +50,28 @@ body.expand > #proxy > button {
     padding: 3px;
 }
 
-#output:empty + hr,
-.hidden {
+#context {
+    display: flex;
+    gap: auto;
+    height: 23px;
+    margin-bottom: 3px;
+}
+
+#context > div {
+    flex: 1;
+    text-align: center;
+}
+
+#context > :hover {
+    border-style: outset;
+    border-width: 1px;
+}
+
+#context > :active {
+    border-style: inset;
+}
+
+#output:empty + div {
     display: none;
 }
 
