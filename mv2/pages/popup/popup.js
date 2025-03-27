@@ -13,6 +13,7 @@ let checkboxes = [];
 
 let manager = document.body.classList;
 let [outputPane, contextPane, proxyPane,, menuPane, template] = document.body.children;
+let [allBtn, noneBtn, defaultBtn] = contextPane.children;
 let [proxyMenu, expandBtn] = proxyPane.children;
 let [modeMenu, submitBtn, tempoBtn, purgeBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
@@ -26,6 +27,9 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
 });
 
 const shortcutHandlers = {
+    'a': allBtn,
+    'e': noneBtn,
+    'd': defaultBtn,
     '`': expandBtn,
     'Enter': submitBtn,
     ' ': tempoBtn,
