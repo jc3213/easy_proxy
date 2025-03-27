@@ -80,6 +80,15 @@
     "popup_options": {
         "message": "Options"
     },
+    "popup_all": {
+        "message": "All"
+    },
+    "popup_none": {
+        "message": "None"
+    },
+    "popup_default": {
+        "message": "Default"
+    },
     "full_host": {
         "message": "Toggle host name match rules"
     }

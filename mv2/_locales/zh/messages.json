@@ -80,6 +80,15 @@
     "popup_options": {
         "message": "设置"
     },
+    "popup_all": {
+        "message": "全选"
+    },
+    "popup_none": {
+        "message": "全清"
+    },
+    "popup_default": {
+        "message": "初始"
+    },
     "full_host": {
         "message": "切换域名匹配规则"
     }
