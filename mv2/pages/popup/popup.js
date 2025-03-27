@@ -18,11 +18,11 @@ let [modeMenu, submitBtn, tempoBtn, purgeBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
-    node.textContent ||= chrome.i18n.getMessage(node.getAttribute('i18n'));
+    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
 });
 
 document.querySelectorAll('[i18n-tips]').forEach((node) => {
-    node.title ||= chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
+    node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
 });
 
 const shortcutHandlers = {
