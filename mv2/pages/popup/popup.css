@@ -18,11 +18,11 @@ body.global > :nth-child(-n + 2) {
     display: none;
 }
 
-body.asleep > #menu button:nth-child(-n + 2),
+body.asleep > #menu button:nth-child(-n + 3),
 body.asleep > #proxy > *,
-body.direct > #menu button:nth-child(-n + 2),
+body.direct > #menu button:nth-child(-n + 3),
 body.direct > #proxy > *,
-body.global > #menu button:nth-child(-n + 2) {
+body.global > #menu button:nth-child(-n + 3) {
     filter: contrast(40%);
     pointer-events: none;
 }
