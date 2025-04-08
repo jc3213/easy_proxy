@@ -13,16 +13,16 @@ select {
 
 body:not(.expand) > #output > :not(.wildcard),
 body.expand > #output > :not(.hostname),
-body.direct > :nth-child(-n + 2),
-body.global > :nth-child(-n + 2) {
+body.direct > :nth-child(-n+2),
+body.global > :nth-child(-n+2) {
     display: none;
 }
 
-body.asleep > #menu button:nth-child(-n + 3),
+body.asleep > #menu > button:nth-of-type(-n+3),
 body.asleep > #proxy > *,
-body.direct > #menu button:nth-child(-n + 3),
+body.direct > #menu > button:nth-of-type(-n+3),
 body.direct > #proxy > *,
-body.global > #menu button:nth-child(-n + 3) {
+body.global > #menu > button:nth-of-type(-n+3) {
     filter: contrast(40%);
     pointer-events: none;
 }
