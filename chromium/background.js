@@ -9,8 +9,9 @@ let easyStorage = {};
 let easyMatch = {};
 let easyTempo = {};
 let easyRegExp;
-let easyScript;
 let easyMode;
+let easyScript;
+let easyURL;
 let easyPersistent;
 let easyInspect = {};
 
@@ -99,25 +100,25 @@ chrome.runtime.onMessage.addListener((message, sender, response) => {
 const proxyHandlers = {
     'autopac': {
         color: '#2940D9',
-        chromium: () => ({ mode: 'pac_script', pacScript: {url: easyScript} }),
-        firefox: () => ({ proxyType: "autoConfig", autoConfigUrl: easyScript })
+        chromium: () => ({ scope: 'regular', value: { mode: 'pac_script', pacScript: { data: easyScript } } }),
+        firefox: () => ({ value: { proxyType: "autoConfig", autoConfigUrl: easyURL } })
     },
     'direct': {
         color: '#C1272D',
-        chromium: () => ({ mode: 'direct' }),
-        firefox: () => ({ proxyType: "none" })
+        chromium: () => ({ scope: 'regular', value: { mode: 'direct' } }),
+        firefox: () => ({ value: { proxyType: "none" } })
     },
     'global': {
         color: '#208020', 
         chromium: (direct) => {
             let [scheme, host, port] = direct.split(/[\s:]/);
             let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-            return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
+            return ({ scope: 'regular', value: { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } } });
         },
         firefox: (direct) => {
             let [scheme, proxy] = direct.split(' ');
             let config = proxyHandlers[scheme](proxy);
-            return { proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config };
+            return ({ value: { proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config } });
         }
     },
     'SOCKS': (proxy) => ({ socks: 'socks://' + proxy, socksVersion: 4 }),
@@ -129,8 +130,8 @@ const proxyHandlers = {
 function easyProxyMode(direct) {
     easyMode = direct;
     let {color, [system]: config} = proxyHandlers[direct] ?? proxyHandlers.global;
-    let value = config(direct);
-    chrome.proxy.settings.set({ value });
+    let proxy = config(direct);
+    chrome.proxy.settings.set(proxy);
     chrome.action.setBadgeBackgroundColor({ color });
 }
 
@@ -218,10 +219,11 @@ chrome.storage.local.get(null, (json) => {
 
 function easyProxyScript() {
     let merge = MatchPattern.merge();
-    let blob = new Blob([merge.pac_script]);
-    URL.revokeObjectURL(easyScript);
+    easyScript = merge.pac_script;
     easyRegExp = merge.regexp;
-    easyScript = URL.createObjectURL(blob);
+    URL.revokeObjectURL(easyURL);
+    let blob = new Blob([easyScript]);
+    easyURL = URL.createObjectURL(blob);
     easyProxyMode(easyStorage.direct);
 }
 
