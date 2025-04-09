@@ -100,25 +100,25 @@ chrome.runtime.onMessage.addListener((message, sender, response) => {
 const proxyHandlers = {
     'autopac': {
         color: '#2940D9',
-        chromium: () => ({ scope: 'regular', value: { mode: 'pac_script', pacScript: { data: easyScript } } }),
-        firefox: () => ({ value: { proxyType: "autoConfig", autoConfigUrl: easyURL } })
+        chromium: () => ({ mode: 'pac_script', pacScript: { data: easyScript } }),
+        firefox: () => ({ proxyType: "autoConfig", autoConfigUrl: easyURL })
     },
     'direct': {
         color: '#C1272D',
-        chromium: () => ({ scope: 'regular', value: { mode: 'direct' } }),
-        firefox: () => ({ value: { proxyType: "none" } })
+        chromium: () => ({ mode: 'direct' }),
+        firefox: () => ({ proxyType: "none" })
     },
     'global': {
         color: '#208020', 
         chromium: (direct) => {
             let [scheme, host, port] = direct.split(/[\s:]/);
             let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-            return ({ scope: 'regular', value: { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } } });
+            return ({ mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } });
         },
         firefox: (direct) => {
             let [scheme, proxy] = direct.split(' ');
             let config = proxyHandlers[scheme](proxy);
-            return ({ value: { proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config } });
+            return ({ proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config });
         }
     },
     'SOCKS': (proxy) => ({ socks: 'socks://' + proxy, socksVersion: 4 }),
@@ -130,8 +130,8 @@ const proxyHandlers = {
 function easyProxyMode(direct) {
     easyMode = direct;
     let {color, [system]: config} = proxyHandlers[direct] ?? proxyHandlers.global;
-    let proxy = config(direct);
-    chrome.proxy.settings.set(proxy);
+    let value = config(direct);
+    chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
 }
 
