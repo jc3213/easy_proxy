@@ -10,9 +10,7 @@ let easyMatch = {};
 let easyTempo = {};
 let easyRegExp;
 let easyScript;
-
 let easyMode;
-let easyLink;
 let easyPersistent;
 let easyInspect = {};
 
@@ -101,8 +99,8 @@ chrome.runtime.onMessage.addListener((message, sender, response) => {
 const proxyHandlers = {
     'autopac': {
         color: '#2940D9',
-        chromium: () => ({ mode: 'pac_script', pacScript: {data: easyScript} }),
-        firefox: () => ({ proxyType: "autoConfig", autoConfigUrl: easyLink })
+        chromium: () => ({ mode: 'pac_script', pacScript: {url: easyScript} }),
+        firefox: () => ({ proxyType: "autoConfig", autoConfigUrl: easyScript })
     },
     'direct': {
         color: '#C1272D',
@@ -221,11 +219,10 @@ chrome.storage.local.get(null, (json) => {
 
 function easyProxyScript() {
     let merge = MatchPattern.merge();
+    let blob = new Blob([merge.pac_script]);
+    URL.revokeObjectURL(easyScript);
     easyRegExp = merge.regexp;
-    easyScript = merge.pac_script;
-    URL.revokeObjectURL(easyLink);
-    let blob = new Blob([easyScript]);
-    easyLink = URL.createObjectURL(blob);
+    easyScript = URL.createObjectURL(blob);
     easyProxyMode(easyStorage.direct);
 }
 
