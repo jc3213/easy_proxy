@@ -192,7 +192,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyProxyIndicator(tabId, host, url) {
-    if (easyMode === 'direct' || easyMode === 'autopac' && !easyRegExp.test(host)) {
+    if (proxyHandlers[easyMode] && !easyRegExp.test(host)) {
         return;
     }
     easyInspect[tabId].index ++;
