@@ -130,7 +130,6 @@ function easyProxyMode(direct) {
     easyMode = direct;
     let {color, [system]: config} = proxyHandlers[direct] ?? proxyHandlers.global;
     let value = config(direct);
-    console.log(color, value, config);
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
 }
