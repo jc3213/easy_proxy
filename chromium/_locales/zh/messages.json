@@ -1,0 +1,95 @@
+{
+    "extension_name": {
+        "message": "简易代理"
+    },
+    "extension_description": {
+        "message": "一个简单易用的自动代理扩展"
+    },
+    "options_title": {
+        "message": "简易代理设置"
+    },
+    "options_profile": {
+        "message": "新档案"
+    },
+    "options_advance": {
+        "message": "选项"
+    },
+    "options_save": {
+        "message": "保存"
+    },
+    "options_import": {
+        "message": "导入"
+    },
+    "options_export": {
+        "message": "导出"
+    },
+    "options_submit": {
+        "message": "提交"
+    },
+    "options_modes": {
+        "message": "代理模式"
+    },
+    "profile_export": {
+        "message": "将此代理导出为PAC脚本"
+    },
+    "profile_resort": {
+        "message": "排序匹配规则"
+    },
+    "profile_remove": {
+        "message": "移除此代理"
+    },
+    "options_indicator": {
+        "message": "请求计数器"
+    },
+    "options_indicator_title": {
+        "message": "记录各标签页已代理的网络交通\n\n此功能\"直连\"模式不会生效"
+    },
+    "options_persistent": {
+        "message": "永驻后台"
+    },
+    "options_persistent_title": {
+        "message": "使得ServiceWorker不再休眠\n\n此功能将额外消耗部分CPU性能"
+    },
+    "match_add": {
+        "message": "添加新规则"
+    },
+    "match_remove": {
+        "message": "移除此规则"
+    },
+    "proxy_direct": {
+        "message": "直连"
+    },
+    "proxy_autopac": {
+        "message": "智能"
+    },
+    "proxy_global": {
+        "message": "全局"
+    },
+    "popup_title": {
+        "message": "简易代理管理"
+    },
+    "popup_submit": {
+        "message": "添加"
+    },
+    "popup_tempo": {
+        "message": "临时"
+    },
+    "popup_purge": {
+        "message": "清除"
+    },
+    "popup_options": {
+        "message": "设置"
+    },
+    "popup_all": {
+        "message": "全选"
+    },
+    "popup_none": {
+        "message": "全清"
+    },
+    "popup_default": {
+        "message": "初始"
+    },
+    "full_host": {
+        "message": "切换域名匹配规则"
+    }
+}

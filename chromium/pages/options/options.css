@@ -1,0 +1,119 @@
+body {
+    width: 680px;
+}
+
+body > div {
+    padding: 10px;
+}
+
+body:not(.new_profile) > #profile,
+body:not(.set_options) > #options,
+body:not(.global) #proxy-server {
+    display: none;
+}
+
+input[type="file"], a {
+    display: none;
+}
+
+#menu {
+    display: flex;
+    gap: 3px;
+}
+
+#menu > :nth-child(3) {
+    margin-left: auto;
+}
+
+#profile, #options {
+    border-style: inset;
+    border-width: 2px;
+    display: grid;
+    grid-gap: 3px;
+}
+
+#profile {
+    grid-template-columns: auto 1fr auto auto;
+}
+
+#options {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+#options > :first-child {
+    grid-column: span 2;
+}
+
+#options > :nth-child(n+2) {
+    margin-top: 10px;
+}
+
+#options label {
+    font-weight: bold;
+}
+
+#manager button {
+    font-size: 12px;
+    height: 23px;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 3px;
+}
+
+.new_profile #new-profile,
+.set_options #set-options {
+    border-style: inset;
+}
+
+.checkbox {
+    padding: 5px;
+}
+
+.profile {
+    display: flex;
+    gap: 1px;
+    flex-wrap: wrap;
+}
+
+.profile > input {
+    height: 16px;
+    margin-left: auto;
+    position: relative;
+    top: 6px;
+    width: 220px;
+}
+
+.profile > button:last-of-type {
+    margin-left: auto;
+}
+
+.proxy {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 5px 0px;
+}
+
+.matches {
+    border-style: inset;
+    border-width: 1px;
+    display: grid;
+    flex-basis: 100%;
+    grid-column-gap: 3px;
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: 30px;
+    max-height: 174px;
+    min-height: 25px;
+    overflow-y: auto;
+}
+
+.matches > * {
+    border-style: outset;
+    border-width: 1px;
+    display: flex;
+    white-space: nowrap;
+}
+
+.matches > * > :first-child {
+    flex: 1;
+}
