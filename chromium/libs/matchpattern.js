@@ -27,14 +27,15 @@ class MatchPattern {
     }
     clear () {
         this.data = [];
-        this.text = '!';
+        this.text = '';
         this.regexp = /!/;
     }
     test (host) {
         return this.regexp.test(host);
     }
     get pac_script () {
-        return 'function FindProxyForURL(url, host) {\n    if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n    return "DIRECT";\n}';
+        let result = this.text && this.proxy ? 'if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n' : '';
+        return 'function FindProxyForURL(url, host) {\n' + result + '    return "DIRECT";\n}';
     }
     static instances = [];
     static caches = {};
@@ -96,7 +97,7 @@ class MatchPattern {
     }
     static stringnify (array) {
         if (array.length === 0) {
-            return '!';
+            return '';
         }
         if (array.includes('<all-urls>') || array.includes('*')) {
             return '.*';
@@ -114,8 +115,10 @@ class MatchPattern {
         let text = [];
         let pac = [];
         MatchPattern.instances.forEach((instance) => {
-            text.push(instance.text);
-            pac.push('\n    if (/' + instance.text + '/i.test(host)) {\n        return "' + instance.proxy + '";\n    }');
+            if (instance.text && instance.proxy) {
+                text.push(instance.text);
+                pac.push('\n    if (/' + instance.text + '/i.test(host)) {\n        return "' + instance.proxy + '";\n    }');
+            }
         });
         let regexp = new RegExp('(' + text.join('|') + ')');
         let pac_script = 'function FindProxyForURL(url, host) {' + pac.join('') + '\n    return "DIRECT";\n}';
