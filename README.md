@@ -1,8 +1,8 @@
 # 简易代理
 
 ## 安装
-| <a href="https://microsoftedge.microsoft.com/addons/detail/mdoojhdlkngkgcgkefkbmfaahpclojen"><img src="https://github.com/user-attachments/assets/755ede26-33d5-41eb-9000-9ba903886041" title="Microsoft Edge" width="48" height="48"></a> |
-| - |
+| <a href="https://microsoftedge.microsoft.com/addons/detail/mdoojhdlkngkgcgkefkbmfaahpclojen"><img src="https://github.com/user-attachments/assets/755ede26-33d5-41eb-9000-9ba903886041" title="Microsoft Edge" width="64" height="64"></a> | <a href="https://addons.mozilla.org/firefox/addon/easy-proxy/"><img src="https://github.com/user-attachments/assets/e2bb973f-5106-4eae-8d1d-4a3dd25b01e5" title="Mozilla Firefox" width="64" height="64"></a> | TBA |
+| - | - | - |
 
 ## 关于
 - 一个简单易用的自动代理扩展
