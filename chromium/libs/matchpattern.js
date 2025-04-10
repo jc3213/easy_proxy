@@ -6,22 +6,14 @@ class MatchPattern {
     }
     version = '0.5';
     add (...args) {
-        args.flat().forEach((arg) => {
-            let result = MatchPattern.make(arg);
-            if (!this.data.includes(result)) {
-                this.data.push(result);
-            }
-        });
+        args.flat().forEach((arg) => this.data.push(MatchPattern.make(arg)));
+        this.data = [...new Set(this.data)];
         this.text = MatchPattern.stringnify(this.data);
         this.regexp = new RegExp(this.text);
     }
     remove (...args) {
-        args.flat().forEach((arg) => {
-            let index = this.data.indexOf(arg);
-            if (index !== -1) {
-                this.data.splice(index, 1);
-            }
-        });
+        let remove = new Set(args.flat())
+        this.data = this.data.filter((arg) => !remove.has(arg));
         this.text = MatchPattern.stringnify(this.data);
         this.regexp = new RegExp(this.text);
     }
@@ -34,7 +26,7 @@ class MatchPattern {
         return this.regexp.test(host);
     }
     get pac_script () {
-        let result = this.text && this.proxy ? '    if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n' : '';
+        let result = this.text && /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+:\d+$/.test(this.proxy) ? '    if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n' : '';
         return 'function FindProxyForURL(url, host) {\n' + result + '    return "DIRECT";\n}';
     }
     static instances = [];
@@ -99,7 +91,7 @@ class MatchPattern {
         if (array.length === 0) {
             return '';
         }
-        if (array.includes('<all-urls>') || array.includes('*')) {
+        if (array.includes('*')) {
             return '.*';
         }
         return '^(' + array.join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
@@ -112,7 +104,7 @@ class MatchPattern {
         let text = [];
         let pac = [];
         MatchPattern.instances.forEach((instance) => {
-            if (instance.text && instance.proxy) {
+            if (instance.text && /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+:\d+$/.test(instance.proxy)) {
                 text.push(instance.text);
                 pac.push('\n    if (/' + instance.text + '/i.test(host)) {\n        return "' + instance.proxy + '";\n    }');
             }
