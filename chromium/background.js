@@ -11,7 +11,6 @@ let easyTempo = {};
 let easyRegExp;
 let easyMode;
 let easyScript;
-let easyURL;
 let easyPersistent;
 let easyInspect = {};
 
@@ -101,7 +100,7 @@ const proxyHandlers = {
     'autopac': {
         color: '#2940D9',
         chromium: () => ({ mode: 'pac_script', pacScript: { data: easyScript } }),
-        firefox: () => ({ proxyType: "autoConfig", autoConfigUrl: easyURL })
+        firefox: () => ({ proxyType: "autoConfig", autoConfigUrl: 'data:,' + easyScript })
     },
     'direct': {
         color: '#C1272D',
@@ -221,9 +220,6 @@ function easyProxyScript() {
     let merge = MatchPattern.merge();
     easyScript = merge.pac_script;
     easyRegExp = merge.regexp;
-    URL.revokeObjectURL(easyURL);
-    let blob = new Blob([easyScript]);
-    easyURL = URL.createObjectURL(blob);
     easyProxyMode(easyStorage.direct);
 }
 
