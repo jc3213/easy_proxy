@@ -34,7 +34,7 @@ class MatchPattern {
         return this.regexp.test(host);
     }
     get pac_script () {
-        let result = this.text && this.proxy ? 'if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n' : '';
+        let result = this.text && this.proxy ? '    if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n' : '';
         return 'function FindProxyForURL(url, host) {\n' + result + '    return "DIRECT";\n}';
     }
     static instances = [];
