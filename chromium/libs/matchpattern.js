@@ -75,7 +75,7 @@ class MatchPattern {
         if (result) {
             return result;
         }
-        let host = string.match(/^(?:https?|ftps?|wss?)?:?(?:\/\/)?((?:[^./:]+\.)+[^./:]+):?(?:\d+)?\/?(?:[^\/]+\/?)*$/)?.[1];
+        let host = string.match(/^(?:(?:http|ftp|ws)s?:\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
         if (!host) {
             throw new Error('"' + string + '" is either not a URL, or a valid MatchPattern');
         }
