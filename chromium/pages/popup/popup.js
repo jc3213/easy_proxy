@@ -214,7 +214,7 @@ function easyMatchPattern(value) {
     }
     let host = hostLET.cloneNode(true);
     let [check, label] = host.children;
-    check.id = 'easyproxy_' + easyId;
+    check.id = 'easyproxy_' + easyId ++;
     label.setAttribute('for', check.id);
     host.title = label.textContent = check.value = value;
     outputPane.append(host);
@@ -231,7 +231,6 @@ function easyMatchPattern(value) {
         check.checked = true;
     }
     easyChecks.push(check);
-    easyId ++;
     easyList[value] = host;
     easyDefault[value] = check.checked;
 }
