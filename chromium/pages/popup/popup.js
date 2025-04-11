@@ -62,13 +62,7 @@ function contextMenuEvent(check, value) {
 contextPane.addEventListener('click', (event) => {
     let handler = contextHandlers[event.target.getAttribute('i18n')];
     if (handler) {
-        let type = manager.contains('expand') ? 'hostname' : 'wildcard';
-        easyChecks.forEach((check) => {
-            let css = check.parentNode.classList;
-            if (css.length !== 1 || css[0] === type) {
-                handler(check);
-            }
-        });
+        easyChecks.forEach(handler);
     }
 });
 
