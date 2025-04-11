@@ -24,8 +24,8 @@ const messageHandlers = {
     'storage_query': (response) => response({ storage: {...easyDefault, ...easyStorage}, manifest }),
     'storage_update': easyStorageUpdated,
     'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
-    'manager_query': (response, params) => response({ storage: easyStorage, tempo: easyTempo, inspect: [...easyInspect[params.tabId].result] }),
-    'manager_update': easyMatchUpdated,
+    'manager_query': easyManageQuery,
+    'manager_update': easyManageUpdated,
     'manager_tempo': (response, params) => easyMatchPattern(easyTempo, params),
     'manager_purge': easyTempoPurged,
     'easyproxy_mode': easyModeChanger
@@ -64,7 +64,13 @@ function easyStorageUpdated(response, json) {
     chrome.storage.local.set(json);
 }
 
-function easyMatchUpdated(response, {add, remove, proxy, tabId}) {
+function easyManageQuery(response, params) {
+    let tempo = {};
+    easyStorage.proxies.forEach((proxy) => tempo[proxy] = [...easyTempo[proxy].data]);
+    response({ storage: easyStorage, tempo, inspect: [...easyInspect[params].result] });
+}
+
+function easyManageUpdated(response, {add, remove, proxy, tabId}) {
     easyMatchPattern(easyMatch, {add, remove, proxy, tabId});
     easyStorage[proxy] = easyMatch[proxy].data;
     chrome.storage.local.set(easyStorage);

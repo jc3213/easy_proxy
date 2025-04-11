@@ -7,19 +7,16 @@ class MatchPattern {
     version = '0.6';
     add (...args) {
         args.flat().forEach((arg) => this.data.add(MatchPattern.make(arg)));
-        this.list = [...this.data];
         this.text = MatchPattern.stringnify(this.data);
         this.regexp = new RegExp(this.text);
     }
     remove (...args) {
         args.flat().forEach((arg) => this.data.delete(arg));
-        this.list = [...this.data];
         this.text = MatchPattern.stringnify(this.data);
         this.regexp = new RegExp(this.text);
     }
     clear () {
         this.data = new Set();
-        this.list = [];
         this.text = '';
         this.regexp = /!/;
     }
