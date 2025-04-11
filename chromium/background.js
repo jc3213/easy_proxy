@@ -46,6 +46,9 @@ function easyStorageUpdated(response, json) {
             easyMatch[key].clear();
         } else {
             easyMatch[key] = new MatchPattern();
+            easyTempo[key] = new MatchPattern();
+            easyMatch[key].proxy = key;
+            easyTempo[key].proxy = key;
         }
         easyMatch[key].add(json[key]);
     });
