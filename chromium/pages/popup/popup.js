@@ -161,7 +161,8 @@ chrome.runtime.onMessage.addListener((message) => {
     }
     let {tabId, host, match} = message.params;
     if (easyProxy && tabId === easyTab) {
-        easyMatchPattern(match);
+        easyMatchPattern(host, 'hostname');
+        easyMatchPattern(match, 'wildcard');
         manager.remove('asleep');
     }
 });
@@ -180,7 +181,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         easyStorage = storage;
         easyProxy = easyStorage.proxies[0];
         easyStorage.proxies.forEach((proxy) => {
-            easyTempo[proxy] = tempo[proxy].data;
+            easyTempo[proxy] = new Set(tempo[proxy].list);
             easyProxyCeate(proxy);
         });
         let mode = storage.direct;
@@ -197,7 +198,8 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
 });
 
 function easyManagerSetup() {
-    easyInspect.match.forEach(easyMatchPattern);
+    easyInspect.host.forEach((value) => easyMatchPattern(value, 'hostname'));
+    easyInspect.match.forEach((value) => easyMatchPattern(value, 'wildcard'));
 }
 
 function easyProxyCeate(proxy) {
@@ -205,14 +207,15 @@ function easyProxyCeate(proxy) {
     menu.textContent = menu.title = menu.value = proxy;
     proxyMenu.append(menu);
     easyStorage[proxy].forEach((match) => easyCache[match] = proxy);
-    easyTempo[proxy]?.forEach((match) => easyTempoCache[match] = proxy);
+    easyTempo[proxy].forEach((match) => easyTempoCache[match] = proxy);
 }
 
-function easyMatchPattern(value) {
+function easyMatchPattern(value, type) {
     if (easyList[value]) {
         return;
     }
     let host = hostLET.cloneNode(true);
+    host.classList.add(type);
     let [check, label] = host.children;
     check.id = 'easyproxy_' + easyId;
     label.setAttribute('for', check.id);

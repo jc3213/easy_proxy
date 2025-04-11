@@ -138,12 +138,12 @@ chrome.action ??= chrome.browserAction;
 
 chrome.tabs.query({}, (tabs) => {
     tabs.forEach(({id, url}) => {
-        easyInspect[id] = { result: [], cache: {}, index: 0, url };
+        easyInspect[id] = { host: [], match: [], cache: {}, index: 0, url };
     });
 });
 
 chrome.tabs.onCreated.addListener(({id, url}) => {
-    easyInspect[id] = { result: [], cache: {}, index: 0, url };
+    easyInspect[id] = { host: [], match: [], cache: {}, index: 0, url };
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -163,37 +163,43 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
 function easyInspectSetup(tabId, url) {
-    let match = MatchPattern.make(url);
-    easyInspect[tabId] = { result: [match], cache: {}, index: 0, url };
-    easyInspectSync(tabId, match);
+    let host = new URL(url).hostname;
+    let match = MatchPattern.make(host);
+    easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, index: 0, result: [], url };
+    easyInspectSync(tabId, host, match);
 }
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
+    let host = new URL(url).hostname;
+    let match = MatchPattern.make(host);
     let inspect = easyInspect[tabId];
-    let match = MatchPattern.make(url);
-    if (!inspect?.result || !match) {
+    if (!match || !inspect) {
         return;
     }
+    if (!inspect.cache[host]) {
+        inspect.host.push(host);
+        inspect.cache[host] = true;
+    }
     if (!inspect.cache[match]) {
-        inspect.result.push(match);
+        inspect.match.push(match);
         inspect.cache[match] = true;
     }
     if (easyStorage.indicator) {
-        easyProxyIndicator(tabId, url);
+        easyProxyIndicator(tabId, host, url);
     }
-    easyInspectSync(tabId, match);
+    easyInspectSync(tabId, host, match);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
-function easyProxyIndicator(tabId, url) {
-    if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
+function easyProxyIndicator(tabId, host, url) {
+    if (proxyHandlers[easyMode] && !easyRegExp.test(host)) {
         return;
     }
     easyInspect[tabId].index ++;
     chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
 }
 
-function easyInspectSync(tabId, result) {
-    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, result}});
+function easyInspectSync(tabId, host, match) {
+    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
 }
 
 chrome.storage.local.get(null, (json) => {

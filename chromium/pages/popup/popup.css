@@ -11,18 +11,24 @@ select {
     width: 100%;
 }
 
+body:not(.expand) > #output > :not(.wildcard),
+body.expand > #output > :not(.hostname),
 body.direct > :nth-child(-n+2),
 body.global > :nth-child(-n+2) {
     display: none;
 }
 
 body.asleep > #menu > button:nth-of-type(-n+3),
-body.asleep > #proxy,
+body.asleep > #proxy > *,
 body.direct > #menu > button:nth-of-type(-n+3),
-body.direct > #proxy,
+body.direct > #proxy > *,
 body.global > #menu > button:nth-of-type(-n+3) {
     filter: contrast(40%);
     pointer-events: none;
+}
+
+body.expand > #proxy > button {
+    border-style: inset;
 }
 
 #menu, #proxy {
