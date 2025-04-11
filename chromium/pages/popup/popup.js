@@ -9,7 +9,7 @@ let easyList = {};
 let easyProxy;
 let easyTab;
 let easyId = 0;
-let checkboxes = [];
+let checkboxes = new Set();
 
 let manager = document.body.classList;
 let [outputPane, contextPane, proxyPane,, menuPane, template] = document.body.children;
@@ -45,20 +45,21 @@ document.addEventListener('keydown', (event) => {
 });
 
 outputPane.addEventListener('change', (event) => {
-    let entry = event.target;
-    let {value, checked} = entry;
-    if (easyDefault[value] === checked) {
-        checkboxes = checkboxes.filter((node) => node !== entry);
-    } else {
-        checkboxes.push(entry);
-    }
+    let check = event.target;
+    let {value, checked} = check;
+    easyDefault[value] === checked ? checkboxes.delete(check) : checkboxes.add(check);
 });
 
 const contextHandlers = {
-    'popup_all': (check) => check.checked = true,
-    'popup_none': (check) => check.checked = false,
-    'popup_default': (check) => check.checked = easyDefault[check.value]
+    'popup_all': (check) => contextMenuEvent(check, true),
+    'popup_none': (check) => contextMenuEvent(check, false),
+    'popup_default': (check) => contextMenuEvent(check, easyDefault[check.value])
 };
+
+function contextMenuEvent(check, value) {
+    check.checked === value ? checkboxes.delete(check) : checkboxes.add(check);
+    check.checked = value;
+}
 
 contextPane.addEventListener('click', (event) => {
     let handler = contextHandlers[event.target.getAttribute('i18n')];
@@ -66,7 +67,7 @@ contextPane.addEventListener('click', (event) => {
         let type = manager.contains('expand') ? 'hostname' : 'wildcard';
         easyChecks.forEach((check) => {
             let css = check.parentNode.classList;
-            if (css.length !== 1 || css.contains(type)) {
+            if (css.length !== 1 || css[0] === type) {
                 handler(check);
             }
         });
@@ -115,7 +116,7 @@ const menuEventHandlers = {
 };
 
 function proxyStatusChanged(action, type, storage, logs) {
-    if (checkboxes.length === 0) {
+    if (checkboxes.size === 0) {
         return;
     }
     let proxy = proxyMenu.value;
@@ -139,7 +140,7 @@ function proxyStatusChanged(action, type, storage, logs) {
             check.parentNode.classList.remove(type);
         }
     });
-    checkboxes = [];
+    checkboxes.clear();
     chrome.runtime.sendMessage({ action, params: {add, remove, proxy, tabId: easyTab} });
 }
 
