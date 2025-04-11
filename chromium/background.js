@@ -163,43 +163,37 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
 function easyInspectSetup(tabId, url) {
-    let host = new URL(url).hostname;
-    let match = MatchPattern.make(host);
-    easyInspect[tabId] = { host: [host], match: [match], cache: { [host]: true, [match]: true }, index: 0, result: [], url };
-    easyInspectSync(tabId, host, match);
+    let match = MatchPattern.make(url);
+    easyInspect[tabId] = { result: [match], cache: {}, index: 0, url };
+    easyInspectSync(tabId, match);
 }
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
-    let host = new URL(url).hostname;
-    let match = MatchPattern.make(host);
     let inspect = easyInspect[tabId];
-    if (!match || !inspect) {
+    let match = MatchPattern.make(url);
+    if (!inspect?.result || !match) {
         return;
     }
-    if (!inspect.cache[host]) {
-        inspect.host.push(host);
-        inspect.cache[host] = true;
-    }
     if (!inspect.cache[match]) {
-        inspect.match.push(match);
+        inspect.result.push(match);
         inspect.cache[match] = true;
     }
     if (easyStorage.indicator) {
-        easyProxyIndicator(tabId, host, url);
+        easyProxyIndicator(tabId, url);
     }
-    easyInspectSync(tabId, host, match);
+    easyInspectSync(tabId, match);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
-function easyProxyIndicator(tabId, host, url) {
-    if (proxyHandlers[easyMode] && !easyRegExp.test(host)) {
+function easyProxyIndicator(tabId, url) {
+    if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
         return;
     }
     easyInspect[tabId].index ++;
     chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
 }
 
-function easyInspectSync(tabId, host, match) {
-    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, host, match}});
+function easyInspectSync(tabId, result) {
+    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, result}});
 }
 
 chrome.storage.local.get(null, (json) => {
