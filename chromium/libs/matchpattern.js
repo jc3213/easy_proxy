@@ -4,7 +4,7 @@ class MatchPattern {
         this.clear();
         MatchPattern.instances.add(this);
     }
-    version = '0.5';
+    version = '0.6';
     add (...args) {
         args.flat().forEach((arg) => this.data.add(MatchPattern.make(arg)));
         this.list = [...this.data];
