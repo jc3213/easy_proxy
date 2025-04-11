@@ -185,7 +185,7 @@ function easyProxyIndicator(inspect, tabId, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
         return;
     }
-    chrome.action.setBadgeText({tabId, text: ++ inspect + ''});
+    chrome.action.setBadgeText({tabId, text: ++ inspect.index + ''});
 }
 
 function easyInspectSync(tabId, match) {
