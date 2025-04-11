@@ -138,12 +138,12 @@ chrome.action ??= chrome.browserAction;
 
 chrome.tabs.query({}, (tabs) => {
     tabs.forEach(({id, url}) => {
-        easyInspect[id] = { host: [], match: [], cache: {}, index: 0, url };
+        easyInspect[id] = { result: [], cache: {}, index: 0, url };
     });
 });
 
 chrome.tabs.onCreated.addListener(({id, url}) => {
-    easyInspect[id] = { host: [], match: [], cache: {}, index: 0, url };
+    easyInspect[id] = { result: [], cache: {}, index: 0, url };
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
