@@ -79,7 +79,7 @@ class MatchPattern {
         }
         let host = test[1];
         if (MatchPattern.caches[host]) {
-            return MatchPattern.caches[string] = host;
+            return MatchPattern.caches[host];
         }
         if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
             return MatchPattern.caches[string] = MatchPattern.caches[host] = host.replace(/\d+\.\d+$/, '*');
