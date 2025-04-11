@@ -12,9 +12,8 @@ let easyId = 0;
 let checkboxes = new Set();
 
 let manager = document.body.classList;
-let [outputPane, contextPane, proxyPane,, menuPane, template] = document.body.children;
+let [outputPane, contextPane, proxyMenu,, menuPane, template] = document.body.children;
 let [allBtn, noneBtn, defaultBtn] = contextPane.children;
-let [proxyMenu, expandBtn] = proxyPane.children;
 let [modeMenu, submitBtn, tempoBtn, purgeBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
@@ -30,7 +29,6 @@ const shortcutHandlers = {
     'a': allBtn,
     'e': noneBtn,
     'd': defaultBtn,
-    '`': expandBtn,
     'Enter': submitBtn,
     ' ': tempoBtn,
     'Backspace': purgeBtn
@@ -86,10 +84,6 @@ proxyMenu.addEventListener('change', (event) => {
         easyStorage.direct = easyProxy;
         chrome.runtime.sendMessage({action: 'easyproxy_mode', params: easyProxy});
     }
-});
-
-expandBtn.addEventListener('click', (event) => {
-    manager.toggle('expand');
 });
 
 const optionModes = ['direct', 'autopac', 'global'];
@@ -167,8 +161,7 @@ chrome.runtime.onMessage.addListener((message) => {
     }
     let {tabId, host, match} = message.params;
     if (easyProxy && tabId === easyTab) {
-        easyMatchPattern(host, 'hostname');
-        easyMatchPattern(match, 'wildcard');
+        easyMatchPattern(match);
         manager.remove('asleep');
     }
 });
@@ -204,8 +197,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
 });
 
 function easyManagerSetup() {
-    easyInspect.host.forEach((value) => easyMatchPattern(value, 'hostname'));
-    easyInspect.match.forEach((value) => easyMatchPattern(value, 'wildcard'));
+    easyInspect.match.forEach(easyMatchPattern);
 }
 
 function easyProxyCeate(proxy) {
@@ -216,12 +208,11 @@ function easyProxyCeate(proxy) {
     easyTempo[proxy]?.forEach((match) => easyTempoCache[match] = proxy);
 }
 
-function easyMatchPattern(value, type) {
+function easyMatchPattern(value) {
     if (easyList[value]) {
         return;
     }
     let host = hostLET.cloneNode(true);
-    host.classList.add(type);
     let [check, label] = host.children;
     check.id = 'easyproxy_' + easyId;
     label.setAttribute('for', check.id);
