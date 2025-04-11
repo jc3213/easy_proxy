@@ -72,8 +72,8 @@ function easyMatchUpdated(response, {add, remove, proxy, tabId}) {
 
 function easyMatchPattern(list, {add = [], remove = [], proxy, tabId}) {
     let matchpattern = list[proxy];
-    matchpattern.add(...add);
-    matchpattern.remove(...remove);
+    matchpattern.add(add);
+    matchpattern.remove(remove);
     easyProxyScript();
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
