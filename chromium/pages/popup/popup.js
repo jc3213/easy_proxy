@@ -175,14 +175,12 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: {tabId: easyTab}}, ({storage, tempo, inspect}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({storage, tempo, inspect}) => {
         easyInspect = inspect;
         easyStorage = storage;
+        easyTempo = tempo;
         easyProxy = easyStorage.proxies[0];
-        easyStorage.proxies.forEach((proxy) => {
-            easyTempo[proxy] = tempo[proxy].list;
-            easyProxyCeate(proxy);
-        });
+        easyStorage.proxies.forEach(easyProxyCeate);
         let mode = storage.direct;
         if (mode === 'direct' || mode === 'autopac') {
             modeMenu.value = mode;
