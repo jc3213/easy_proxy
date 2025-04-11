@@ -2,7 +2,7 @@ class MatchPattern {
     constructor () {
         this.proxy = 'DIRECT';
         this.clear();
-        MatchPattern.instances.add(this);
+        MatchPattern.instances.push(this);
     }
     version = '0.6';
     add (...args) {
@@ -27,7 +27,7 @@ class MatchPattern {
         let result = this.text && /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+:\d+$/.test(this.proxy) ? '    if (/' + this.text + '/i.test(host)) {\n        return "' + this.proxy + '";\n    }\n' : '';
         return 'function FindProxyForURL(url, host) {\n' + result + '    return "DIRECT";\n}';
     }
-    static instances = new Set();
+    static instances = [];
     static caches = {};
     static tlds = {
         'aero': true,
@@ -96,7 +96,8 @@ class MatchPattern {
         return '^(' + [...set].join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
     }
     static erase (...args) {
-        args.flat().forEach((instance) => MatchPattern.instances.delete(instance));
+        let removed = new Set(args.flat());
+        MatchPattern.instances = MatchPattern.instances.filter((instance) => !removed.has(instance.proxy));
     }
     static merge () {
         let text = [];
