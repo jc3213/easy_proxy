@@ -8,12 +8,12 @@ class MatchPattern {
     add (...args) {
         args.flat().forEach((arg) => this.data.add(MatchPattern.make(arg)));
         this.text = MatchPattern.stringnify(this.data);
-        this.regexp = new RegExp(this.text);
+        this.regexp = new RegExp(this.text || '!');
     }
     remove (...args) {
         args.flat().forEach((arg) => this.data.delete(arg));
         this.text = MatchPattern.stringnify(this.data);
-        this.regexp = new RegExp(this.text);
+        this.regexp = new RegExp(this.text || '!');
     }
     clear () {
         this.data = new Set();
