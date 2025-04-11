@@ -159,7 +159,7 @@ chrome.runtime.onMessage.addListener((message) => {
     if (message.action !== 'manager_update') {
         return;
     }
-    let {tabId, host, match} = message.params;
+    let {tabId, match} = message.params;
     if (easyProxy && tabId === easyTab) {
         easyMatchPattern(match);
         manager.remove('asleep');
@@ -180,7 +180,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         easyStorage = storage;
         easyProxy = easyStorage.proxies[0];
         easyStorage.proxies.forEach((proxy) => {
-            easyTempo[proxy] = tempo[proxy].data;
+            easyTempo[proxy] = tempo[proxy].link;
             easyProxyCeate(proxy);
         });
         let mode = storage.direct;
@@ -192,12 +192,12 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             proxyMenu.value = mode;
             manager.add('global');
         }
-        inspect.host.length === 0 && inspect.match.length === 0 || !easyProxy ? manager.add('asleep') : easyManagerSetup();
+        inspect.length === 0 || !easyProxy ? manager.add('asleep') : easyManagerSetup();
     });
 });
 
 function easyManagerSetup() {
-    easyInspect.match.forEach(easyMatchPattern);
+    easyInspect.forEach(easyMatchPattern);
 }
 
 function easyProxyCeate(proxy) {

@@ -24,7 +24,7 @@ const messageHandlers = {
     'storage_query': (response) => response({ storage: {...easyDefault, ...easyStorage}, manifest }),
     'storage_update': easyStorageUpdated,
     'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
-    'manager_query': (response, params) => response({ storage: easyStorage, tempo: easyTempo, inspect: easyInspect[params.tabId] }),
+    'manager_query': (response, params) => response({ storage: easyStorage, tempo: easyTempo, inspect: [...easyInspect[params.tabId].result] }),
     'manager_update': easyMatchUpdated,
     'manager_tempo': (response, params) => easyMatchPattern(easyTempo, params),
     'manager_purge': easyTempoPurged,
@@ -138,12 +138,12 @@ chrome.action ??= chrome.browserAction;
 
 chrome.tabs.query({}, (tabs) => {
     tabs.forEach(({id, url}) => {
-        easyInspect[id] = { result: [], cache: {}, index: 0, url };
+        easyInspect[id] = { result: new Set(), index: 0, url };
     });
 });
 
 chrome.tabs.onCreated.addListener(({id, url}) => {
-    easyInspect[id] = { result: [], cache: {}, index: 0, url };
+    easyInspect[id] = { result: new Set(), index: 0, url };
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -164,7 +164,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
 
 function easyInspectSetup(tabId, url) {
     let match = MatchPattern.make(url);
-    easyInspect[tabId] = { result: [match], cache: {}, index: 0, url };
+    easyInspect[tabId] = { result: new Set([match]), index: 0, url };
     easyInspectSync(tabId, match);
 }
 
@@ -174,26 +174,22 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     if (!inspect?.result || !match) {
         return;
     }
-    if (!inspect.cache[match]) {
-        inspect.result.push(match);
-        inspect.cache[match] = true;
-    }
+    inspect.result.add(match);
     if (easyStorage.indicator) {
-        easyProxyIndicator(tabId, url);
+        easyProxyIndicator(inspect, tabId, url);
     }
     easyInspectSync(tabId, match);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
-function easyProxyIndicator(tabId, url) {
+function easyProxyIndicator(inspect, tabId, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
         return;
     }
-    easyInspect[tabId].index ++;
-    chrome.action.setBadgeText({tabId, text: easyInspect[tabId].index + ''});
+    chrome.action.setBadgeText({tabId, text: ++ inspect + ''});
 }
 
-function easyInspectSync(tabId, result) {
-    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, result}});
+function easyInspectSync(tabId, match) {
+    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, match}});
 }
 
 chrome.storage.local.get(null, (json) => {
