@@ -1,10 +1,12 @@
 class MatchPattern {
     constructor () {
-        this.proxy = 'DIRECT';
-        this.clear();
         MatchPattern.instances.push(this);
     }
     version = '0.6';
+    data = new Set();
+    text = '';
+    regexp = /!/;
+    proxy = 'DIRECT';
     add (...args) {
         args.flat().forEach((arg) => this.data.add(arg));
         this.text = MatchPattern.stringnify(this.data);
@@ -16,7 +18,7 @@ class MatchPattern {
         this.regexp = new RegExp(this.text || '!');
     }
     clear () {
-        this.data = new Set();
+        this.data.clear();
         this.text = '';
         this.regexp = /!/;
     }
