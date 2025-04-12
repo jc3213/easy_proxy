@@ -6,7 +6,7 @@ class MatchPattern {
     }
     version = '0.6';
     add (...args) {
-        args.flat().forEach((arg) => this.data.add(MatchPattern.make(arg)));
+        args.flat().forEach((arg) => this.data.add(arg));
         this.text = MatchPattern.stringnify(this.data);
         this.regexp = new RegExp(this.text || '!');
     }
