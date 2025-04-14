@@ -7,20 +7,17 @@ class MatchPattern {
     text = '';
     regexp = /!/;
     proxy = 'DIRECT';
-    add (...args) {
-        args.flat().forEach((arg) => this.data.add(arg));
-        this.text = MatchPattern.stringnify(this.data);
-        this.regexp = new RegExp(this.text || '!');
+    add (arg) {
+        [arg].flat().forEach((arg) => this.data.add(arg));
+        MatchPattern.convert(this);
     }
-    remove (...args) {
-        args.flat().forEach((arg) => this.data.delete(arg));
-        this.text = MatchPattern.stringnify(this.data);
-        this.regexp = new RegExp(this.text || '!');
+    remove (arg) {
+        [arg].flat().forEach((arg) => this.data.delete(arg));
+        MatchPattern.convert(this);
     }
     clear () {
         this.data.clear();
-        this.text = '';
-        this.regexp = /!/;
+        MatchPattern.convert(this);
     }
     test (host) {
         return this.regexp.test(host);
@@ -30,7 +27,7 @@ class MatchPattern {
         return 'function FindProxyForURL(url, host) {\n' + result + '    return "DIRECT";\n}';
     }
     static instances = [];
-    static caches = {};
+    static caches = new Map();
     static tlds = {
         'aero': true,
         'app': true,
@@ -69,8 +66,8 @@ class MatchPattern {
         'xyz': true
     };
     static make (string) {
-        let {caches, tlds} = MatchPattern;
-        let result = caches[string];
+        let { caches, tlds } = MatchPattern;
+        let result = caches.get(string);
         if (result) {
             return result;
         }
@@ -78,27 +75,27 @@ class MatchPattern {
         if (!host) {
             throw new Error('"' + string + '" is either not a URL, or a valid MatchPattern');
         }
-        result = caches[host];
+        result = caches.get(host);
         if (result) {
             return result;
         }
         if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
-            return caches[string] = caches[host] = host.replace(/\d+\.\d+$/, '*');
+            result = host.replace(/\d+\.\d+$/, '*');
+        } else {
+            let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
+            result = '*.' + (sbd && tlds[sld] ? sbd + '.' : '') + sld + '.' + tld;
         }
-        let [_, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
-        return caches[string] = caches[host] = '*.' + (sbd && tlds[sld] ? sbd + '.' : '') + sld + '.' + tld;
+        caches.set(string, result);
+        caches.set(host, result);
+        return result;
     }
-    static stringnify (set) {
-        if (set.size === 0) {
-            return '';
-        }
-        if (set.has('*')) {
-            return '.*';
-        }
-        return '^(' + [...set].join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
+    static convert (instance) {
+        let {data} = instance;
+        instance.text = data.size === 0 ? '' : data.has('*') ? '.*' : '^(' + [...data].join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
+        instance.regexp = new RegExp(instance.text || '!');
     }
-    static erase (...args) {
-        let removed = new Set(args.flat());
+    static erase (arg) {
+        let removed = new Set([arg].flat());
         MatchPattern.instances = MatchPattern.instances.filter((instance) => !removed.has(instance.proxy));
     }
     static merge () {
