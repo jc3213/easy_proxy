@@ -45,9 +45,9 @@ outputPane.addEventListener('change', (event) => {
 });
 
 const contextHandlers = {
-    'popup_all': (check) => contextMenuEvent(check, true),
-    'popup_none': (check) => contextMenuEvent(check, false),
-    'popup_default': (check) => contextMenuEvent(check, easyDefault[check.value])
+    'popup_all': ([check]) => contextMenuEvent(check, true),
+    'popup_none': ([check]) => contextMenuEvent(check, false),
+    'popup_default': ([check, value]) => contextMenuEvent(check, value)
 };
 
 function contextMenuEvent(check, value) {
@@ -58,7 +58,7 @@ function contextMenuEvent(check, value) {
 contextPane.addEventListener('click', (event) => {
     let handler = contextHandlers[event.target.getAttribute('i18n')];
     if (handler) {
-        easyChecks.forEach(handler);
+        [...easyChecks].forEach(handler);
     }
 });
 
