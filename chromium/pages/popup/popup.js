@@ -1,15 +1,12 @@
-let easyStorage = {};
-let easyCache = {};
-let easyTempo = {};
-let easyTempoCache = {};
+let easyMatch = new Map();
+let easyTempo = new Map();
+let easyChecks = new Map();
+let easyChanges = new Set();
 let easyInspect = {};
-let easyChecks = [];
-let easyDefault = {};
 let easyList = {};
 let easyProxy;
 let easyTab;
 let easyId = 0;
-let checkboxes = new Set();
 
 let manager = document.body.classList;
 let [outputPane, contextPane, proxyMenu,, menuPane, template] = document.body.children;
@@ -44,8 +41,7 @@ document.addEventListener('keydown', (event) => {
 
 outputPane.addEventListener('change', (event) => {
     let check = event.target;
-    let {value, checked} = check;
-    easyDefault[value] === checked ? checkboxes.delete(check) : checkboxes.add(check);
+    easyChecks.get(check) === check.checked ? easyChanges.delete(check) : easyChanges.add(check);
 });
 
 const contextHandlers = {
@@ -55,7 +51,7 @@ const contextHandlers = {
 };
 
 function contextMenuEvent(check, value) {
-    check.checked === value ? checkboxes.delete(check) : checkboxes.add(check);
+    check.checked === value ? easyChanges.delete(check) : easyChanges.add(check);
     check.checked = value;
 }
 
@@ -67,16 +63,16 @@ contextPane.addEventListener('click', (event) => {
 });
 
 proxyMenu.addEventListener('change', (event) => {
-    easyProxy = event.target.value;
     if (easyMode === 'autopac') {
         easyChecks.forEach((check) => {
             let host = check.value;
-            check.checked = easyCache[host] === proxy || easyTempoCache[host] === proxy;
-            check.disabled = easyCache[host] && easyCache[host] !== proxy || easyTempoCache[host] && easyTempoCache[host] !== proxy;
+            let match = easyMatch.get(host);
+            let tempo = easyTempo.get(host);
+            check.checked = match === proxy || tempo === proxy;
+            check.disabled = match && match !== proxy || tempo && tempo !== proxy;
         });
     } else {
-        easyStorage.direct = easyProxy;
-        chrome.runtime.sendMessage({action: 'easyproxy_mode', params: easyProxy});
+        chrome.runtime.sendMessage({action: 'easyproxy_mode', params: event.target.value});
     }
 });
 
@@ -97,44 +93,41 @@ modeMenu.addEventListener('change', (event) => {
 });
 
 const menuEventHandlers = {
-    'popup_submit': () => proxyStatusChanged('manager_update', 'match', easyStorage, easyCache),
-    'popup_tempo': () => proxyStatusChanged('manager_tempo', 'tempo', easyTempo, easyTempoCache),
+    'popup_submit': () => proxyStatusChanged('manager_update', 'match', easyMatch),
+    'popup_tempo': () => proxyStatusChanged('manager_tempo', 'tempo', easyTempo),
     'popup_purge': menuEventPurge,
     'popup_options': () => chrome.runtime.openOptionsPage()
 };
 
-function proxyStatusChanged(action, type, storage, logs) {
-    if (checkboxes.size === 0) {
+function proxyStatusChanged(action, type, mapping) {
+    if (easyChanges.size === 0) {
         return;
     }
     let proxy = proxyMenu.value;
     let add = [];
     let remove = [];
-    let matches = storage[proxy] ??= [];
-    checkboxes.forEach((check) => {
+    easyChanges.forEach((check) => {
         let {value, checked} = check;
         let status = check.parentNode.classList[2];
+        let map = mapping.get(value);
         if (status && status !== type) {
             check.checked = easyDefault[value];
-        } else if (checked && !logs[value]) {
-            logs[value] = proxy;
+        } else if (checked && !map) {
+            mapping.set(value, proxy);
             add.push(value);
-            matches.push(value);
             check.parentNode.classList.add(type);
-        } else if (!checked && logs[value]) {
-            delete logs[value];
-            matches.splice(matches.indexOf(value), 1);
+        } else if (!checked && map) {
+            mapping.delete(value);
             remove.push(value);
             check.parentNode.classList.remove(type);
         }
     });
-    checkboxes.clear();
+    easyChanges.clear();
     chrome.runtime.sendMessage({ action, params: {add, remove, proxy, tabId: easyTab} });
 }
 
 function menuEventPurge() {
-    easyTempoCache = {};
-    easyTempo = {};
+    easyTempo = new Map();
     easyChecks.forEach((check) => {
         check.parentNode.classList.remove('tempo');
         check.checked = easyCache[check.value] === easyProxy ? true : false;
@@ -163,41 +156,42 @@ chrome.runtime.onMessage.addListener((message) => {
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
     if (tabId === easyTab && frameId === 0) {
         easyList = {};
+        easyChecks.clear();
         outputPane.innerHTML = '';
     }
 });
 
+const proxyModeHandlers = {
+    'direct': () => 'direct',
+    'autopac': () => 'autopac',
+    'global': (direct) => {
+        proxyMenu.value = direct;
+        return 'global';
+    }
+};
+
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({storage, tempo, inspect}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, inspect, direct}) => {
+        proxies.forEach((proxy) => {
+            match[proxy].forEach((e) => easyMatch.set(e, proxy));
+            tempo[proxy].forEach((e) => easyTempo.set(e, proxy));
+            let menu = document.createElement('option');
+            menu.textContent = menu.title = menu.value = proxy;
+            proxyMenu.append(menu);
+        });
         easyInspect = inspect;
-        easyStorage = storage;
-        easyTempo = tempo;
-        easyProxy = easyStorage.proxies[0];
-        easyStorage.proxies.forEach(easyProxyCeate);
-        let mode = storage.direct;
-        if (mode === 'direct' || mode === 'autopac') {
-            modeMenu.value = mode;
-            manager.add(mode);
-        } else {
-            modeMenu.value = 'global';
-            proxyMenu.value = mode;
-            manager.add('global');
-        }
+        easyProxy = proxies[0];
+        let handler = proxyModeHandlers[direct] ?? proxyModeHandlers['global'];
+        let mode = handler(direct);
+        modeMenu.value = mode;
+        manager.add(mode);
         inspect.length === 0 || !easyProxy ? manager.add('asleep') : easyManagerSetup();
     });
 });
 
 function easyManagerSetup() {
     easyInspect.forEach(easyMatchPattern);
-}
-
-function easyProxyCeate(proxy) {
-    let menu = document.createElement('option');
-    menu.textContent = menu.title = menu.value = proxy;
-    proxyMenu.append(menu);
-    easyStorage[proxy].forEach((match) => easyCache[match] = proxy);
-    easyTempo[proxy]?.forEach((match) => easyTempoCache[match] = proxy);
 }
 
 function easyMatchPattern(value) {
@@ -210,19 +204,20 @@ function easyMatchPattern(value) {
     label.setAttribute('for', check.id);
     host.title = label.textContent = check.value = value;
     outputPane.append(host);
-    if (easyCache[value]) {
+    let match = easyMatch.get(value);
+    let tempo = easyTempo.get(value);
+    if (match) {
         host.classList.add('match');
         easyList.lastMatch?.after(host) || outputPane.insertBefore(host, outputPane.children[0]);
         easyList.lastMatch = host;
-    } else if (easyTempoCache[value]) {
+    } else if (tempo) {
         host.classList.add('tempo');
         easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host) || outputPane.insertBefore(host, outputPane.children[0]);
         easyList.lastTempo = host;
     }
-    if (easyCache[value] === easyProxy || easyTempoCache[value] === easyProxy) {
+    if (match === easyProxy || tempo === easyProxy) {
         check.checked = true;
     }
-    easyChecks.push(check);
+    easyChecks.set(check, check.checked);
     easyList[value] = host;
-    easyDefault[value] = check.checked;
 }
