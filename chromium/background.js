@@ -67,10 +67,16 @@ function easyStorageUpdated(response, json) {
     chrome.storage.local.set(json);
 }
 
-function easyManageQuery(response, params) {
+function easyManageQuery(response, tabId) {
+    let match = {}
     let tempo = {};
-    easyStorage.proxies.forEach((proxy) => tempo[proxy] = [...easyTempo[proxy].data]);
-    response({ storage: easyStorage, tempo, inspect: [...easyInspect[params].result] });
+    let {proxies, direct} = easyStorage;
+    let inspect = [...easyInspect[tabId].result];
+    proxies.forEach((proxy) => {
+        match[proxy] = [...easyMatch[proxy].data];
+        tempo[proxy] = [...easyTempo[proxy].data];
+    });
+    response({ match, tempo, inspect, proxies, direct });
 }
 
 function easyManageUpdated(response, {add, remove, proxy, tabId}) {
@@ -121,12 +127,12 @@ const proxyHandlers = {
         chromium: (direct) => {
             let [scheme, host, port] = direct.split(/[\s:]/);
             let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-            return ({ mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } });
+            return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
         },
         firefox: (direct) => {
             let [scheme, proxy] = direct.split(' ');
             let config = proxyHandlers[scheme](proxy);
-            return ({ proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config });
+            return { proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config };
         }
     },
     'SOCKS': (proxy) => ({ socks: 'socks://' + proxy, socksVersion: 4 }),
