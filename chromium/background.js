@@ -81,7 +81,7 @@ function easyManageQuery(response, tabId) {
 
 function easyManageUpdated(response, {add, remove, proxy, tabId}) {
     easyMatchPattern(easyMatch, {add, remove, proxy, tabId});
-    easyStorage[proxy] = easyMatch[proxy].data;
+    easyStorage[proxy] = [...easyMatch[proxy].data];
     chrome.storage.local.set(easyStorage);
 }
 
