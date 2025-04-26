@@ -73,15 +73,15 @@ function easyManageQuery(response, tabId) {
     let {proxies, direct} = easyStorage;
     let inspect = [...easyInspect[tabId].result];
     proxies.forEach((proxy) => {
-        match[proxy] = [...easyMatch[proxy].data];
-        tempo[proxy] = [...easyTempo[proxy].data];
+        match[proxy] = easyMatch[proxy].data;
+        tempo[proxy] = easyTempo[proxy].data;
     });
     response({ match, tempo, inspect, proxies, direct });
 }
 
 function easyManageUpdated(response, {add, remove, proxy, tabId}) {
     easyMatchPattern(easyMatch, {add, remove, proxy, tabId});
-    easyStorage[proxy] = [...easyMatch[proxy].data];
+    easyStorage[proxy] = easyMatch[proxy].data;
     chrome.storage.local.set(easyStorage);
 }
 
@@ -212,8 +212,8 @@ chrome.storage.local.get(null, (json) => {
     easyStorage.proxies.forEach((proxy) => {
         let match = new MatchPattern();
         let tempo = new MatchPattern();
-        match.add(easyStorage[proxy]);
         match.proxy = tempo.proxy = proxy;
+        match.add(easyStorage[proxy]);
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
     });
