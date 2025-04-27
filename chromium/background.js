@@ -70,13 +70,20 @@ function easyStorageUpdated(response, json) {
 function easyManageQuery(response, tabId) {
     let match = {}
     let tempo = {};
+    let rule = [];
+    let host = [];
     let {proxies, direct} = easyStorage;
-    let inspect = [...easyInspect[tabId].result];
+    let inspect = easyInspect[tabId];
+    if (inspect) {
+        rule = [...inspect.rule];
+        host = [...inspect.rule];
+    }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
-    response({ match, tempo, inspect, proxies, direct });
+    console.log({ match, tempo, rule: [...rule], host: [...host], proxies, direct });
+    response({ match, tempo, rule, host, proxies, direct });
 }
 
 function easyManageUpdated(response, {add, remove, proxy, tabId}) {
@@ -151,16 +158,6 @@ function easyProxyMode(direct) {
 
 chrome.action ??= chrome.browserAction;
 
-chrome.tabs.query({}, (tabs) => {
-    tabs.forEach(({id, url}) => {
-        easyInspect[id] = { result: new Set(), index: 0, url };
-    });
-});
-
-chrome.tabs.onCreated.addListener(({id, url}) => {
-    easyInspect[id] = { result: new Set(), index: 0, url };
-});
-
 chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
@@ -178,33 +175,32 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
 function easyInspectSetup(tabId, url) {
-    let match = MatchPattern.make(url);
-    easyInspect[tabId] = { result: new Set([match]), index: 0, url };
-    easyInspectSync(tabId, match);
+    let {rule, host} = MatchPattern.make(url);
+    let inspect = easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), index: 0, url };
+    easyInspectSync(tabId, rule);
 }
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
-    let inspect = easyInspect[tabId];
-    let match = MatchPattern.make(url);
-    if (!inspect?.result || !match) {
-        return;
-    }
-    inspect.result.add(match);
+    let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), index: 0 };
+    let {rule, host} = MatchPattern.make(url);
+    inspect.rule.add(rule);
+    inspect.host.add(host);
     if (easyStorage.indicator) {
-        easyProxyIndicator(inspect, tabId, url);
+        inspect.index = easyProxyIndicator(tabId, inspect.index, url);
     }
-    easyInspectSync(tabId, match);
+    easyInspectSync(tabId, rule, host);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
-function easyProxyIndicator(inspect, tabId, url) {
+function easyProxyIndicator(tabId, index, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
         return;
     }
-    chrome.action.setBadgeText({tabId, text: ++ inspect.index + ''});
+    chrome.action.setBadgeText({tabId, text: ++index + ''});
+    return index;
 }
 
-function easyInspectSync(tabId, match) {
-    chrome.runtime.sendMessage({action: 'manager_update', params: {tabId, match}});
+function easyInspectSync(tabId, rule, host) {
+    chrome.runtime.sendMessage({action: 'manager_update', params: { tabId, rule, host }});
 }
 
 chrome.storage.local.get(null, (json) => {

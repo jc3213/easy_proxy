@@ -2,7 +2,8 @@ let easyMatch = new Map();
 let easyTempo = new Map();
 let easyChecks = new Map();
 let easyChanges = new Set();
-let easyInspect = {};
+let easyRule;
+let easyHost;
 let easyList = {};
 let easyProxy;
 let easyTab;
@@ -172,7 +173,7 @@ const proxyModeHandlers = {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, inspect, direct}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, rule, host, direct}) => {
         proxies.forEach((proxy) => {
             match[proxy].forEach((e) => easyMatch.set(e, proxy));
             tempo[proxy].forEach((e) => easyTempo.set(e, proxy));
@@ -180,18 +181,19 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             menu.textContent = menu.title = menu.value = proxy;
             proxyMenu.append(menu);
         });
-        easyInspect = inspect;
+        easyRule = rule;
+        easyHost = host;
         easyProxy = proxies[0];
         let handler = proxyModeHandlers[direct] ?? proxyModeHandlers['global'];
         let mode = handler(direct);
         modeMenu.value = mode;
         manager.add(mode);
-        inspect.length === 0 || !easyProxy ? manager.add('asleep') : easyManagerSetup();
+        rule.length === 0 && host.length === 0 || !easyProxy ? manager.add('asleep') : easyManagerSetup();
     });
 });
 
 function easyManagerSetup() {
-    easyInspect.forEach(easyMatchPattern);
+    easyRule.forEach(easyMatchPattern);
 }
 
 function easyMatchPattern(value) {
