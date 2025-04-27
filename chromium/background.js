@@ -82,7 +82,6 @@ function easyManageQuery(response, tabId) {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
-    console.log({ match, tempo, rule: [...rule], host: [...host], proxies, direct });
     response({ match, tempo, rule, host, proxies, direct });
 }
 

@@ -60,27 +60,23 @@ class MatchPattern {
     ]);
     static make (url) {
         let { caches, tlds } = MatchPattern;
-        let result = caches.get(url);
-        if (result) {
-            return result;
-        }
         let host = url.match(/^(?:(?:http|ftp|ws)s?:\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
         if (!host) {
             throw new Error('"' + url + '" is either not a URL, or a valid MatchPattern');
         }
-        result = caches.get(host);
-        if (result) {
-            return result;
+        let rule = caches.get(host);
+        if (rule) {
+            return {rule, host};
         }
         if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
-            result = host.replace(/\d+\.\d+$/, '*');
+            rule = host.replace(/\d+\.\d+$/, '*');
         } else {
             let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
-            result = '*.' + (sbd && tlds.has(sld) ? sbd + '.' : '') + sld + '.' + tld;
+            rule = '*.' + (sbd && tlds.has(sld) ? sbd + '.' : '') + sld + '.' + tld;
         }
-        caches.set(url, result);
-        caches.set(host, result);
-        return result;
+        caches.set(url, rule);
+        caches.set(host, rule);
+        return {rule, host};
     }
     static update (that) {
         let data = that.#data;
