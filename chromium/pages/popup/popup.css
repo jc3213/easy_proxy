@@ -25,17 +25,13 @@ body.global > #menu > button:nth-of-type(-n+3) {
     pointer-events: none;
 }
 
-#menu, #proxy {
-    display: flex;
-    gap: 5px;
+body:not(.express) .fullhost:not(.match):not(.tempo),
+body.express .wildcard:not(.match):not(.tempo) {
+    display: none !important;
 }
 
-#menu {
-    margin: 5px 0px;
-}
-
-#menu > select {
-    flex: 1;
+#output:empty + div {
+    display: none;
 }
 
 #output > div {
@@ -65,16 +61,20 @@ body.global > #menu > button:nth-of-type(-n+3) {
     border-style: inset;
 }
 
-#output:empty + div {
-    display: none;
+#menu {
+    display: flex;
+    gap: 5px;
+    margin: 5px 0px;
+}
+
+#menu > * {
+    flex: 1;
 }
 
 .match {
     color: #d44b31;
-    display: flex !important;
 }
 
 .tempo {
     color: #59a8ff;
-    display: flex !important;
 }

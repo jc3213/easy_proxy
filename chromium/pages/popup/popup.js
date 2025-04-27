@@ -150,7 +150,7 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
     }
     let {tabId, rule, host} = params;
     if (easyProxy && tabId === easyTab) {
-        pinrtOutputList(rule, 'matchrule');
+        pinrtOutputList(rule, 'wildcard');
         pinrtOutputList(host, 'fullhost');
         manager.remove('asleep');
     }
@@ -196,7 +196,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
 });
 
 function easyManagerSetup() {
-    easyRule.forEach((rule) => pinrtOutputList(rule, 'matchrule'));
+    easyRule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
     easyHost.forEach((host) => pinrtOutputList(host, 'fullhost'));
 }
 
