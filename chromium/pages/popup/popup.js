@@ -13,7 +13,7 @@ let easyId = 0;
 let manager = document.body.classList;
 let [outputPane, contextPane, proxyMenu,, menuPane, template] = document.body.children;
 let [allBtn, noneBtn, defaultBtn] = contextPane.children;
-let [modeMenu, submitBtn, tempoBtn, purgeBtn, optionsBtn] = menuPane.children;
+let [modeMenu, submitBtn, tempoBtn, purgeBtn, expressBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -28,6 +28,7 @@ const shortcutHandlers = {
     'a': allBtn,
     'e': noneBtn,
     'd': defaultBtn,
+    'Tab': expressBtn,
     'Enter': submitBtn,
     ' ': tempoBtn,
     'Backspace': purgeBtn
@@ -98,6 +99,7 @@ const menuEventHandlers = {
     'popup_submit': () => proxyStatusChanged('manager_update', 'match', easyMatch),
     'popup_tempo': () => proxyStatusChanged('manager_tempo', 'tempo', easyTempo),
     'popup_purge': menuEventPurge,
+    'popup_express': () => outputPane.classList.toggle('express'),
     'popup_options': () => chrome.runtime.openOptionsPage()
 };
 
@@ -201,12 +203,11 @@ function easyManagerSetup() {
 }
 
 function pinrtOutputList(value, type) {
-    let host = easyList[value] ??= printMatchPattern(value, type);
+    let {host, check} = easyList[value] ??= printMatchPattern(value, type);
     if (easyData[value]) {
         return;
     }
     easyData[value] = true;
-    let check = host.children[0];
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
     if (match) {
@@ -233,5 +234,5 @@ function printMatchPattern(value, type) {
     label.setAttribute('for', check.id);
     host.title = label.textContent = check.value = value;
     host.classList.add(type);
-    return host;
+    return {host, check};
 }

@@ -25,13 +25,13 @@ body.global > #menu > button:nth-of-type(-n+3) {
     pointer-events: none;
 }
 
-body:not(.express) .fullhost:not(.match):not(.tempo),
-body.express .wildcard:not(.match):not(.tempo) {
-    display: none !important;
-}
-
 #output:empty + div {
     display: none;
+}
+
+#output:not(.express) > .fullhost:not(.match):not(.tempo),
+#output.express > .wildcard:not(.match):not(.tempo) {
+    display: none !important;
 }
 
 #output > div {
