@@ -168,7 +168,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
 
 chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
-    if (easyInspect[tabId].url !== url) {
+    if (easyInspect[tabId]?.url !== url) {
         easyInspectSetup(tabId, url);
     }
 }, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
