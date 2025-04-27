@@ -5,6 +5,7 @@ let easyChanges = new Set();
 let easyRule;
 let easyHost;
 let easyList = {};
+let easyData = {};
 let easyProxy;
 let easyTab;
 let easyId = 0;
@@ -149,14 +150,16 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
     }
     let {tabId, rule, host} = params;
     if (easyProxy && tabId === easyTab) {
-        easyMatchPattern(rule);
+        pinrtOutputList(rule, 'matchrule');
+        pinrtOutputList(host, 'fullhost');
         manager.remove('asleep');
     }
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
     if (tabId === easyTab && frameId === 0) {
-        easyList = {};
+        easyData = {};
+        easyList.lastMatch = easyList.lastTempo = null;
         easyChecks.clear();
         outputPane.innerHTML = '';
     }
@@ -193,19 +196,17 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
 });
 
 function easyManagerSetup() {
-    easyRule.forEach(easyMatchPattern);
+    easyRule.forEach((rule) => pinrtOutputList(rule, 'matchrule'));
+    easyHost.forEach((host) => pinrtOutputList(host, 'fullhost'));
 }
 
-function easyMatchPattern(value) {
-    if (easyList[value]) {
+function pinrtOutputList(value, type) {
+    let host = easyList[value] ??= printMatchPattern(value, type);
+    if (easyData[value]) {
         return;
     }
-    let host = hostLET.cloneNode(true);
-    let [check, label] = host.children;
-    check.id = 'easyproxy_' + easyId ++;
-    label.setAttribute('for', check.id);
-    host.title = label.textContent = check.value = value;
-    outputPane.append(host);
+    easyData[value] = true;
+    let check = host.children[0];
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
     if (match) {
@@ -216,10 +217,21 @@ function easyMatchPattern(value) {
         host.classList.add('tempo');
         easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host) || outputPane.insertBefore(host, outputPane.children[0]);
         easyList.lastTempo = host;
+    } else {
+        outputPane.append(host);
     }
-    if (match === easyProxy || tempo === easyProxy) {
+    if (easyMatch.get(value) === easyProxy || easyTempo.get(value) === easyProxy) {
         check.checked = true;
     }
     easyChecks.set(check, check.checked);
-    easyList[value] = host;
+}
+
+function printMatchPattern(value, type) {
+    let host = hostLET.cloneNode(true);
+    let [check, label] = host.children;
+    check.id = 'easyproxy_' + easyId ++;
+    label.setAttribute('for', check.id);
+    host.title = label.textContent = check.value = value;
+    host.classList.add(type);
+    return host;
 }
