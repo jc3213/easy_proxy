@@ -87,11 +87,11 @@ class MatchPattern {
     static pacScript (that) {
         that.#pacScript = that.#text && that.#proxy !== 'DIRECT' ? '    if (/' + that.#text + '/i.test(host)) {\n        return "' + that.#proxy + '";\n    }' : ''
     }
-    static erase (arg) {
+    static delete (arg) {
         let removed = new Set([arg].flat());
         MatchPattern.instances = MatchPattern.instances.filter((that) => !removed.has(that.proxy));
     }
-    static merge () {
+    static combine () {
         let text = [];
         let pac = [];
         MatchPattern.instances.forEach((that) => {
