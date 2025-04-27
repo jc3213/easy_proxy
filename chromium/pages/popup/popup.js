@@ -5,7 +5,6 @@ let easyChanges = new Set();
 let easyRule;
 let easyHost;
 let easyList = {};
-let easyData = {};
 let easyProxy;
 let easyTab;
 let easyId = 0;
@@ -160,7 +159,6 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
 
 chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
     if (tabId === easyTab && frameId === 0) {
-        easyData = {};
         easyList.lastMatch = easyList.lastTempo = null;
         easyChecks.clear();
         outputPane.innerHTML = '';
@@ -204,10 +202,9 @@ function easyManagerSetup() {
 
 function pinrtOutputList(value, type) {
     let {host, check} = easyList[value] ??= printMatchPattern(value, type);
-    if (easyData[value]) {
+    if (easyChecks.has(check)) {
         return;
     }
-    easyData[value] = true;
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
     if (match) {
@@ -221,7 +218,7 @@ function pinrtOutputList(value, type) {
     } else {
         outputPane.append(host);
     }
-    if (easyMatch.get(value) === easyProxy || easyTempo.get(value) === easyProxy) {
+    if (match === easyProxy || tempo === easyProxy) {
         check.checked = true;
     }
     easyChecks.set(check, check.checked);
