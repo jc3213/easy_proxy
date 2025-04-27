@@ -143,13 +143,13 @@ menuPane.addEventListener('click', (event) => {
     }
 });
 
-chrome.runtime.onMessage.addListener((message) => {
-    if (message.action !== 'manager_update') {
+chrome.runtime.onMessage.addListener(({action, params}) => {
+    if (action !== 'manager_update') {
         return;
     }
-    let {tabId, match} = message.params;
+    let {tabId, rule, host} = params;
     if (easyProxy && tabId === easyTab) {
-        easyMatchPattern(match);
+        easyMatchPattern(rule);
         manager.remove('asleep');
     }
 });
