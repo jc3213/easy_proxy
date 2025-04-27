@@ -59,7 +59,7 @@ function easyStorageUpdated(response, json) {
             return true;
         }
     });
-    MatchPattern.erase(removed);
+    MatchPattern.delete(removed);
     easyStorage = json;
     easyProxyScript();
     persistentModeHandler();
@@ -76,7 +76,7 @@ function easyManageQuery(response, tabId) {
     let inspect = easyInspect[tabId];
     if (inspect) {
         rule = [...inspect.rule];
-        host = [...inspect.rule];
+        host = [...inspect.host];
     }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
@@ -176,7 +176,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
 function easyInspectSetup(tabId, url) {
     let {rule, host} = MatchPattern.make(url);
     let inspect = easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), index: 0, url };
-    easyInspectSync(tabId, rule);
+    easyInspectSync(tabId, rule, host);
 }
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
@@ -187,6 +187,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     if (easyStorage.indicator) {
         inspect.index = easyProxyIndicator(tabId, inspect.index, url);
     }
+    console.log(rule, host);
     easyInspectSync(tabId, rule, host);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
@@ -217,9 +218,9 @@ chrome.storage.local.get(null, (json) => {
 });
 
 function easyProxyScript() {
-    let merge = MatchPattern.merge();
-    easyScript = merge.pac_script;
-    easyRegExp = merge.regexp;
+    let result = MatchPattern.combine();
+    easyScript = result.pac_script;
+    easyRegExp = result.regexp;
     easyProxyMode(easyStorage.direct);
 }
 
