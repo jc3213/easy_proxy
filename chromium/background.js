@@ -187,7 +187,6 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     if (easyStorage.indicator) {
         inspect.index = easyProxyIndicator(tabId, inspect.index, url);
     }
-    console.log(rule, host);
     easyInspectSync(tabId, rule, host);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
