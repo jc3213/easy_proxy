@@ -1,5 +1,6 @@
 let easyProfile = {};
 let easyProxy = {};
+let easyModes = ['direct', 'autopac', 'global'];
 
 let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
@@ -16,26 +17,27 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
     node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
 });
 
-const shortcutHandlers = {
-    's': saveBtn,
-    'f': newBtn,
-    'g': optionsBtn
-};
+function shortcutHandler(event, ctrlKey, button) {
+    if (ctrlKey) {
+        event.preventDefault();
+        button.click();
+    }
+}
 
 document.addEventListener('keydown', (event) => {
-    let handler = shortcutHandlers[event.key];
-    if (event.ctrlKey && handler) {
-        event.preventDefault();
-        handler.click();
-    }
+    let {key, ctrlKey} = event;
+    switch (key) {
+        case 's':
+            shortcutHandler(event, ctrlKey, saveBtn);
+            break;
+        case 'e':
+            shortcutHandler(event, ctrlKey, newBtn);
+            break;
+        case 'q':
+            shortcutHandler(event, ctrlKey, optionsBtn);
+            break;
+    };
 });
-
-const menuEventHandlers = {
-    'options_profile': menuEventNewProf,
-    'options_advance': menuEventAdvance,
-    'options_save': menuEventSave,
-    'options_export': menuEventExport
-};
 
 function menuEventNewProf() {
     extension.remove('set_options');
@@ -64,10 +66,20 @@ function fileSaver(data, type, filename, filetype) {
 }
 
 menuPane.addEventListener('click', (event) => {
-    let handler = menuEventHandlers[event.target.getAttribute('i18n')];
-    if (handler) {
-        handler();
-    }
+    switch (event.target.getAttribute('i18n')) {
+        case 'options_profile':
+            menuEventNewProf();
+            break;
+        case 'options_advance':
+            menuEventAdvance();
+            break;
+        case 'options_save':
+            menuEventSave();
+            break;
+        case 'options_export':
+            menuEventExport();
+            break;
+    };
 });
 
 submitBtn.addEventListener('click', (event) => {
@@ -104,27 +116,30 @@ profilePane.addEventListener('keydown', (event) => {
     }
 });
 
-const optionHandlers = {
-    'work-mode': optionProxyMode,
-    'proxy-server': () => easyStorage.direct = proxyMenu.value,
-    'indicator': ({checked}) => easyStorage.indicator = checked,
-    'persistent': ({checked}) => easyStorage.persistent = checked
-};
-const optionModes = ['direct', 'autopac', 'global'];
-
 function optionProxyMode({value}) {
-    let hide = optionModes.filter((key) => key !== value);
+    let hide = easyModes.filter((key) => key !== value);
     extension.add(value);
     extension.remove(...hide);
     easyStorage.direct = value === 'global' ? proxyMenu.value : value;
 }
 
 optionsPane.addEventListener('change', (event) => {
-    let handler = optionHandlers[event.target.id];
-    if (handler) {
-        handler(event.target);
-        saveBtn.disabled = false;
-    }
+    let {id, value, checked} = event.target;
+    switch (id) {
+        case 'work-mode':
+            optionProxyMode(value);
+            break;
+        case 'proxy-server':
+            easyStorage.direct = proxyMenu.value;
+            break;
+        case 'indicator':
+            easyStorage.indicator = checked;
+            break;
+        case 'persistent':
+            easyStorage.persistent = checked;
+            break;
+    };
+    saveBtn.disabled = false;
 });
 
 chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
@@ -150,14 +165,6 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
         persistMenu.parentNode.remove();
     }
 });
-
-const profileHandlers = {
-    'profile_export': profileExport,
-    'profile_resort': profileResort,
-    'profile_remove': profileRemove,
-    'match_add': matchAddNew,
-    'match_remove': matchRemove
-};
 
 function profileExport(id) {
     chrome.runtime.sendMessage({action: 'pacscript_query', params: id}, (pac_script) => {
@@ -195,11 +202,10 @@ function matchAddNew(id, list, entry) {
     }
 }
 
-function matchRemove(id, list, entry, event) {
+function matchRemove(id, rule) {
     saveBtn.disabled = false;
-    let match = event.target.parentNode;
-    let value = match.title;
-    match.remove();
+    let value = rule.title;
+    rule.remove();
     easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
 }
 
@@ -209,10 +215,23 @@ function createMatchProfile(id) {
     let server = document.createElement('option');
     proxy.textContent = server.value = server.textContent = id;
     profile.addEventListener('click', (event) => {
-        let handler = profileHandlers[event.target.getAttribute('i18n-tips')];
-        if (handler) {
-            handler(id, list, entry, event);
-        }
+        switch (event.target.getAttribute('i18n-tips')) {
+            case 'profile_export':
+                profileExport(id);
+                break;
+            case 'profile_resort':
+                profileResort(id, list);
+                break;
+            case 'profile_remove':
+                profileRemove(id);
+                break;
+            case 'match_add':
+                matchAddNew(id, list, entry);
+                break;
+            case 'match_remove':
+                matchRemove(id, event.target.parentNode);
+                break;
+        };
     });
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {

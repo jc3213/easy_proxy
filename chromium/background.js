@@ -4,6 +4,11 @@ let easyDefault = {
     persistent: false,
     proxies: []
 };
+let easyColor = {
+    direct: '#2940D9',
+    autopac: '#C1272D',
+    global: '#208020'
+};
 
 let easyStorage = {};
 let easyMatch = {};
@@ -15,23 +20,12 @@ let easyPersistent;
 let easyInspect = {};
 
 let manifest = chrome.runtime.getManifest().manifest_version;
-let system = typeof browser !== 'undefined' ? 'firefox' : 'chromium';
+let firefox = typeof browser !== 'undefined';
 if (manifest === 3) {
     importScripts('libs/matchpattern.js');
 }
 
-const messageHandlers = {
-    'storage_query': (response) => response({ storage: {...easyDefault, ...easyStorage}, manifest }),
-    'storage_update': easyStorageUpdated,
-    'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
-    'manager_query': easyManageQuery,
-    'manager_update': easyManageUpdated,
-    'manager_tempo': (response, params) => easyMatchPattern(easyTempo, params),
-    'manager_purge': easyTempoPurged,
-    'easyproxy_mode': easyModeChanger
-};
-
-function easyStorageUpdated(response, json) {
+function easyStorageUpdated(json) {
     let invalid = [];
     Object.keys(json).forEach((key) => {
         if (key in easyDefault) {
@@ -67,7 +61,7 @@ function easyStorageUpdated(response, json) {
     chrome.storage.local.set(json);
 }
 
-function easyManageQuery(response, tabId) {
+function easyManageQuery(tabId, response) {
     let match = {}
     let tempo = {};
     let rule = [];
@@ -85,7 +79,7 @@ function easyManageQuery(response, tabId) {
     response({ match, tempo, rule, host, proxies, direct });
 }
 
-function easyManageUpdated(response, {add, remove, proxy, tabId}) {
+function easyManageUpdated({add, remove, proxy, tabId}) {
     easyMatchPattern(easyMatch, {add, remove, proxy, tabId});
     easyStorage[proxy] = easyMatch[proxy].data;
     chrome.storage.local.set(easyStorage);
@@ -99,58 +93,93 @@ function easyMatchPattern(list, {add = [], remove = [], proxy, tabId}) {
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
 
-function easyTempoPurged(response, tabId) {
+function easyTempoPurged(tabId) {
     easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
     easyProxyScript();
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
 
-function easyModeChanger(response, params) {
+function easyModeChanger(params, response) {
     easyProxyMode(params);
     easyStorage.direct = params;
     chrome.storage.local.set(easyStorage);
     response(true);
 }
 
-chrome.runtime.onMessage.addListener((message, sender, response) => {
-    messageHandlers[message.action](response, message.params ?? sender);
-    return true;
+chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
+    switch (action) {
+        case 'storage_query': 
+            response({ storage: {...easyDefault, ...easyStorage}, manifest });
+            break;
+        case 'storage_update':
+            easyStorageUpdated(params);
+            break;
+        case 'pacscript_query':
+            response(easyMatch[params].pac_script);
+            break;
+        case 'manager_query':
+            easyManageQuery(params, response);
+            break;
+        case 'manager_update':
+            easyManageUpdated(params);
+            break;
+        case 'manager_tempo':
+            easyMatchPattern(easyTempo, params);
+            break;
+        case 'manager_purge':
+            easyTempoPurged(params);
+            break;
+        case 'easyproxy_mode':
+            easyModeChanger(params, response);
+            break;
+    };
 });
 
-const proxyHandlers = {
-    'autopac': {
-        color: '#2940D9',
-        chromium: () => ({ mode: 'pac_script', pacScript: { data: easyScript } }),
-        firefox: () => ({ proxyType: "autoConfig", autoConfigUrl: 'data:,' + easyScript })
-    },
-    'direct': {
-        color: '#C1272D',
-        chromium: () => ({ mode: 'direct' }),
-        firefox: () => ({ proxyType: "none" })
-    },
-    'global': {
-        color: '#208020', 
-        chromium: (direct) => {
-            let [scheme, host, port] = direct.split(/[\s:]/);
-            let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-            return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
-        },
-        firefox: (direct) => {
-            let [scheme, proxy] = direct.split(' ');
-            let config = proxyHandlers[scheme](proxy);
-            return { proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config };
-        }
-    },
-    'SOCKS': (proxy) => ({ socks: 'socks://' + proxy, socksVersion: 4 }),
-    'SOCKS5': (proxy) => ({ socks: 'socks://' + proxy, socksVersion: 5 }),
-    'HTTPS': (proxy) => ({ ssl: 'https://' + proxy }),
-    'HTTP': (proxy) => ({ http: 'http://' + proxy })
-};
+function firefoxHandler(scheme, proxy) {
+    switch (scheme) {
+        case 'HTTP':
+            return { http: 'http://' + proxy };
+        case 'HTTPS':
+            return { ssl: 'https://' + proxy };
+        case 'SOCKS':
+            return { socks: 'socks://' + proxy, socksVersion: 4 };
+        case 'SOCKS5':
+            return { socks: 'socks://' + proxy, socksVersion: 5 };
+    };
+}
 
-function easyProxyMode(direct) {
+function easyProxyMode(direct, value) {
     easyMode = direct;
-    let {color, [system]: config} = proxyHandlers[direct] ?? proxyHandlers.global;
-    let value = config(direct);
+    let color = easyColor[direct] ?? easyColor.global;
+    if (firefox) {
+        switch (direct) {
+            case 'autopac':
+                value = { proxyType: "autoConfig", autoConfigUrl: 'data:,' + easyScript };
+                break;
+            case 'direct':
+                value = { proxyType: "none" };
+                break;
+            default:
+                let [scheme, proxy] = direct.split(' ');
+                let config = firefoxHandler(scheme, proxy);
+                value = { proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config };
+                break;
+        };
+    } else {
+        switch (direct) {
+            case 'autopac':
+                value = { mode: 'pac_script', pacScript: { data: easyScript } };
+                break;
+            case 'direct':
+                value = { mode: 'direct' };
+                break;
+            default:
+                let [scheme, host, port] = direct.split(/[\s:]/);
+                let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
+                value = { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
+                break;
+        };
+    }
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
 }
