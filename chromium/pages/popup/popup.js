@@ -55,7 +55,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-
 outputPane.addEventListener('change', (event) => {
     let check = event.target;
     easyChecks.get(check) === check.checked ? easyChanges.delete(check) : easyChanges.add(check);
