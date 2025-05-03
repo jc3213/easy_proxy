@@ -11,11 +11,6 @@ select {
     width: 100%;
 }
 
-body.direct > :nth-child(-n+2),
-body.global > :nth-child(-n+2) {
-    display: none;
-}
-
 body.asleep > #menu > button:nth-of-type(-n+3),
 body.asleep > #proxy,
 body.direct > #menu > button:nth-of-type(-n+3),
@@ -25,12 +20,11 @@ body.global > #menu > button:nth-of-type(-n+3) {
     pointer-events: none;
 }
 
-#output:empty + div {
-    display: none;
-}
-
+body.direct > :nth-child(-n+2),
+body.global > :nth-child(-n+2),
 #output:not(.express) > .fullhost:not(.match):not(.tempo),
-#output.express > .wildcard:not(.match):not(.tempo) {
+#output.express > .wildcard:not(.match):not(.tempo),
+#output:empty + #context {
     display: none !important;
 }
 
