@@ -2,7 +2,7 @@ class MatchPattern {
     constructor () {
         MatchPattern.instances.push(this);
     }
-    version = '0.7';
+    version = '0.8';
     #data = new Set();
     #text = '';
     #regexp = /!/;
@@ -19,7 +19,7 @@ class MatchPattern {
         return this.#proxy;
     }
     get pas_script () {
-        return 'function FindProxyForURL(url, host) {\n' + this.#pacScript + '\n    return "DIRECT";\n}'
+        return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n    return "DIRECT";\n}`;
     }
     add (arg) {
         [arg].flat().forEach((arg) => this.#data.add(arg));
@@ -62,7 +62,7 @@ class MatchPattern {
         let { caches, tlds } = MatchPattern;
         let host = url.match(/^(?:(?:http|ftp|ws)s?:\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
         if (!host) {
-            throw new Error('"' + url + '" is either not a URL, or a valid MatchPattern');
+            throw new Error(`"${url}" is either not a URL, or a MatchPattern`);
         }
         let rule = caches.get(host);
         if (rule) {
@@ -72,7 +72,7 @@ class MatchPattern {
             rule = host.replace(/\d+\.\d+$/, '*');
         } else {
             let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
-            rule = '*.' + (sbd && tlds.has(sld) ? sbd + '.' : '') + sld + '.' + tld;
+            rule = `*.${sbd && tlds.has(sld) ? `${sbd}.` : ''}${sld}.${tld}`;
         }
         caches.set(url, rule);
         caches.set(host, rule);
@@ -80,12 +80,12 @@ class MatchPattern {
     }
     static update (that) {
         let data = that.#data;
-        that.#text = data.size === 0 ? '' : data.has('*') ? '.*' : '^(' + [...data].join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*') + ')$';
+        that.#text = data.size === 0 ? '' : data.has('*') ? '.*' : `^(${[...data].join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*')})$`;
         that.#regexp = new RegExp(that.#text || '!');
         MatchPattern.pacScript(that);
     }
     static pacScript (that) {
-        that.#pacScript = that.#text && that.#proxy !== 'DIRECT' ? '    if (/' + that.#text + '/i.test(host)) {\n        return "' + that.#proxy + '";\n    }' : ''
+        that.#pacScript = that.#text && that.#proxy !== 'DIRECT' ? `    if (/${that.#text}/i.test(host)) {\n        return "${that.#proxy}";\n    }` : '';
     }
     static delete (arg) {
         let removed = new Set([arg].flat());
@@ -100,8 +100,8 @@ class MatchPattern {
                 pac.push(that.#pacScript);
             }
         });
-        let regexp = text.length === 0 ? /!/ : new RegExp('(' + text.join('|') + ')');
-        let pac_script = 'function FindProxyForURL(url, host) {\n' + pac.join('\n') + '\n    return "DIRECT";\n}';
+        let regexp = text.length === 0 ? /!/ : new RegExp(`(${text.join('|')})`);
+        let pac_script = `function FindProxyForURL(url, host) {\n${pac.join('\n')}\n    return "DIRECT";\n}`;
         return { regexp , pac_script };
     }
 };
