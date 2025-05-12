@@ -99,17 +99,16 @@ function easyTempoPurged(tabId) {
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
 
-function easyModeChanger(params, response) {
+function easyModeChanger(params) {
     easyProxyMode(params);
     easyStorage.direct = params;
     chrome.storage.local.set(easyStorage);
-    response(true);
 }
 
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     switch (action) {
         case 'storage_query': 
-            response({ storage: {...easyDefault, ...easyStorage}, manifest });
+            response({ storage: easyStorage, manifest });
             break;
         case 'storage_update':
             easyStorageUpdated(params);
@@ -130,7 +129,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             easyTempoPurged(params);
             break;
         case 'easyproxy_mode':
-            easyModeChanger(params, response);
+            response(easyModeChanger(params));
             break;
     };
 });
