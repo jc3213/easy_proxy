@@ -2,7 +2,7 @@ class MatchPattern {
     constructor () {
         MatchPattern.instances.push(this);
     }
-    version = '0.8';
+    version = '0.7';
     #data = new Set();
     #text = '';
     #regexp = /!/;
@@ -12,7 +12,7 @@ class MatchPattern {
         return [...this.#data];
     }
     set proxy (proxy) {
-        this.#proxy = /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+:\d+$/.test(proxy) ? proxy : 'DIRECT';
+        this.#proxy = /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+(:\d{2,5})?$/.test(proxy) ? proxy : 'DIRECT';
         MatchPattern.pacScript(this);
     }
     get proxy () {
@@ -60,7 +60,7 @@ class MatchPattern {
     ]);
     static make (url) {
         let { caches, tlds } = MatchPattern;
-        let host = url.match(/^(?:(?:http|ftp|ws)s?:\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
+        let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
         if (!host) {
             throw new Error(`"${url}" is either not a URL, or a MatchPattern`);
         }
