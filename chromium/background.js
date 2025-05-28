@@ -37,7 +37,7 @@ function easyStorageUpdated(json) {
             return;
         }
         if (easyStorage.proxies.includes(key)) {
-            easyMatch[key].clear();
+            easyMatch[key].empty();
         } else {
             easyMatch[key] = new MatchPattern();
             easyTempo[key] = new MatchPattern();
@@ -94,7 +94,7 @@ function easyMatchPattern(list, {add = [], remove = [], proxy, tabId}) {
 }
 
 function easyTempoPurged(tabId) {
-    easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
+    easyStorage.proxies.forEach((proxy) => easyTempo[proxy].empty());
     easyProxyScript();
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
