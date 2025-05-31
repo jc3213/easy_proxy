@@ -15,7 +15,7 @@ class Storage {
             request.onerror = () => reject(request.error);
         });
     }
-    version = '1.0';
+    version = '0.1';
     #database;
     #store;
     #db;
