@@ -17,12 +17,13 @@ let easyRegExp;
 let easyMode;
 let easyScript;
 let easyPersistent;
+let easyTabs = new Set();
 let easyInspect = {};
 
 let manifest = chrome.runtime.getManifest().manifest_version;
 let firefox = typeof browser !== 'undefined';
 if (manifest === 3) {
-    importScripts('libs/matchpattern.js');
+    importScripts('libs/storage.js', 'libs/matchpattern.js');
 }
 
 function easyStorageUpdated(json) {
@@ -189,33 +190,31 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
-chrome.webNavigation.onBeforeNavigate.addListener(({tabId, url, frameId}) => {
-    if (frameId === 0) {
-        easyInspectSetup(tabId, url);
-    }
-}, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
+chrome.tabs.onUpdated.addListener(async (tabId, {status}, {url}) => {
+    switch (status) {
+        case 'loading':
+            if (url.startsWith('http') && !easyTabs.has(tabId)) {
+                easyTabs.add(tabId);
+                let {host, rule} = await MatchPattern.make(url);
+                easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), index: 0, url };
+                easyInspectSync(tabId, host, rule);
+            }
+            break;
+        case 'complete':
+            easyTabs.delete(tabId);
+            break;
+    };
+});
 
-chrome.webNavigation.onHistoryStateUpdated.addListener(({tabId, url}) => {
-    if (easyInspect[tabId]?.url !== url) {
-        easyInspectSetup(tabId, url);
-    }
-}, {url: [ {urlPrefix: 'http://'}, {urlPrefix: 'https://'} ]});
-
-function easyInspectSetup(tabId, url) {
-    let {rule, host} = MatchPattern.make(url);
-    let inspect = easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), index: 0, url };
-    easyInspectSync(tabId, rule, host);
-}
-
-chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
+chrome.webRequest.onBeforeRequest.addListener(async ({tabId, type, url}) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), index: 0 };
-    let {rule, host} = MatchPattern.make(url);
+    let {host, rule} = await MatchPattern.make(url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyStorage.indicator) {
         inspect.index = easyProxyIndicator(tabId, inspect.index, url);
     }
-    easyInspectSync(tabId, rule, host);
+    easyInspectSync(tabId, host, rule);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyProxyIndicator(tabId, index, url) {
@@ -226,7 +225,7 @@ function easyProxyIndicator(tabId, index, url) {
     return index;
 }
 
-function easyInspectSync(tabId, rule, host) {
+function easyInspectSync(tabId, host, rule) {
     chrome.runtime.sendMessage({action: 'manager_update', params: { tabId, rule, host }});
 }
 

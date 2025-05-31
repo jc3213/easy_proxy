@@ -1,3 +1,5 @@
+const MatchPatternCaches = new Storage('matchpattern', 'caches');
+
 class MatchPattern {
     constructor () {
         MatchPattern.#instances.push(this);
@@ -47,7 +49,6 @@ class MatchPattern {
         this.#pacScript = this.#text && this.#proxy !== 'DIRECT' ? `    if (/${this.#text}/i.test(host)) {\n        return "${this.#proxy}";\n    }` : '';
     }
     static #instances = [];
-    static #caches = new Map();
     static #tlds = new Set([
         'aero', 'app', 'arpa', 'asia',
         'biz',
@@ -68,25 +69,25 @@ class MatchPattern {
         'xxx', 'xyz'
     ]);
     static make (url) {
-        let caches = MatchPattern.#caches;
-        let tlds = MatchPattern.#tlds;
-        let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
-        if (!host) {
-            throw new Error(`"${url}" is either not a URL, or a MatchPattern`);
-        }
-        let rule = caches.get(host);
-        if (rule) {
-            return {rule, host};
-        }
-        if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
-            rule = host.replace(/\d+\.\d+$/, '*');
-        } else {
-            let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
-            rule = sbd && tlds.has(sld) ? `*.${sbd}.${sld}.${tld}` : `*.${sld}.${tld}`;
-        }
-        caches.set(url, rule);
-        caches.set(host, rule);
-        return {rule, host};
+        return new Promise(async (resolve, reject) => {
+            let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
+            if (!host) {
+                throw new Error(`"${url}" is either not a URL, or a MatchPattern`);
+            }
+            let rule = await MatchPatternCaches.get(host);
+            if (rule) {
+                resolve({rule, host});
+                return;
+            }
+            if (/((25[0-5]|(2[0-4]|1[0-9]|[1-9]?)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])/.test(host)) {
+                rule = host.replace(/\d+\.\d+$/, '*');
+            } else {
+                let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
+                rule = sbd && MatchPattern.#tlds.has(sld) ? `*.${sbd}.${sld}.${tld}` : `*.${sld}.${tld}`;
+            }
+            MatchPatternCaches.set(host, rule);
+            resolve({rule, host});
+        });
     }
     static delete (arg) {
         let removed = new Set([arg].flat());
