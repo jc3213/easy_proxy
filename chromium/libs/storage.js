@@ -33,10 +33,7 @@ class Storage {
         });
     }
     close () {
-        return this.#db.then((db) => {
-            db.close();
-            return Promise.resolve(true);
-        });
+        return this.#db.then((db) => db.close());
     }
     set (key, value) {
         return this.#transaction((store) => store.put({ key, value }));
