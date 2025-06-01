@@ -60,7 +60,7 @@ class Storage {
         return this.entries().then((entries) => entries.forEach(callback));
     }
     clear () {
-        return this.#transaction('readwrite', (store) => store.clear());
+        return this.#transaction((store) => store.clear());
     }
     flush () {
         return new Promise(async (resolve, reject) => {
