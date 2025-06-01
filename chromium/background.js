@@ -195,7 +195,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, {status}, {url}) => {
         case 'loading':
             if (url.startsWith('http') && !easyTabs.has(tabId)) {
                 easyTabs.add(tabId);
-                let {host, rule} = await MatchPattern.make(url);
+                let {host, rule} = MatchPattern.make(url);
                 easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), index: 0, url };
                 easyInspectSync(tabId, host, rule);
             }
@@ -208,7 +208,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, {status}, {url}) => {
 
 chrome.webRequest.onBeforeRequest.addListener(async ({tabId, type, url}) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), index: 0 };
-    let {host, rule} = await MatchPattern.make(url);
+    let {host, rule} = MatchPattern.make(url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyStorage.indicator) {
@@ -229,7 +229,8 @@ function easyInspectSync(tabId, host, rule) {
     chrome.runtime.sendMessage({action: 'manager_update', params: { tabId, rule, host }});
 }
 
-chrome.storage.local.get(null, (json) => {
+chrome.storage.local.get(null, async (json) => {
+    await MatchPattern.caches();
     easyStorage = {...easyDefault, ...json};
     easyStorage.proxies.forEach((proxy) => {
         let match = new MatchPattern();
