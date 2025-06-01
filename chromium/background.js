@@ -190,7 +190,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
-chrome.tabs.onUpdated.addListener(async (tabId, {status}, {url}) => {
+chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
     switch (status) {
         case 'loading':
             if (url.startsWith('http') && !easyTabs.has(tabId)) {
@@ -206,7 +206,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, {status}, {url}) => {
     };
 });
 
-chrome.webRequest.onBeforeRequest.addListener(async ({tabId, type, url}) => {
+chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), index: 0 };
     let {host, rule} = MatchPattern.make(url);
     inspect.rule.add(rule);
