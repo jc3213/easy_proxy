@@ -8,12 +8,7 @@ class Storage {
         }
         this.#database = database;
         this.#store = store;
-        this.#db = new Promise((resolve, reject) => {
-            let request = indexedDB.open(database, 1);
-            request.onsuccess = () => resolve(request.result);
-            request.onupgradeneeded = (event) => request.result.createObjectStore(store, { keyPath: 'key' });
-            request.onerror = () => reject(request.error);
-        });
+        this.open();
     }
     version = '0.1';
     #database;
@@ -27,6 +22,20 @@ class Storage {
             let request = callback(store);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
+        });
+    }
+    open () {
+        this.#db = new Promise((resolve, reject) => {
+            let request = indexedDB.open(this.#database, 1);
+            request.onsuccess = () => resolve(request.result);
+            request.onupgradeneeded = (event) => request.result.createObjectStore(this.#store, { keyPath: 'key' });
+            request.onerror = () => reject(request.error);
+        });
+    }
+    close () {
+        return this.#db.then((db) => {
+            db.close();
+            return Promise.resolve(true);
         });
     }
     set (key, value) {
@@ -58,10 +67,9 @@ class Storage {
     }
     flush () {
         return new Promise(async (resolve, reject) => {
-            let db = await this.#db;
-            db.close();
+            await this.close();
             let request = indexedDB.deleteDatabase(this.#database);
-            request.onsuccess = () => resolve(true);
+            request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
     }
