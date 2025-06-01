@@ -48,7 +48,7 @@ class Storage {
         return this.#transaction((store) => store.get(key)).then((item) => item?.value);
     }
     delete (key) {
-        return this.#transaction('readwrite', (store) => store.delete(key));
+        return this.#transaction((store) => store.delete(key));
     }
     entries () {
         return this.#transaction((store) => store.getAll());
