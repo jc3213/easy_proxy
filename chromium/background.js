@@ -89,7 +89,7 @@ function easyManageUpdated({add, remove, proxy, tabId}) {
 function easyMatchPattern(list, {add = [], remove = [], proxy, tabId}) {
     let matchpattern = list[proxy];
     matchpattern.add(add);
-    matchpattern.remove(remove);
+    matchpattern.delete(remove);
     easyProxyScript();
     chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
 }
@@ -239,7 +239,7 @@ function easyInspectSync(tabId, host, rule) {
 }
 
 chrome.storage.local.get(null, async (json) => {
-    await MatchPattern.caches();
+    await MatchPattern.fetch();
     easyStorage = {...easyDefault, ...json};
     easyStorage.proxies.forEach((proxy) => {
         let match = new MatchPattern();

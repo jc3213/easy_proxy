@@ -2,7 +2,7 @@ class MatchPattern {
     constructor () {
         MatchPattern.#instances.push(this);
     }
-    version = '0.9';
+    version = '1.0';
     #data = new Set();
     #text = '';
     #regexp = /!/;
@@ -22,14 +22,14 @@ class MatchPattern {
         return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n    return "DIRECT";\n}`;
     }
     add (arg) {
-        [arg].flat().forEach((arg) => this.#data.add(arg));
+        Array.isArray(arg) ? arg.forEach((i) => this.#data.add(i)) : this.#data.add(arg);
         this.#update();
     }
-    remove (arg) {
-        [arg].flat().forEach((arg) => this.#data.delete(arg));
+    delete (arg) {
+        Array.isArray(arg) ? arg.forEach((i) => this.#data.delete(i)) : this.#data.delete(arg);
         this.#update();
     }
-    empty () {
+    clear () {
         this.#data.clear();
         this.#text = this.#pacScript = '';
         this.#regexp = /!/;
@@ -46,9 +46,8 @@ class MatchPattern {
     #parser () {
         this.#pacScript = this.#text && this.#proxy !== 'DIRECT' ? `    if (/${this.#text}/i.test(host)) {\n        return "${this.#proxy}";\n    }` : '';
     }
-    static #storage;
+
     static #instances = [];
-    static #caches = new Map();
     static #tlds = new Set([
         'aero', 'app', 'arpa', 'asia',
         'biz',
@@ -68,7 +67,15 @@ class MatchPattern {
         'web',
         'xxx', 'xyz'
     ]);
-    static caches () {
+    static #caches = new Map();
+    static get caches () {
+        return MatchPattern.#caches;
+    }
+    static #storage;
+    static get storage () {
+        return MatchPattern.#storage;
+    }
+    static fetch () {
         MatchPattern.#storage = new Storage('matchpattern', 'caches');
         return MatchPattern.#storage.forEach(({key, value}) => MatchPattern.#caches.set(key, value));
     }
