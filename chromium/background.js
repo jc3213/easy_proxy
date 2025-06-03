@@ -195,7 +195,7 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
         case 'loading':
             if (url.startsWith('http') && !easyTabs.has(tabId)) {
                 easyTabs.add(tabId);
-                let {host, rule} = MatchPattern.make(url);
+                let {host, rule} = easyMatchMaker(url);
                 easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), index: 0, url };
                 easyInspectSync(tabId, host, rule);
             }
@@ -208,7 +208,7 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), index: 0 };
-    let {host, rule} = MatchPattern.make(url);
+    let {host, rule} = easyMatchMaker(url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyStorage.indicator) {
@@ -216,6 +216,15 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     }
     easyInspectSync(tabId, host, rule);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
+
+function easyMatchMaker(url) {
+    let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
+    if (!host) {
+        throw new Error(`"${url}" is either not a URL, or a MatchPattern`);
+    }
+    let rule = MatchPattern.make(host);
+    return {host, rule};
+}
 
 function easyProxyIndicator(tabId, index, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
