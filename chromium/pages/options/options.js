@@ -116,7 +116,7 @@ profilePane.addEventListener('keydown', (event) => {
     }
 });
 
-function optionProxyMode({value}) {
+function optionProxyMode(value) {
     let hide = easyModes.filter((key) => key !== value);
     extension.add(value);
     extension.remove(...hide);
