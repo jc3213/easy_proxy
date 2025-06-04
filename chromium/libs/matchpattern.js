@@ -46,7 +46,6 @@ class MatchPattern {
     #parser () {
         this.#pacScript = this.#text && this.#proxy !== 'DIRECT' ? `    if (/${this.#text}/i.test(host)) {\n        return "${this.#proxy}";\n    }` : '';
     }
-
     static #instances = [];
     static #tlds = new Set([
         'aero', 'app', 'arpa', 'asia',
