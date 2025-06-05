@@ -1,12 +1,13 @@
 let easyMatch = new Map();
 let easyTempo = new Map();
+let easyRule = new Map();
 let easyChecks = new Map();
 let easyChanges = new Set();
 let easyModes = ['direct', 'autopac', 'global'];
-let easyRule;
-let easyHost;
-let easyList = {};
+let lastMatch;
+let lastTempo;
 let easyProxy;
+let easyTabs = new Set();
 let easyTab;
 let easyId = 0;
 
@@ -63,10 +64,17 @@ outputPane.addEventListener('change', (event) => {
 contextPane.addEventListener('click', (event) => {
     let button = event.target.getAttribute('i18n');
     let inject = button === 'popup_all' ? true : button === 'popup_none' ? false : undefined;
-    [...easyChecks].forEach(([check, value]) => {
-        value = inject ?? value;
-        check.checked === value ? easyChanges.delete(check) : easyChanges.add(check);
-        check.checked = value;
+    easyChecks.forEach((value, check) => {
+        if (inject === undefined) {
+            check.checked = value;
+            easyChanges.delete(check);
+        } else if (inject === value) {
+            check.checked = inject;
+            easyChanges.delete(check);
+        } else {
+            check.checked = inject;
+            easyChanges.add(check);
+        }
     });
 });
 
@@ -91,9 +99,6 @@ modeMenu.addEventListener('change', (event) => {
         let hide = easyModes.filter((key) => key !== mode);
         manager.add(mode);
         manager.remove(...hide);
-        if (mode === 'autopac' && !manager.contains('asleep')) {
-            easyManagerSetup();
-        }
     });
 });
 
@@ -114,6 +119,7 @@ function proxyStatusChanged(action, type, mapping) {
             mapping.set(value, proxy);
             add.push(value);
             check.parentNode.classList.add(type);
+            check.parentNode.classList.remove('error');
         } else if (!checked && map) {
             mapping.delete(value);
             remove.push(value);
@@ -153,71 +159,93 @@ menuPane.addEventListener('click', (event) => {
     };
 });
 
-chrome.runtime.onMessage.addListener(({action, params}) => {
-    if (action !== 'manager_update') {
-        return;
-    }
-    let {tabId, rule, host} = params;
+function easyMatchUpdate({tabId, rule, host}) {
     if (easyProxy && tabId === easyTab) {
         pinrtOutputList(rule, 'wildcard');
         pinrtOutputList(host, 'fullhost');
         manager.remove('asleep');
     }
+}
+
+function easyMatchError({tabId, rule, host}) {
+    if (tabId === easyTab) {
+        easyRule.get(rule)?.classList?.add('error');
+        easyRule.get(host)?.classList?.add('error');
+    }
+}
+
+chrome.runtime.onMessage.addListener(({action, params}) => {
+    switch (action) {
+        case 'manager_update':
+            easyMatchUpdate(params);
+            break;
+        case 'manager_onerror':
+            easyMatchError(params);
+            break;
+    };
 });
 
-chrome.webNavigation.onBeforeNavigate.addListener(({tabId, frameId}) => {
-    if (tabId === easyTab && frameId === 0) {
-        easyList.lastMatch = easyList.lastTempo = null;
-        easyChecks.clear();
-        outputPane.innerHTML = '';
-    }
+chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
+    switch (status) {
+        case 'loading':
+            if (easyTab === tabId && !easyTabs.has(tabId)) {
+                lastMatch = lastTempo = null;
+                easyChecks.clear();
+                outputPane.innerHTML = '';
+            }
+            break;
+        case 'complete':
+            if (easyTab === tabId) {
+                easyTabs.delete(tabId);
+            }
+            break;
+    };
 });
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, rule, host, direct}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, rule, host, error, direct}) => {
+        if (proxies.length === 0 || rule.length === 0 && host.length === 0) {
+            manager.add('asleep');
+        }
+        proxyMenu.value = easyProxy = proxies[0];
         proxies.forEach((proxy) => {
-            match[proxy].forEach((e) => easyMatch.set(e, proxy));
-            tempo[proxy].forEach((e) => easyTempo.set(e, proxy));
+            match[proxy]?.forEach((e) => easyMatch.set(e, proxy));
+            tempo[proxy]?.forEach((e) => easyTempo.set(e, proxy));
             let menu = document.createElement('option');
             menu.textContent = menu.title = menu.value = proxy;
             proxyMenu.append(menu);
         });
-        easyRule = rule;
-        easyHost = host;
-        easyProxy = proxies[0];
         if (direct !== 'direct' && direct !== 'autopac') {
             proxyMenu.value = easyProxy = direct;
             direct = 'global';
         }
         modeMenu.value = direct;
         manager.add(direct);
-        rule.length === 0 && host.length === 0 || !easyProxy ? manager.add('asleep') : easyManagerSetup();
+        rule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
+        host.forEach((host) => pinrtOutputList(host, 'fullhost'));
+        error.forEach((error) => easyRule.get(error).classList.add('error'));
     });
 });
 
-function easyManagerSetup() {
-    easyRule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
-    easyHost.forEach((host) => pinrtOutputList(host, 'fullhost'));
-}
-
 function pinrtOutputList(value, type) {
-    let {host, check} = easyList[value] ??= printMatchPattern(value, type);
+    let rule = easyRule.get(value) ?? printMatchPattern(value, type);
+    let {check} = rule;
     if (easyChecks.has(check)) {
         return;
     }
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
     if (match) {
-        host.classList.add('match');
-        easyList.lastMatch?.after(host) || outputPane.insertBefore(host, outputPane.children[0]);
-        easyList.lastMatch = host;
+        rule.classList.add('match');
+        lastMatch?.after(rule) || outputPane.insertBefore(rule, outputPane.children[0]);
+        lastMatch = rule;
     } else if (tempo) {
-        host.classList.add('tempo');
-        easyList.lastTempo?.after(host) || easyList.lastMatch?.after(host) || outputPane.insertBefore(host, outputPane.children[0]);
-        easyList.lastTempo = host;
+        rule.classList.add('tempo');
+        lastTempo?.after(rule) || lastMatch?.after(rule) || outputPane.insertBefore(rule, outputPane.children[0]);
+        lastTempo = rule;
     } else {
-        outputPane.append(host);
+        outputPane.append(rule);
     }
     if (match === easyProxy || tempo === easyProxy) {
         check.checked = true;
@@ -226,11 +254,13 @@ function pinrtOutputList(value, type) {
 }
 
 function printMatchPattern(value, type) {
-    let host = hostLET.cloneNode(true);
-    let [check, label] = host.children;
+    let rule = hostLET.cloneNode(true);
+    let [check, label] = rule.children;
+    rule.check = check;
     check.id = 'easyproxy_' + easyId ++;
     label.setAttribute('for', check.id);
-    host.title = label.textContent = check.value = value;
-    host.classList.add(type);
-    return {host, check};
+    rule.title = label.textContent = check.value = value;
+    rule.classList.add(type);
+    easyRule.set(value, rule);
+    return rule;
 }

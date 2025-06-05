@@ -31,6 +31,7 @@ body.global > :nth-child(-n+2),
 #output > div {
     display: flex;
     gap: 5px;
+    margin: 1px;
     padding: 3px;
 }
 
@@ -65,10 +66,20 @@ body.global > :nth-child(-n+2),
     flex: 1;
 }
 
+.match,
+.tempo,
+.error {
+    color: #FFFFFF;
+}
+
 .match {
-    color: #d44b31;
+    background-color: #34A85D;
 }
 
 .tempo {
-    color: #59a8ff;
+    background-color: #E6A92A;
+}
+
+.error {
+    background-color: #D23F2A;
 }

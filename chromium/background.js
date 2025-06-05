@@ -18,6 +18,7 @@ let easyMode;
 let easyScript;
 let easyPersistent;
 let easyTabs = new Set();
+let easyError = new Set(['net::ERR_CONNECTION_TIMED_OUT', 'ERR_NAME_NOT_RESOLVED', 'net::ERR_CONNECTION_RESET']);
 let easyInspect = {};
 
 let manifest = chrome.runtime.getManifest().manifest_version;
@@ -62,22 +63,20 @@ function easyStorageUpdated(json) {
     chrome.storage.local.set(json);
 }
 
-function easyManageQuery(tabId, response) {
+function easyManageQuery(tabId) {
     let match = {}
     let tempo = {};
-    let rule = [];
-    let host = [];
     let {proxies, direct} = easyStorage;
     let inspect = easyInspect[tabId];
-    if (inspect) {
-        rule = [...inspect.rule];
-        host = [...inspect.host];
+    if (!inspect) {
+        return { match, tempo, rule: [], host: [], error: [], proxies, direct };
     }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
-    response({ match, tempo, rule, host, proxies, direct });
+    let {rule, host, error} = easyInspect[tabId];
+    return { match, tempo, rule: [...rule], host: [...host], error: [...error], proxies, direct };
 }
 
 function easyManageUpdated({add, remove, proxy, tabId}) {
@@ -118,7 +117,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             response(easyMatch[params].pac_script);
             break;
         case 'manager_query':
-            easyManageQuery(params, response);
+            response(easyManageQuery(params));
             break;
         case 'manager_update':
             easyManageUpdated(params);
@@ -196,8 +195,8 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
             if (url.startsWith('http') && !easyTabs.has(tabId)) {
                 easyTabs.add(tabId);
                 let {host, rule} = easyMatchMaker(url);
-                easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), index: 0, url };
-                easyInspectSync(tabId, host, rule);
+                easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), error: new Set(), index: 0, url };
+                easyInspectSync('manager_update', tabId, host, rule);
             }
             break;
         case 'complete':
@@ -207,15 +206,26 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
-    let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), index: 0 };
+    let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), error: new Set(), index: 0 };
     let {host, rule} = easyMatchMaker(url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyStorage.indicator) {
         inspect.index = easyProxyIndicator(tabId, inspect.index, url);
     }
-    easyInspectSync(tabId, host, rule);
+    easyInspectSync('manager_update', tabId, host, rule);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
+
+chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
+    if (easyError.has(error)) {
+        let {host, rule} = easyMatchMaker(url);
+        let {error} = easyInspect[tabId];
+        error.add(rule);
+        error.add(host);
+        easyInspectSync('manager_onerror', tabId, host, rule);
+    }
+}, {urls: [ 'http://*/*', 'https://*/*' ]});
+
 
 function easyMatchMaker(url) {
     let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
@@ -234,8 +244,8 @@ function easyProxyIndicator(tabId, index, url) {
     return index;
 }
 
-function easyInspectSync(tabId, host, rule) {
-    chrome.runtime.sendMessage({action: 'manager_update', params: { tabId, rule, host }});
+function easyInspectSync(action, tabId, host, rule) {
+    chrome.runtime.sendMessage({action, params: { tabId, rule, host }});
 }
 
 chrome.storage.local.get(null, async (json) => {
