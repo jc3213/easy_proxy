@@ -111,23 +111,27 @@ function proxyStatusChanged(action, type, mapping) {
     let remove = [];
     easyChanges.forEach((check) => {
         let {value, checked} = check;
-        let status = check.parentNode.classList[2];
+        let rule = check.parentNode;
+        let status = rule.classList[1];
         let map = mapping.get(value);
         if (status && status !== type) {
-            check.checked = easyDefault[value];
+            console.log(easyChecks.get(check));
+            check.checked = easyChecks.get(check);
         } else if (checked && !map) {
             mapping.set(value, proxy);
             add.push(value);
-            check.parentNode.classList.add(type);
-            check.parentNode.classList.remove('error');
+            rule.classList.add(type);
+            rule.classList.remove('error');
         } else if (!checked && map) {
             mapping.delete(value);
             remove.push(value);
-            check.parentNode.classList.remove(type);
+            rule.classList.remove(type);
         }
     });
+    if (add.length !== 0 || remove.length !== 0) {
+        chrome.runtime.sendMessage({ action, params: {add, remove, proxy, tabId: easyTab} });
+    }
     easyChanges.clear();
-    chrome.runtime.sendMessage({ action, params: {add, remove, proxy, tabId: easyTab} });
 }
 
 function menuEventPurge() {

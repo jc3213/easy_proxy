@@ -75,7 +75,7 @@ function easyManageQuery(tabId) {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
-    let {rule, host, error} = easyInspect[tabId];
+    let {rule, host, error} = inspect;
     return { match, tempo, rule: [...rule], host: [...host], error: [...error], proxies, direct };
 }
 
