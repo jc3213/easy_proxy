@@ -115,7 +115,6 @@ function proxyStatusChanged(action, type, mapping) {
         let status = rule.classList[1];
         let map = mapping.get(value);
         if (status && status !== type) {
-            console.log(easyChecks.get(check));
             check.checked = easyChecks.get(check);
         } else if (checked && !map) {
             mapping.set(value, proxy);
