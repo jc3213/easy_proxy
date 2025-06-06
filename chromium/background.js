@@ -194,9 +194,8 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
         case 'loading':
             if (url.startsWith('http') && !easyTabs.has(tabId)) {
                 easyTabs.add(tabId);
-                let {host, rule} = easyMatchMaker(url);
+                let {host, rule} = easyMatchInspect('manager_update', tabId, url);
                 easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), error: new Set(), index: 0, url };
-                easyInspectSync('manager_update', tabId, host, rule);
             }
             break;
         case 'complete':
@@ -207,32 +206,28 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), error: new Set(), index: 0 };
-    let {host, rule} = easyMatchMaker(url);
+    let {host, rule} = easyMatchInspect('manager_update', tabId, url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyStorage.indicator) {
         inspect.index = easyProxyIndicator(tabId, inspect.index, url);
     }
-    easyInspectSync('manager_update', tabId, host, rule);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
     if (easyError.has(error)) {
-        let {host, rule} = easyMatchMaker(url);
+        let {host, rule} = easyMatchInspect('manager_onerror', tabId, url);
         let {error} = easyInspect[tabId];
         error.add(rule);
         error.add(host);
-        easyInspectSync('manager_onerror', tabId, host, rule);
     }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 
-function easyMatchMaker(url) {
-    let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)?.[1];
-    if (!host) {
-        throw new Error(`"${url}" is either not a URL, or a MatchPattern`);
-    }
+function easyMatchInspect(action, tabId, url) {
+    let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
     let rule = MatchPattern.make(host);
+    chrome.runtime.sendMessage({action, params: { tabId, rule, host }});
     return {host, rule};
 }
 
@@ -242,10 +237,6 @@ function easyProxyIndicator(tabId, index, url) {
     }
     chrome.action.setBadgeText({tabId, text: ++index + ''});
     return index;
-}
-
-function easyInspectSync(action, tabId, host, rule) {
-    chrome.runtime.sendMessage({action, params: { tabId, rule, host }});
 }
 
 chrome.storage.local.get(null, async (json) => {
