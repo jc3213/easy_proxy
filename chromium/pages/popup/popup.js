@@ -171,7 +171,7 @@ function easyMatchUpdate({tabId, rule, host}) {
 }
 
 function easyMatchError({tabId, rule, host}) {
-    if (tabId === easyTab) {
+    if (easyProxy && tabId === easyTab) {
         easyRule.get(rule)?.classList?.add('error');
         easyRule.get(host)?.classList?.add('error');
     }
