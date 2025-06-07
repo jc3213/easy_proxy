@@ -137,20 +137,20 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
 function firefoxScheme(scheme, proxy) {
     switch (scheme) {
         case 'HTTP':
-            return { http: `http://${proxy}` };
+            return { http: 'http://' + proxy };
         case 'HTTPS':
-            return { ssl: `https://${proxy}` };
+            return { ssl: 'https://' + proxy };
         case 'SOCKS':
-            return { socks: `socks://${proxy}`, socksVersion: 4 };
+            return { socks: 'socks://' + proxy, socksVersion: 4 };
         case 'SOCKS5':
-            return { socks: `socks://${proxy}`, socksVersion: 5 };
+            return { socks: 'socks://' + proxy, socksVersion: 5 };
     };
 }
 
 function firefoxHandler(direct) {
     switch (direct) {
         case 'autopac':
-            return { proxyType: 'autoConfig', autoConfigUrl: `data:,${easyScript}` };
+            return { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + easyScript };
         case 'direct':
             return { proxyType: 'none' };
         default:
@@ -233,7 +233,7 @@ function easyProxyIndicator(tabId, index, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
         return;
     }
-    chrome.action.setBadgeText({tabId, text: `${++index}`});
+    chrome.action.setBadgeText({tabId, text: String(++index)});
     return index;
 }
 
