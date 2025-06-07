@@ -134,51 +134,49 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     };
 });
 
-function firefoxHandler(scheme, proxy) {
+function firefoxScheme(scheme, proxy) {
     switch (scheme) {
         case 'HTTP':
-            return { http: 'http://' + proxy };
+            return { http: `http://${proxy}` };
         case 'HTTPS':
-            return { ssl: 'https://' + proxy };
+            return { ssl: `https://${proxy}` };
         case 'SOCKS':
-            return { socks: 'socks://' + proxy, socksVersion: 4 };
+            return { socks: `socks://${proxy}`, socksVersion: 4 };
         case 'SOCKS5':
-            return { socks: 'socks://' + proxy, socksVersion: 5 };
+            return { socks: `socks://${proxy}`, socksVersion: 5 };
     };
 }
 
-function easyProxyMode(direct, value) {
+function firefoxHandler(direct) {
+    switch (direct) {
+        case 'autopac':
+            return { proxyType: 'autoConfig', autoConfigUrl: `data:,${easyScript}` };
+        case 'direct':
+            return { proxyType: 'none' };
+        default:
+            let [scheme, proxy] = direct.split(' ');
+            let config = firefoxScheme(scheme, proxy);
+            return { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1', ...config };
+    };
+}
+
+function chromiumHandler(direct) {
+    switch (direct) {
+        case 'autopac':
+            return { mode: 'pac_script', pacScript: { data: easyScript } };
+        case 'direct':
+            return { mode: 'direct' };
+        default:
+            let [scheme, host, port] = direct.split(/[\s:]/);
+            let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
+            return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
+    };
+}
+
+function easyProxyMode(direct) {
     easyMode = direct;
     let color = easyColor[direct] ?? easyColor.global;
-    if (firefox) {
-        switch (direct) {
-            case 'autopac':
-                value = { proxyType: "autoConfig", autoConfigUrl: 'data:,' + easyScript };
-                break;
-            case 'direct':
-                value = { proxyType: "none" };
-                break;
-            default:
-                let [scheme, proxy] = direct.split(' ');
-                let config = firefoxHandler(scheme, proxy);
-                value = { proxyType: "manual", passthrough: "localhost, 127.0.0.1", ...config };
-                break;
-        };
-    } else {
-        switch (direct) {
-            case 'autopac':
-                value = { mode: 'pac_script', pacScript: { data: easyScript } };
-                break;
-            case 'direct':
-                value = { mode: 'direct' };
-                break;
-            default:
-                let [scheme, host, port] = direct.split(/[\s:]/);
-                let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-                value = { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
-                break;
-        };
-    }
+    let value = firefox ? firefoxHandler(direct) : chromiumHandler(direct);
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
 }
@@ -235,7 +233,7 @@ function easyProxyIndicator(tabId, index, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
         return;
     }
-    chrome.action.setBadgeText({tabId, text: ++index + ''});
+    chrome.action.setBadgeText({tabId, text: `${++index}`});
     return index;
 }
 
