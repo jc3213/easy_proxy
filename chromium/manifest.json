@@ -7,7 +7,6 @@
         "proxy",
         "storage",
         "unlimitedStorage",
-        "webNavigation",
         "webRequest",
         "contextMenus",
         "tabs",
