@@ -192,8 +192,9 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
     switch (status) {
         case 'loading':
             if (easyTab === tabId && !easyTabs.has(tabId)) {
-                lastMatch = lastTempo = null;
+                easyTabs.add(tabId);
                 easyChecks.clear();
+                lastMatch = lastTempo = null;
                 outputPane.innerHTML = '';
             }
             break;
