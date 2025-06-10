@@ -1,6 +1,5 @@
 let easyProfile = {};
 let easyProxy = {};
-let easyModes = ['direct', 'autopac', 'global'];
 
 let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
@@ -117,9 +116,8 @@ profilePane.addEventListener('keydown', (event) => {
 });
 
 function optionProxyMode(value) {
-    let hide = easyModes.filter((key) => key !== value);
+    extension.remove('direct', 'autopac', 'global');
     extension.add(value);
-    extension.remove(...hide);
     easyStorage.direct = value === 'global' ? proxyMenu.value : value;
 }
 
