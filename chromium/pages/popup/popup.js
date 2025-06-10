@@ -3,7 +3,6 @@ let easyTempo = new Map();
 let easyRule = new Map();
 let easyChecks = new Map();
 let easyChanges = new Set();
-let easyModes = ['direct', 'autopac', 'global'];
 let lastMatch;
 let lastTempo;
 let easyProxy;
@@ -96,9 +95,8 @@ modeMenu.addEventListener('change', (event) => {
     let mode = event.target.value;
     let params = mode === 'global' ? proxyMenu.value : mode;
     chrome.runtime.sendMessage({action: 'easyproxy_mode', params}, () => {
-        let hide = easyModes.filter((key) => key !== mode);
+        manager.remove('direct', 'autopac', 'global');
         manager.add(mode);
-        manager.remove(...hide);
     });
 });
 
