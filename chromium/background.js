@@ -18,7 +18,6 @@ let easyMode;
 let easyScript;
 let easyPersistent;
 let easyTabs = new Set();
-let easyError = new Set(['net::ERR_CONNECTION_TIMED_OUT', 'ERR_NAME_NOT_RESOLVED', 'net::ERR_CONNECTION_RESET']);
 let easyInspect = {};
 
 let manifest = chrome.runtime.getManifest().manifest_version;
@@ -213,14 +212,18 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
-    if (easyError.has(error)) {
-        let {host, rule} = easyMatchInspect('manager_onerror', tabId, url);
-        let {error} = easyInspect[tabId];
-        error.add(rule);
-        error.add(host);
-    }
+    switch (error) {
+        case 'net::ERR_CONNECTION_TIMED_OUT':
+        case 'ERR_NAME_NOT_RESOLVED':
+        case 'net::ERR_CONNECTION_RESET': {
+            let { host, rule } = easyMatchInspect('manager_onerror', tabId, url);
+            let { error } = easyInspect[tabId];
+            error.add(rule);
+            error.add(host);
+            break;
+        }
+    };
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
-
 
 function easyMatchInspect(action, tabId, url) {
     let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
