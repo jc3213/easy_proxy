@@ -58,6 +58,7 @@ function easyStorageUpdated(json) {
     });
     MatchPattern.delete(removed);
     easyStorage = json;
+    easyError = new Set(json.onerror);
     easyProxyScript();
     persistentModeHandler();
     chrome.storage.local.remove([...invalid, ...removed]);
