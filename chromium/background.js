@@ -219,7 +219,7 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
         let { error } = easyInspect[tabId];
         error.add(rule);
         error.add(host);
-    };
+    }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyMatchInspect(action, tabId, url) {
