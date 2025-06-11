@@ -2,6 +2,7 @@ let easyDefault = {
     direct: 'autopac',
     indicator: false,
     persistent: false,
+    onerror: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
     proxies: []
 };
 let easyColor = {
@@ -11,6 +12,7 @@ let easyColor = {
 };
 
 let easyStorage = {};
+let easyError;
 let easyMatch = {};
 let easyTempo = {};
 let easyRegExp;
@@ -212,16 +214,11 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
-    switch (error) {
-        case 'net::ERR_CONNECTION_TIMED_OUT':
-        case 'net::ERR_NAME_NOT_RESOLVED':
-        case 'net::ERR_CONNECTION_RESET': {
-            let { host, rule } = easyMatchInspect('manager_onerror', tabId, url);
-            let { error } = easyInspect[tabId];
-            error.add(rule);
-            error.add(host);
-            break;
-        }
+    if (easyError.has(error)) {
+        let { host, rule } = easyMatchInspect('manager_onerror', tabId, url);
+        let { error } = easyInspect[tabId];
+        error.add(rule);
+        error.add(host);
     };
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
@@ -243,6 +240,7 @@ function easyProxyIndicator(tabId, index, url) {
 chrome.storage.local.get(null, async (json) => {
     await MatchPattern.fetch();
     easyStorage = {...easyDefault, ...json};
+    easyError = new Set(easyStorage.onerror);
     easyStorage.proxies.forEach((proxy) => {
         let match = new MatchPattern();
         let tempo = new MatchPattern();
