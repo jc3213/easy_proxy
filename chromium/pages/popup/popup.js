@@ -107,24 +107,30 @@ function proxyStatusChanged(action, type, mapping) {
     let proxy = proxyMenu.value;
     let add = [];
     let remove = [];
+    let except = new Set(['error', type]);
     easyChanges.forEach((check) => {
         let {value, checked} = check;
         let rule = check.parentNode;
         let status = rule.classList[1];
         let map = mapping.get(value);
-        if (status && status !== type) {
+        console.log(map, status, checked, checked && !map, status && status !== type, !checked && map)
+        if (status && !except.has(status)) {
+            console.log(0)
             check.checked = easyChecks.get(check);
         } else if (checked && !map) {
+            console.log(1);
             mapping.set(value, proxy);
             add.push(value);
             rule.classList.add(type);
             rule.classList.remove('error');
         } else if (!checked && map) {
+            console.log(2);
             mapping.delete(value);
             remove.push(value);
             rule.classList.remove(type);
         }
     });
+    console.log(add, remove);
     if (add.length !== 0 || remove.length !== 0) {
         chrome.runtime.sendMessage({ action, params: {add, remove, proxy, tabId: easyTab} });
     }
@@ -240,19 +246,14 @@ function pinrtOutputList(value, type) {
     let tempo = easyTempo.get(value);
     if (match) {
         rule.classList.add('match');
-        lastMatch?.after(rule) || outputPane.insertBefore(rule, outputPane.children[0]);
-        lastMatch = rule;
     } else if (tempo) {
         rule.classList.add('tempo');
-        lastTempo?.after(rule) || lastMatch?.after(rule) || outputPane.insertBefore(rule, outputPane.children[0]);
-        lastTempo = rule;
-    } else {
-        outputPane.append(rule);
     }
     if (match === easyProxy || tempo === easyProxy) {
         check.checked = true;
     }
     easyChecks.set(check, check.checked);
+    outputPane.append(rule);
 }
 
 function printMatchPattern(value, type) {

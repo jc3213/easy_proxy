@@ -28,6 +28,11 @@ body.global > :nth-child(-n+2),
     display: none !important;
 }
 
+#output {
+    display: flex;
+    flex-direction: column;
+}
+
 #output > div {
     display: flex;
     gap: 5px;
@@ -74,12 +79,15 @@ body.global > :nth-child(-n+2),
 
 .match {
     background-color: #34A85D;
+    order: -3;
 }
 
 .tempo {
     background-color: #E6A92A;
+    order: -2;
 }
 
 .error {
     background-color: #D23F2A;
+    order: -1;
 }
