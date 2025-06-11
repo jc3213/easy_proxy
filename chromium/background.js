@@ -214,7 +214,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
 chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
     switch (error) {
         case 'net::ERR_CONNECTION_TIMED_OUT':
-        case 'ERR_NAME_NOT_RESOLVED':
+        case 'net::ERR_NAME_NOT_RESOLVED':
         case 'net::ERR_CONNECTION_RESET': {
             let { host, rule } = easyMatchInspect('manager_onerror', tabId, url);
             let { error } = easyInspect[tabId];
