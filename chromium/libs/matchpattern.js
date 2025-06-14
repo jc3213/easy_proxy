@@ -74,10 +74,6 @@ class MatchPattern {
     static get storage () {
         return MatchPattern.#storage;
     }
-    static fetch () {
-        MatchPattern.#storage = new Storage('matchpattern', 'caches');
-        return MatchPattern.#storage.forEach(({key, value}) => MatchPattern.#caches.set(key, value));
-    }
     static make (host) {
         let caches = MatchPattern.#caches;
         let tlds = MatchPattern.#tlds;
@@ -91,8 +87,8 @@ class MatchPattern {
             let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
             rule = sbd && tlds.has(sld) ? `*.${sbd}.${sld}.${tld}` : `*.${sld}.${tld}`;
         }
-        MatchPattern.#storage?.set(host, rule);
         caches.set(host, rule);
+        chrome.storage.local.set({ caches: [...caches] });
         return rule;
     }
     static delete (arg) {
