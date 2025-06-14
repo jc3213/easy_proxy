@@ -240,19 +240,7 @@ function easyProxyIndicator(tabId, index, url) {
 }
 
 chrome.storage.local.get(null, async (json) => {
-    if (indexedDB.databases) {
-        indexedDB.databases().then((dbs) => {
-            dbs.forEach((db) => {
-                let request = indexedDB.deleteDatabase(db.name);
-                request.onsuccess = () => console.log(`${db.name} has been deleted`);
-                request.onerror = () => new Error(`${db.name} can not been deleted`);
-            });
-        }).catch((err) => {
-            console.error(`Error ${err} has occured`);
-        });
-    }
     easyStorage = {...easyDefault, ...json};
-    console.log(easyStorage.caches);
     easyStorage.caches.forEach(([key, value]) => MatchPattern.caches.set(key, value));
     easyError = new Set(easyStorage.onerror);
     easyStorage.proxies.forEach((proxy) => {
