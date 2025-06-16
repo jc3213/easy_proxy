@@ -77,9 +77,9 @@ body.global > :nth-child(-n+2),
     color: #FFFFFF;
 }
 
-.match {
-    background-color: #34A85D;
-    order: -3;
+.error {
+    background-color: #D23F2A;
+    order: -1;
 }
 
 .tempo {
@@ -87,7 +87,7 @@ body.global > :nth-child(-n+2),
     order: -2;
 }
 
-.error {
-    background-color: #D23F2A;
-    order: -1;
+.match {
+    background-color: #34A85D;
+    order: -3;
 }
