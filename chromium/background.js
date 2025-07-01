@@ -18,6 +18,7 @@ chrome.storage.local.remove(['caches', 'onerror', 'indicator']);
 
 let easyStorage = {};
 let easyHandler;
+let easyNetwork;
 let easyFall;
 let easyMatch;
 let easyTempo;
@@ -197,8 +198,8 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     let {host, rule} = easyMatchInspect('manager_update', tabId, url);
     inspect.rule.add(rule);
     inspect.host.add(host);
-    if (easyStorage.network) {
-        inspect.index = easyProxynetwork(tabId, inspect.index, url);
+    if (easyNetwork) {
+        inspect.index = easyNetworkCounter(tabId, inspect.index, url);
     }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
@@ -225,9 +226,9 @@ function easyMatchInspect(action, tabId, url) {
     return {host, rule};
 }
 
-function easyProxynetwork(tabId, index, url) {
+function easyNetworkCounter(tabId, index, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
-        return;
+        return 0;
     }
     chrome.action.setBadgeText({tabId, text: String(++index)});
     return index;
@@ -249,6 +250,7 @@ chrome.storage.local.get(null, async (json) => {
 function easyStorageInit(json) {
     easyMatch = {};
     easyTempo = {};
+    easyNetwork = easyStorage.network;
     easyHandler = new Set(json.handler);
     easyFall = json.fallback;
     json.proxies.forEach((proxy) => {
