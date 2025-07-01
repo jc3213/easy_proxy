@@ -236,28 +236,20 @@ function easyNetworkCounter(tabId, index, url) {
 
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
-    easyStorage.proxies.forEach((proxy) => {
-        let match = new MatchPattern();
-        let tempo = new MatchPattern();
-        match.proxy = tempo.proxy = proxy;
-        match.add(easyStorage[proxy]);
-        easyMatch[proxy] = match;
-        easyTempo[proxy] = tempo;
-    });
     easyStorageInit(easyStorage);
 });
 
 function easyStorageInit(json) {
     easyMatch = {};
     easyTempo = {};
-    easyNetwork = easyStorage.network;
+    easyNetwork = json.network;
     easyHandler = new Set(json.handler);
     easyFall = json.fallback;
     json.proxies.forEach((proxy) => {
         let match = new MatchPattern();
         let tempo = new MatchPattern();
         match.proxy = tempo.proxy = proxy;
-        match.add(easyStorage[proxy]);
+        match.add(json[proxy]);
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
     });
