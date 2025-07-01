@@ -18,7 +18,7 @@ class MatchPattern {
     get proxy () {
         return this.#proxy;
     }
-    get pas_script () {
+    get pac_script () {
         return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n    return "DIRECT";\n}`;
     }
     add (arg) {
@@ -70,14 +70,8 @@ class MatchPattern {
     static get caches () {
         return MatchPattern.#caches;
     }
-    static #storage;
-    static get storage () {
-        return MatchPattern.#storage;
-    }
     static make (host) {
-        let caches = MatchPattern.#caches;
-        let tlds = MatchPattern.#tlds;
-        let rule = caches.get(host);
+        let rule = MatchPattern.#caches.get(host);
         if (rule) {
             return rule;
         }
@@ -85,14 +79,13 @@ class MatchPattern {
             rule = host.replace(/\d+\.\d+$/, '*');
         } else {
             let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
-            rule = sbd && tlds.has(sld) ? `*.${sbd}.${sld}.${tld}` : `*.${sld}.${tld}`;
+            rule = sbd && MatchPattern.#tlds.has(sld) ? `*.${sbd}.${sld}.${tld}` : `*.${sld}.${tld}`;
         }
-        caches.set(host, rule);
-        chrome.storage.local.set({ caches: [...caches] });
+        MatchPattern.#caches.set(host, rule);
         return rule;
     }
     static delete (arg) {
-        let removed = new Set([arg].flat());
+        let removed = new Set(Array.isArray(arg) ? arg : [arg]);
         MatchPattern.#instances = MatchPattern.#instances.filter((that) => !removed.has(that.proxy));
     }
     static combine () {
