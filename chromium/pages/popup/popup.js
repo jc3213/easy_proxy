@@ -78,25 +78,20 @@ contextPane.addEventListener('click', (event) => {
 });
 
 proxyMenu.addEventListener('change', (event) => {
-    if (easyMode === 'autopac') {
-        easyChecks.forEach((check) => {
-            let host = check.value;
-            let match = easyMatch.get(host);
-            let tempo = easyTempo.get(host);
-            check.checked = match === proxy || tempo === proxy;
-            check.disabled = match && match !== proxy || tempo && tempo !== proxy;
-        });
-    } else {
-        chrome.runtime.sendMessage({action: 'easyproxy_mode', params: event.target.value});
-    }
+    easyChecks.forEach((check) => {
+        let host = check.value;
+        let match = easyMatch.get(host);
+        let tempo = easyTempo.get(host);
+        check.checked = match === proxy || tempo === proxy;
+        check.disabled = match && match !== proxy || tempo && tempo !== proxy;
+    });
 });
 
 modeMenu.addEventListener('change', (event) => {
-    let mode = event.target.value;
-    let params = mode === 'global' ? proxyMenu.value : mode;
+    let params = event.target.value;
     chrome.runtime.sendMessage({action: 'easyproxy_mode', params}, () => {
         manager.remove('direct', 'autopac', 'global');
-        manager.add(mode);
+        manager.add(params);
     });
 });
 
@@ -207,11 +202,12 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, rule, host, flag, direct}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({proxies, mode, preset, match, tempo, rule, host, flag}) => {
         if (proxies.length === 0 || rule.length === 0 && host.length === 0) {
             manager.add('asleep');
         }
-        proxyMenu.value = easyProxy = proxies[0];
+        modeMenu.value = mode;
+        proxyMenu.value = easyProxy = preset || proxies[0];
         proxies.forEach((proxy) => {
             match[proxy]?.forEach((e) => easyMatch.set(e, proxy));
             tempo[proxy]?.forEach((e) => easyTempo.set(e, proxy));
@@ -219,12 +215,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             menu.textContent = menu.title = menu.value = proxy;
             proxyMenu.append(menu);
         });
-        if (direct !== 'direct' && direct !== 'autopac') {
-            proxyMenu.value = easyProxy = direct;
-            direct = 'global';
-        }
-        modeMenu.value = direct;
-        manager.add(direct);
+        manager.add(mode);
         rule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
         host.forEach((host) => pinrtOutputList(host, 'fullhost'));
         flag.forEach((flag) => easyRule.get(flag).classList.add('error'));
