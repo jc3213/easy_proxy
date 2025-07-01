@@ -52,8 +52,7 @@ input[type="file"], a {
 #manager button {
     font-size: 12px;
     height: 23px;
-    margin-top: auto;
-    margin-bottom: auto;
+    margin: auto 0px;
     padding: 3px;
 }
 
@@ -81,7 +80,7 @@ input[type="file"], a {
 }
 
 .profile > button:last-of-type {
-    margin-left: auto;
+    margin-left: auto !important;
 }
 
 .proxy {
