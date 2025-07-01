@@ -30,10 +30,10 @@
         "message": "Proxy Mode"
     },
     "options_network": {
-        "message": "Proxied Network"
+        "message": "Network Traffic"
     },
     "options_network_title": {
-        "message": "Count proxied network requests for each tab\n\nThis won't work for \"Direct\" mode"
+        "message": "Record proxied network requests for each tab\n\nThis won't work for \"Direct\" mode"
     },
     "options_persistent": {
         "message": "Persistent Background"

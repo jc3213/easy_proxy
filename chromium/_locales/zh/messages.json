@@ -38,11 +38,11 @@
     "profile_remove": {
         "message": "移除此代理"
     },
-    "options_indicator": {
-        "message": "请求计数器"
+    "options_network": {
+        "message": "网络统计"
     },
-    "options_indicator_title": {
-        "message": "记录各标签页已代理的网络交通\n\n此功能\"直连\"模式不会生效"
+    "options_network_title": {
+        "message": "记录各标签页已代理的网络请求\n\n此功能\"直连\"模式不会生效"
     },
     "options_persistent": {
         "message": "永驻后台"
