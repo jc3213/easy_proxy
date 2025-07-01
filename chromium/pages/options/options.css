@@ -7,8 +7,7 @@ body > div {
 }
 
 body:not(.new_profile) > #profile,
-body:not(.set_options) > #options,
-body:not(.global) #proxy-server {
+body:not(.set_options) > #options {
     display: none;
 }
 
@@ -39,10 +38,6 @@ input[type="file"], a {
 #options {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px 5px;
-}
-
-#options > :first-child {
-    grid-column: span 2;
 }
 
 #options label {

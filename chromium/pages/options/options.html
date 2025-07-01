@@ -28,14 +28,17 @@
             <button i18n="options_submit">Submit</button>
         </div>
         <div id="options">
-            <div>
+            <div i18n-tips="options_presets_title">
+                <label i18n="options_presets">Proxy Preset</label>
+                <select id="proxy-preset"></select>
+            </div>
+            <div i18n-tips="options_modes_title">
                 <label i18n="options_modes">Proxy Mode</label>
-                <select id="work-mode">
+                <select id="proxy-mode">
                     <option value="direct" i18n="proxy_direct">Direct</option>
                     <option value="autopac" i18n="proxy_autopac">PAC</option>
                     <option value="global" i18n="proxy_global">Global</option>
                 </select>
-                <select id="proxy-server"></select>
             </div>
             <div class="checkbox" i18n-tips="options_network_title">
                 <input type="checkbox" id="network">

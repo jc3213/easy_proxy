@@ -5,7 +5,7 @@ let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
-let [modeMenu, proxyMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [presetMenu, modeMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -115,20 +115,14 @@ profilePane.addEventListener('keydown', (event) => {
     }
 });
 
-function optionProxyMode(value) {
-    extension.remove('direct', 'autopac', 'global');
-    extension.add(value);
-    easyStorage.direct = value === 'global' ? proxyMenu.value : value;
-}
-
 optionsPane.addEventListener('change', (event) => {
     let {id, value, checked} = event.target;
     switch (id) {
-        case 'work-mode':
-            optionProxyMode(value);
+        case 'proxy-mode':
+            easyStorage.mode = value;
             break;
-        case 'proxy-server':
-            easyStorage.direct = proxyMenu.value;
+        case 'proxy-preset':
+            easyStorage.preset = value;
             break;
         case 'network':
             easyStorage.network = checked;
@@ -141,24 +135,13 @@ optionsPane.addEventListener('change', (event) => {
 });
 
 chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
-    let mode = storage.direct;
     easyStorage = storage;
     easyStorage.proxies.forEach(createMatchProfile);
-    switch (mode) {
-        case 'direct':
-        case 'autopac':
-            modeMenu.value = mode;
-            extension.add(mode);
-            break;
-        default:
-            modeMenu.value = 'global';
-            proxyMenu.value = mode;
-            extension.add('global');
-            break;
-    }
-    networkMenu.checked = easyStorage.network;
+    modeMenu.value = storage.mode;
+    presetMenu.value = storage.preset ?? storage.proxies[0];
+    networkMenu.checked = storage.network;
     if (manifest === 3) {
-        persistMenu.checked = easyStorage.persistent;
+        persistMenu.checked = storage.persistent;
     } else {
         persistMenu.parentNode.remove();
     }
@@ -238,7 +221,7 @@ function createMatchProfile(id) {
     });
     easyStorage[id].forEach((value) => createMatchPattern(list, id, value));
     easyProfile[id] = profile;
-    proxyMenu.appendChild(server);
+    presetMenu.appendChild(server);
     managePane.appendChild(profile);
 }
 
