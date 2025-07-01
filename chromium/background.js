@@ -1,5 +1,6 @@
 let easyDefault = {
-    direct: 'autopac',
+    mode: 'autopac',
+    preset: '',
     network: false,
     persistent: false,
     fallback: false,
@@ -106,9 +107,9 @@ function easyTempoPurged(tabId) {
 }
 
 function easyModeChanger(params) {
-    easyProxyMode(params);
-    easyStorage.direct = params;
+    Object.assign(easyStorage, params)
     chrome.storage.local.set(easyStorage);
+    easyProxyMode();
 }
 
 chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
@@ -140,49 +141,50 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
     };
 });
 
-function firefoxScheme(scheme, proxy) {
+function firefoxScheme(scheme, url) {
     switch (scheme) {
         case 'HTTP':
-            return { http: 'http://' + proxy };
+            return { http: 'http://' + url };
         case 'HTTPS':
-            return { ssl: 'https://' + proxy };
+            return { ssl: 'https://' + url };
         case 'SOCKS':
-            return { socks: 'socks://' + proxy, socksVersion: 4 };
+            return { socks: 'socks://' + url, socksVersion: 4 };
         case 'SOCKS5':
-            return { socks: 'socks://' + proxy, socksVersion: 5 };
+            return { socks: 'socks://' + url, socksVersion: 5 };
     };
 }
 
-function firefoxHandler(direct) {
-    switch (direct) {
+function firefoxHandler(mode, proxy) {
+    switch (mode) {
         case 'autopac':
             return { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + easyScript };
         case 'direct':
             return { proxyType: 'none' };
-        default:
-            let [scheme, proxy] = direct.split(' ');
-            let config = firefoxScheme(scheme, proxy);
+        case 'global':
+            let [scheme, url] = proxy.split(' ');
+            let config = firefoxScheme(scheme, url);
             return { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1', ...config };
     };
 }
 
-function chromiumHandler(direct) {
-    switch (direct) {
+function chromiumHandler(mode, proxy) {
+    switch (mode) {
         case 'autopac':
             return { mode: 'pac_script', pacScript: { data: easyScript } };
         case 'direct':
             return { mode: 'direct' };
-        default:
-            let [scheme, host, port] = direct.split(/[\s:]/);
+        case 'global':
+            let [scheme, host, port] = proxy.split(/[\s:]/);
             let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
             return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
     };
 }
 
-function easyProxyMode(direct) {
-    easyMode = direct;
-    let color = easyColor[direct] ?? easyColor.global;
-    let value = firefox ? firefoxHandler(direct) : chromiumHandler(direct);
+function easyProxyMode() {
+    let {mode, preset} = easyStorage;
+    let color = easyColor[mode];
+    let value = firefox ? firefoxHandler(mode, preset) : chromiumHandler(mode, preset);
+    easyMode = mode;
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
 }
@@ -214,7 +216,7 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyNetwork) {
-        inspect.index = easyNetworkCounter(tabId, inspect.index, url);
+        inspect.index = easyNetworkCounter(tabId, inspect.index, host);
     }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
@@ -224,7 +226,7 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
     }
     let { host, rule } = easyMatchInspect('manager_report', tabId, url);
     if (easyFall && easyStorage.proxies.length !== 0) {
-        let proxy = easyStorage[easyStorage.direct] ? easyStorage.direct : easyStorage.proxies[0];
+        let proxy = easyStorage.preset;
         easyMatch[proxy].add(host);
         easyProxyScript();
     } else {
@@ -241,8 +243,8 @@ function easyMatchInspect(action, tabId, url) {
     return {host, rule};
 }
 
-function easyNetworkCounter(tabId, index, url) {
-    if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
+function easyNetworkCounter(tabId, index, host) {
+    if (easyMode === 'direct' || !easyRegExp.test(host)) {
         return 0;
     }
     chrome.action.setBadgeText({tabId, text: String(++index)});
@@ -278,5 +280,5 @@ function easyProxyScript() {
     let result = MatchPattern.combine();
     easyScript = result.pac_script;
     easyRegExp = result.regexp;
-    easyProxyMode(easyStorage.direct);
+    easyProxyMode();
 }
