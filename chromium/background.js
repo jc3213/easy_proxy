@@ -1,9 +1,9 @@
 let easyDefault = {
     direct: 'autopac',
-    indicator: false,
+    network: false,
     persistent: false,
-    onerror: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
-    caches: [],
+    fallback: false,
+    handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
     proxies: []
 };
 let easyColor = {
@@ -12,10 +12,15 @@ let easyColor = {
     global: '#208020'
 };
 
+// removed caches
+chrome.storage.local.remove(['caches', 'onerror', 'indicator']);
+//
+
 let easyStorage = {};
-let easyError;
-let easyMatch = {};
-let easyTempo = {};
+let easyHandler;
+let easyFall;
+let easyMatch;
+let easyTempo;
 let easyRegExp;
 let easyMode;
 let easyScript;
@@ -38,32 +43,14 @@ function easyStorageUpdated(json) {
         if (!json.proxies.includes(key)) {
             delete json[key];
             invalid.push(key);
-            return;
-        }
-        if (easyStorage.proxies.includes(key)) {
-            easyMatch[key].empty();
-        } else {
-            easyMatch[key] = new MatchPattern();
-            easyTempo[key] = new MatchPattern();
-            easyMatch[key].proxy = key;
-            easyTempo[key].proxy = key;
-        }
-        easyMatch[key].add(json[key]);
-    });
-    let removed = easyStorage.proxies.filter((proxy) => {
-        if (!json[proxy]) {
-            delete easyMatch[proxy];
-            delete easyTempo[proxy];
-            return true;
         }
     });
+    let removed = easyStorage.proxies.filter((key) => !json.proxies.includes(key));
     MatchPattern.delete(removed);
-    easyStorage = json;
-    easyError = new Set(json.onerror);
-    easyProxyScript();
-    persistentModeHandler();
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
+    easyStorage = json;
+    easyStorageInit(json);
 }
 
 function easyManageQuery(tabId) {
@@ -72,14 +59,14 @@ function easyManageQuery(tabId) {
     let {proxies, direct} = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
-        return { match, tempo, rule: [], host: [], error: [], proxies, direct };
+        return { match, tempo, rule: [], host: [], flag: [], proxies, direct };
     }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
-    let {rule, host, error} = inspect;
-    return { match, tempo, rule: [...rule], host: [...host], error: [...error], proxies, direct };
+    let {rule, host, flag} = inspect;
+    return { match, tempo, rule: [...rule], host: [...host], flag: [...flag], proxies, direct };
 }
 
 function easyManageUpdated({add, remove, proxy, tabId}) {
@@ -196,7 +183,7 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
             if (url.startsWith('http') && !easyTabs.has(tabId)) {
                 easyTabs.add(tabId);
                 let {host, rule} = easyMatchInspect('manager_update', tabId, url);
-                easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), error: new Set(), index: 0, url };
+                easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), flag: new Set(), index: 0, url };
             }
             break;
         case 'complete':
@@ -206,21 +193,28 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
-    let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), error: new Set(), index: 0 };
+    let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), flag: new Set(), index: 0 };
     let {host, rule} = easyMatchInspect('manager_update', tabId, url);
     inspect.rule.add(rule);
     inspect.host.add(host);
-    if (easyStorage.indicator) {
-        inspect.index = easyProxyIndicator(tabId, inspect.index, url);
+    if (easyStorage.network) {
+        inspect.index = easyProxynetwork(tabId, inspect.index, url);
     }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
-    if (easyError.has(error)) {
-        let { host, rule } = easyMatchInspect('manager_onerror', tabId, url);
-        let { error } = easyInspect[tabId];
-        error.add(rule);
-        error.add(host);
+    if (!easyHandler.has(error)) {
+        return;
+    }
+    let { host, rule } = easyMatchInspect('manager_report', tabId, url);
+    if (easyFall && easyStorage.proxies.length !== 0) {
+        let proxy = easyStorage[easyStorage.direct] ? easyStorage.direct : easyStorage.proxies[0];
+        easyMatch[proxy].add(host);
+        easyProxyScript();
+    } else {
+        let { flag } = easyInspect[tabId];
+        flag.add(rule);
+        flag.add(host);
     }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
@@ -231,7 +225,7 @@ function easyMatchInspect(action, tabId, url) {
     return {host, rule};
 }
 
-function easyProxyIndicator(tabId, index, url) {
+function easyProxynetwork(tabId, index, url) {
     if (proxyHandlers[easyMode] && !easyRegExp.test(new URL(url).hostname)) {
         return;
     }
@@ -241,8 +235,6 @@ function easyProxyIndicator(tabId, index, url) {
 
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
-    easyStorage.caches.forEach(([key, value]) => MatchPattern.caches.set(key, value));
-    easyError = new Set(easyStorage.onerror);
     easyStorage.proxies.forEach((proxy) => {
         let match = new MatchPattern();
         let tempo = new MatchPattern();
@@ -251,21 +243,33 @@ chrome.storage.local.get(null, async (json) => {
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
     });
-    easyProxyScript();
-    persistentModeHandler();
+    easyStorageInit(easyStorage);
 });
+
+function easyStorageInit(json) {
+    easyMatch = {};
+    easyTempo = {};
+    easyHandler = new Set(json.handler);
+    easyFall = json.fallback;
+    json.proxies.forEach((proxy) => {
+        let match = new MatchPattern();
+        let tempo = new MatchPattern();
+        match.proxy = tempo.proxy = proxy;
+        match.add(easyStorage[proxy]);
+        easyMatch[proxy] = match;
+        easyTempo[proxy] = tempo;
+    });
+    easyProxyScript();
+    if (manifest === 3 && json.persistent) {
+        easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
+    } else {
+        clearInterval(easyPersistent);
+    }
+}
 
 function easyProxyScript() {
     let result = MatchPattern.combine();
     easyScript = result.pac_script;
     easyRegExp = result.regexp;
     easyProxyMode(easyStorage.direct);
-}
-
-function persistentModeHandler() {
-    if (manifest === 3 && easyStorage.persistent) {
-        easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
-    } else {
-        clearInterval(easyPersistent);
-    }
 }

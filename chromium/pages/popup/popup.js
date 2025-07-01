@@ -169,7 +169,7 @@ function easyMatchUpdate({tabId, rule, host}) {
     }
 }
 
-function easyMatchError({tabId, rule, host}) {
+function easyMatchReport({tabId, rule, host}) {
     if (easyProxy && tabId === easyTab) {
         easyRule.get(rule)?.classList?.add('error');
         easyRule.get(host)?.classList?.add('error');
@@ -181,8 +181,8 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
         case 'manager_update':
             easyMatchUpdate(params);
             break;
-        case 'manager_onerror':
-            easyMatchError(params);
+        case 'manager_report':
+            easyMatchReport(params);
             break;
     };
 });
@@ -207,7 +207,7 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, rule, host, error, direct}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({match, tempo, proxies, rule, host, flag, direct}) => {
         if (proxies.length === 0 || rule.length === 0 && host.length === 0) {
             manager.add('asleep');
         }
@@ -227,7 +227,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         manager.add(direct);
         rule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
         host.forEach((host) => pinrtOutputList(host, 'fullhost'));
-        error.forEach((error) => easyRule.get(error).classList.add('error'));
+        flag.forEach((flag) => easyRule.get(flag).classList.add('error'));
     });
 });
 

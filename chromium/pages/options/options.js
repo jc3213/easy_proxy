@@ -5,7 +5,7 @@ let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
-let [modeMenu, proxyMenu, indicatorMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [modeMenu, proxyMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -130,8 +130,8 @@ optionsPane.addEventListener('change', (event) => {
         case 'proxy-server':
             easyStorage.direct = proxyMenu.value;
             break;
-        case 'indicator':
-            easyStorage.indicator = checked;
+        case 'network':
+            easyStorage.network = checked;
             break;
         case 'persistent':
             easyStorage.persistent = checked;
@@ -156,7 +156,7 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
             extension.add('global');
             break;
     }
-    indicatorMenu.checked = easyStorage.indicator;
+    networkMenu.checked = easyStorage.network;
     if (manifest === 3) {
         persistMenu.checked = easyStorage.persistent;
     } else {
