@@ -14,7 +14,7 @@ let easyColor = {
 };
 
 // removed caches
-chrome.storage.local.remove(['caches', 'onerror', 'indicator']);
+chrome.storage.local.remove(['caches', 'onerror', 'indicator', 'direct']);
 //
 
 let easyStorage = {};
@@ -73,17 +73,17 @@ function easyStorageUpdated(json) {
 function easyManageQuery(tabId) {
     let match = {}
     let tempo = {};
-    let {proxies, direct} = easyStorage;
+    let {proxies, mode, preset} = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
-        return { match, tempo, rule: [], host: [], flag: [], proxies, direct };
+        return { match, tempo, rule: [], host: [], flag: [], proxies, mode, preset };
     }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
     let {rule, host, flag} = inspect;
-    return { match, tempo, rule: [...rule], host: [...host], flag: [...flag], proxies, direct };
+    return { match, tempo, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset };
 }
 
 function easyManageUpdated({add, remove, proxy, tabId}) {
@@ -107,7 +107,7 @@ function easyTempoPurged(tabId) {
 }
 
 function easyModeChanger(params) {
-    Object.assign(easyStorage, params)
+    easyStorage.mode = params;
     chrome.storage.local.set(easyStorage);
     easyProxyMode();
 }
