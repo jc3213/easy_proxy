@@ -37,20 +37,12 @@ input[type="file"], a {
 }
 
 #options {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px 5px;
 }
 
 #options > :first-child {
-    grid-column: span 3;
-}
-
-#options > :nth-child(n+3) {
     grid-column: span 2;
-}
-
-#options button {
-    padding: 1px;
 }
 
 #options label {
