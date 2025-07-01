@@ -36,7 +36,7 @@
         "message": "预设代理档案"
     },
     "options_preset_title": {
-        "message": "为\"自动化代理\"设置预设的代理档案"
+        "message": "设置用于\"自动化代理\"及\"全局代理模式\"的预设代理档案"
     },
     "profile_export": {
         "message": "将此代理导出为PAC脚本"

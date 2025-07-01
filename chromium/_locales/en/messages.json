@@ -36,7 +36,7 @@
         "message": "Preset Profile"
     },
     "options_preset_title": {
-        "message": "Set preset proxy profile for \"Automated Proxy\""
+        "message": "Set preset proxy profile for \"Automated Proxy\" and \"Proxy Mode: Global\""
     },
     "options_network": {
         "message": "Network Traffic"
