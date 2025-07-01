@@ -26,8 +26,17 @@
     "options_submit": {
         "message": "提交"
     },
-    "options_modes": {
+    "options_mode": {
         "message": "代理模式"
+    },
+    "options_mode_title": {
+        "message": "设置首选的代理模式"
+    },
+    "options_preset": {
+        "message": "预设代理档案"
+    },
+    "options_preset_title": {
+        "message": "为\"自动化代理\"设置预设的代理档案"
     },
     "profile_export": {
         "message": "将此代理导出为PAC脚本"

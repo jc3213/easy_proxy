@@ -26,8 +26,17 @@
     "options_submit": {
         "message": "Submit"
     },
-    "options_modes": {
+    "options_mode": {
         "message": "Proxy Mode"
+    },
+    "options_mode_title": {
+        "message": "Set preferred proxy mode"
+    },
+    "options_preset": {
+        "message": "Preset Profile"
+    },
+    "options_preset_title": {
+        "message": "Set preset proxy profile for \"Automated Proxy\""
     },
     "options_network": {
         "message": "Network Traffic"
