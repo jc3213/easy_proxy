@@ -55,7 +55,13 @@ function easyStorageUpdated(json) {
             easyTempo[key].proxy = key;
         }
     });
-    let removed = easyStorage.proxies.filter((key) => !json.proxies.includes(key));
+    let removed = easyStorage.proxies.filter((proxy) => {
+        if (!json[proxy]) {
+            delete easyMatch[proxy];
+            delete easyTempo[proxy];
+            return true;
+        }
+    });
     MatchPattern.delete(removed);
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
