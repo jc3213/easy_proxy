@@ -20,8 +20,8 @@ let easyStorage = {};
 let easyHandler;
 let easyNetwork;
 let easyFall;
-let easyMatch;
-let easyTempo;
+let easyMatch = {};
+let easyTempo = {};
 let easyRegExp;
 let easyMode;
 let easyScript;
@@ -44,6 +44,15 @@ function easyStorageUpdated(json) {
         if (!json.proxies.includes(key)) {
             delete json[key];
             invalid.push(key);
+            return;
+        }
+        if (easyStorage.proxies.includes(key)) {
+            easyMatch[key].new(json[key]);
+        } else {
+            easyMatch[key] = new MatchPattern();
+            easyTempo[key] = new MatchPattern();
+            easyMatch[key].proxy = key;
+            easyTempo[key].proxy = key;
         }
     });
     let removed = easyStorage.proxies.filter((key) => !json.proxies.includes(key));
@@ -236,23 +245,21 @@ function easyNetworkCounter(tabId, index, url) {
 
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
+    easyStorage.proxies.forEach((proxy) => {
+        let match = new MatchPattern();
+        let tempo = new MatchPattern();
+        match.proxy = tempo.proxy = proxy;
+        match.new(easyStorage[proxy]);
+        easyMatch[proxy] = match;
+        easyTempo[proxy] = tempo;
+    });
     easyStorageInit(easyStorage);
 });
 
 function easyStorageInit(json) {
-    easyMatch = {};
-    easyTempo = {};
     easyNetwork = json.network;
     easyHandler = new Set(json.handler);
     easyFall = json.fallback;
-    json.proxies.forEach((proxy) => {
-        let match = new MatchPattern();
-        let tempo = new MatchPattern();
-        match.proxy = tempo.proxy = proxy;
-        match.add(json[proxy]);
-        easyMatch[proxy] = match;
-        easyTempo[proxy] = tempo;
-    });
     easyProxyScript();
     if (manifest === 3 && json.persistent) {
         easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);

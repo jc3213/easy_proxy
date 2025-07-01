@@ -21,6 +21,10 @@ class MatchPattern {
     get pac_script () {
         return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n    return "DIRECT";\n}`;
     }
+    new (arg) {
+        this.#data = new Set(Array.isArray(arg) ? arg : [arg]);
+        this.#update();
+    }
     add (arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#data.add(i)) : this.#data.add(arg);
         this.#update();
