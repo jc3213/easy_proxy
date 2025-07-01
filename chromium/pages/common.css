@@ -95,16 +95,16 @@ button:disabled {
     display: none;
 }
 
-#work-mode {
+#proxy-mode {
     background-color: #2940D9;
     color: #FFFFFF;
     width: fit-content;
 }
 
-body.global #work-mode {
+body.global #proxy-mode {
     background-color: #208020;
 }
 
-body.direct #work-mode {
+body.direct #proxy-mode {
     background-color: #C1272D;
 }

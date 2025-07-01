@@ -5,7 +5,7 @@ let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
-let [presetMenu, modeMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [modeMenu, proxyMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -91,7 +91,7 @@ submitBtn.addEventListener('click', (event) => {
     createMatchProfile(profile);
     schemeEntry.value = 'HTTP';
     hostEntry.value = portEntry.value = '';
-    document.body.classList.remove('new_profile');
+    extension.remove('new_profile');
     saveBtn.disabled = false;
 });
 
@@ -120,6 +120,8 @@ optionsPane.addEventListener('change', (event) => {
     switch (id) {
         case 'proxy-mode':
             easyStorage.mode = value;
+            extension.remove('autopac', 'direct', 'global');
+            extension.add(value);
             break;
         case 'proxy-preset':
             easyStorage.preset = value;
@@ -138,7 +140,7 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     easyStorage = storage;
     easyStorage.proxies.forEach(createMatchProfile);
     modeMenu.value = storage.mode;
-    presetMenu.value = storage.preset ?? storage.proxies[0];
+    proxyMenu.value = storage.preset ?? storage.proxies[0];
     networkMenu.checked = storage.network;
     if (manifest === 3) {
         persistMenu.checked = storage.persistent;
@@ -221,7 +223,7 @@ function createMatchProfile(id) {
     });
     easyStorage[id].forEach((value) => createMatchPattern(list, id, value));
     easyProfile[id] = profile;
-    presetMenu.appendChild(server);
+    proxyMenu.appendChild(server);
     managePane.appendChild(profile);
 }
 
