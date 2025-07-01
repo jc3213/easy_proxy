@@ -48,7 +48,7 @@
         "message": "移除此代理"
     },
     "options_network": {
-        "message": "网络统计"
+        "message": "代理计数器"
     },
     "options_network_title": {
         "message": "记录各标签页已代理的网络请求\n\n此功能\"直连\"模式不会生效"
