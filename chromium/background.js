@@ -1,9 +1,9 @@
 let easyDefault = {
     mode: 'autopac',
-    preset: '',
+    preset: undefined,
     network: false,
     persistent: false,
-    fallback: false,
+    automate: false,
     handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
     proxies: []
 };
@@ -20,7 +20,7 @@ chrome.storage.local.remove(['caches', 'onerror', 'indicator', 'direct']);
 let easyStorage = {};
 let easyHandler;
 let easyNetwork;
-let easyFall;
+let easyAuto;
 let easyMatch = {};
 let easyTempo = {};
 let easyRegExp;
@@ -154,26 +154,28 @@ function firefoxScheme(scheme, url) {
     };
 }
 
-function firefoxHandler(mode, proxy) {
+function firefoxHandler(mode) {
     switch (mode) {
         case 'autopac':
             return { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + easyScript };
         case 'direct':
             return { proxyType: 'none' };
         case 'global':
+            let proxy = easyStorage.preset ?? easyStorage.proxies[0];
             let [scheme, url] = proxy.split(' ');
             let config = firefoxScheme(scheme, url);
             return { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1', ...config };
     };
 }
 
-function chromiumHandler(mode, proxy) {
+function chromiumHandler(mode) {
     switch (mode) {
         case 'autopac':
             return { mode: 'pac_script', pacScript: { data: easyScript } };
         case 'direct':
             return { mode: 'direct' };
         case 'global':
+            let proxy = easyStorage.preset ?? easyStorage.proxies[0];
             let [scheme, host, port] = proxy.split(/[\s:]/);
             let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
             return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
@@ -181,9 +183,9 @@ function chromiumHandler(mode, proxy) {
 }
 
 function easyProxyMode() {
-    let {mode, preset} = easyStorage;
+    let {mode} = easyStorage;
     let color = easyColor[mode];
-    let value = firefox ? firefoxHandler(mode, preset) : chromiumHandler(mode, preset);
+    let value = firefox ? firefoxHandler(mode) : chromiumHandler(mode);
     easyMode = mode;
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
@@ -225,9 +227,9 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
         return;
     }
     let { host, rule } = easyMatchInspect('manager_report', tabId, url);
-    if (easyFall && easyStorage.proxies.length !== 0) {
-        let proxy = easyStorage.preset;
-        easyMatch[proxy].add(host);
+    let { preset } = easyStorage;
+    if (easyAuto && preset) {
+        easyTempo[preset].add(host);
         easyProxyScript();
     } else {
         let { flag } = easyInspect[tabId];
@@ -267,7 +269,7 @@ chrome.storage.local.get(null, async (json) => {
 function easyStorageInit(json) {
     easyNetwork = json.network;
     easyHandler = new Set(json.handler);
-    easyFall = json.fallback;
+    easyAuto = json.automate;
     easyProxyScript();
     if (manifest === 3 && json.persistent) {
         easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
