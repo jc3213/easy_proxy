@@ -28,6 +28,10 @@
             <button i18n="options_submit">Submit</button>
         </div>
         <div id="options">
+            <div i18n-tips="options_preset_title">
+                <label i18n="options_preset">Proxy Preset</label>
+                <select id="proxy-preset"></select>
+            </div>
             <div i18n-tips="options_mode_title">
                 <label i18n="options_mode">Proxy Mode</label>
                 <select id="proxy-mode">
@@ -36,9 +40,18 @@
                     <option value="global" i18n="proxy_global">Global</option>
                 </select>
             </div>
-            <div i18n-tips="options_preset_title">
-                <label i18n="options_preset">Proxy Preset</label>
-                <select id="proxy-preset"></select>
+            <div class="checkbox" i18n-tips="options_automate_title">
+                <input type="checkbox" id="automate">
+                <label for="automate" i18n="options_automate">Enable Fallback Auto-Proxy</label>
+            </div>
+            <div i18n-tips="options_handler_title">
+                <button i18n="options_handler">Manage Fallback</button>
+                <div class="popup">
+                    <div id="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
+                    <div id="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
+                    <div id="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
+                    <div id="net::ERR_NAME_NOT_RESOLVED" i18n="error_dns">Name Not Resolved</div>
+                </div>
             </div>
             <div class="checkbox" i18n-tips="options_network_title">
                 <input type="checkbox" id="network">

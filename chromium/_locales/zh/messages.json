@@ -27,25 +27,28 @@
         "message": "提交"
     },
     "options_mode": {
-        "message": "代理模式"
+        "message": "模式"
     },
     "options_mode_title": {
         "message": "设置首选的代理模式"
     },
     "options_preset": {
-        "message": "预设代理档案"
+        "message": "预设"
     },
     "options_preset_title": {
         "message": "设置用于\"自动化代理\"及\"全局代理模式\"的预设代理档案"
     },
-    "profile_export": {
-        "message": "将此代理导出为PAC脚本"
+    "options_automate": {
+        "message": "自动化"
     },
-    "profile_resort": {
-        "message": "排序匹配规则"
+    "options_automate_title": {
+        "message": "当网络请求发生错误时，自动将对应的域名添加到临时代理规则"
     },
-    "profile_remove": {
-        "message": "移除此代理"
+    "options_handler": {
+        "message": "管理"
+    },
+    "options_handler_title": {
+        "message": "管理用于进行\"自动化代理\"的网络请求错误列表"
     },
     "options_network": {
         "message": "代理计数器"
@@ -58,6 +61,15 @@
     },
     "options_persistent_title": {
         "message": "使得ServiceWorker不再休眠\n\n此功能将额外消耗部分CPU性能"
+    },
+    "profile_export": {
+        "message": "将此代理导出为PAC脚本"
+    },
+    "profile_resort": {
+        "message": "排序匹配规则"
+    },
+    "profile_remove": {
+        "message": "移除此代理"
     },
     "match_add": {
         "message": "添加新规则"

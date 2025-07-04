@@ -27,16 +27,28 @@
         "message": "Submit"
     },
     "options_mode": {
-        "message": "Proxy Mode"
+        "message": "Mode"
     },
     "options_mode_title": {
         "message": "Set preferred proxy mode"
     },
     "options_preset": {
-        "message": "Preset Profile"
+        "message": "Preset"
     },
     "options_preset_title": {
         "message": "Set preset proxy profile for \"Automated Proxy\" and \"Proxy Mode: Global\""
+    },
+    "options_automate": {
+        "message": "Automated"
+    },
+    "options_automate_title": {
+        "message": "Auto add hosts to temporary match rules where network error has occurred"
+    },
+    "options_handler": {
+        "message": "Manage"
+    },
+    "options_handler_title": {
+        "message": "Manage the list of network error for \"Automated Proxy\""
     },
     "options_network": {
         "message": "Network Traffic"

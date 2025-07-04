@@ -11,6 +11,11 @@ body:not(.set_options) > #options {
     display: none;
 }
 
+body.direct > #options > :nth-child(3) > * {
+    filter: contrast(20%);
+    pointer-events: none;
+}
+
 input[type="file"], a {
     display: none;
 }
@@ -36,8 +41,12 @@ input[type="file"], a {
 }
 
 #options {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, auto);
     gap: 10px 5px;
+}
+
+#options > :nth-child(n+5) {
+    grid-column: span 2;
 }
 
 #options label {

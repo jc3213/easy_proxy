@@ -13,10 +13,6 @@ let easyColor = {
     global: '#208020'
 };
 
-// removed caches
-chrome.storage.local.remove(['caches', 'onerror', 'indicator', 'direct']);
-//
-
 let easyStorage = {};
 let easyHandler;
 let easyNetwork;

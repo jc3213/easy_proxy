@@ -5,7 +5,7 @@ let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
-let [modeMenu, proxyMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [proxyMenu, modeMenu, automateMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -125,6 +125,9 @@ optionsPane.addEventListener('change', (event) => {
             break;
         case 'proxy-preset':
             easyStorage.preset = value;
+            break;
+        case 'automate':
+            easyStorage.automate = checked;
             break;
         case 'network':
             easyStorage.network = checked;
