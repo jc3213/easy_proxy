@@ -77,6 +77,18 @@
     "match_remove": {
         "message": "移除此规则"
     },
+    "error_refused": {
+        "message": "连接被拒绝"
+    },
+    "error_reset": {
+        "message": "连接被重置"
+    },
+    "error_timeout": {
+        "message": "连接超时"
+    },
+    "error_dnserr": {
+        "message": "无法解析域名"
+    },
     "proxy_direct": {
         "message": "直连"
     },

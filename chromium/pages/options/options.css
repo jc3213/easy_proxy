@@ -32,17 +32,18 @@ input[type="file"], a {
 #profile, #options {
     border-style: inset;
     border-width: 2px;
-    display: grid;
-    grid-gap: 3px;
 }
 
 #profile {
+    display: grid;
+    gap: 3px;
     grid-template-columns: auto 1fr auto auto;
 }
 
 #options {
-    grid-template-columns: repeat(4, auto);
+    display: grid;
     gap: 10px 5px;
+    grid-template-columns: repeat(4, auto);
 }
 
 #options > :nth-child(n+5) {
@@ -56,8 +57,48 @@ input[type="file"], a {
 #manager button {
     font-size: 12px;
     height: 23px;
-    margin: auto 0px;
+    margin-bottom: auto;
+    margin-top: auto;
     padding: 3px;
+}
+
+#handler {
+    border-style: solid;
+    border-width: 1px;
+    position: absolute;
+    top: 100%;
+    width: 200px;
+    z-index: 9;
+}
+
+#handler:not(.popuped) {
+    display: none;
+}
+
+#handler > *,
+#handler > ::before {
+    padding: 5px;
+}
+
+#handler > :hover {
+    filter: contrast(80%);
+}
+
+#handler > :active {
+    filter: contrast(60%);
+}
+
+#handler > ::before {
+    content: "✔️";
+    visibility: hidden;
+}
+
+#handler > .checked::before {
+    visibility: visible;
+}
+
+.clicked {
+    border-style: inset;
 }
 
 .new_profile #new-profile,
@@ -80,11 +121,10 @@ input[type="file"], a {
     margin-left: auto;
     position: relative;
     top: 6px;
-    width: 220px;
 }
 
 .profile > button:last-of-type {
-    margin-left: auto !important;
+    margin-left: auto;
 }
 
 .proxy {

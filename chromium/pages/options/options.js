@@ -1,11 +1,12 @@
 let easyProfile = {};
 let easyProxy = {};
+let easyHandler;
 
 let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
-let [proxyMenu, modeMenu, automateMenu, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [proxyMenu, modeMenu, automateMenu, manageBtn, managePop, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -123,7 +124,7 @@ optionsPane.addEventListener('change', (event) => {
             extension.remove('autopac', 'direct', 'global');
             extension.add(value);
             break;
-        case 'proxy-preset':
+        case 'preset':
             easyStorage.preset = value;
             break;
         case 'automate':
@@ -139,12 +140,38 @@ optionsPane.addEventListener('change', (event) => {
     saveBtn.disabled = false;
 });
 
+
+manageBtn.addEventListener('click', (event) => {
+    manageBtn.classList.toggle('clicked');
+    managePop.classList.toggle('popuped');
+});
+
+managePop.addEventListener('click', (event) => {
+    let click = event.target;
+    let value = click.classList[0];
+    if (easyHandler.has(value)) {
+        easyHandler.delete(value);
+    } else {
+        easyHandler.add(value);
+    }
+    click.classList.toggle('checked');
+    easyStorage.handler = [...easyHandler];
+    saveBtn.disabled = false;
+});
+
 chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     easyStorage = storage;
+    easyHandler = new Set(storage.handler);
     easyStorage.proxies.forEach(createMatchProfile);
     modeMenu.value = storage.mode;
     proxyMenu.value = storage.preset ?? storage.proxies[0];
     networkMenu.checked = storage.network;
+    [...managePop.children].forEach((item) => {
+        let value = item.classList[0];
+        if (easyHandler.has(value)) {
+            item.classList.add('checked');
+        }
+    });
     if (manifest === 3) {
         persistMenu.checked = storage.persistent;
     } else {

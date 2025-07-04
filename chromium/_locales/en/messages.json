@@ -77,6 +77,18 @@
     "match_remove": {
         "message": "Remove this match pattern"
     },
+    "error_refused": {
+        "message": "Connection Refused"
+    },
+    "error_reset": {
+        "message": "Connection Reset"
+    },
+    "error_timeout": {
+        "message": "Connection Time Out"
+    },
+    "error_dnserr": {
+        "message": "DNS Failed to Resolve"
+    },
     "proxy_direct": {
         "message": "Direct"
     },
