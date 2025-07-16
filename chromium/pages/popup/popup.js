@@ -180,7 +180,6 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
             easyRule.get(host)?.classList?.add('tempo');
             break;
     };
-    console.log(action, params);
 });
 
 chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
