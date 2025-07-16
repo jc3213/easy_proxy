@@ -156,30 +156,31 @@ menuPane.addEventListener('click', (event) => {
     };
 });
 
-function easyMatchUpdate({tabId, rule, host}) {
-    if (easyProxy && tabId === easyTab) {
-        pinrtOutputList(rule, 'wildcard');
-        pinrtOutputList(host, 'fullhost');
-        manager.remove('asleep');
-    }
-}
-
-function easyMatchReport({tabId, rule, host}) {
-    if (easyProxy && tabId === easyTab) {
-        easyRule.get(rule)?.classList?.add('error');
-        easyRule.get(host)?.classList?.add('error');
-    }
-}
-
 chrome.runtime.onMessage.addListener(({action, params}) => {
+    let {tabId, rule, host} = params;
+    if (!easyProxy || tabId !== easyTab) {
+        return;
+    }
     switch (action) {
         case 'manager_update':
-            easyMatchUpdate(params);
+            pinrtOutputList(rule, 'wildcard');
+            pinrtOutputList(host, 'fullhost');
+            manager.remove('asleep');
             break;
         case 'manager_report':
-            easyMatchReport(params);
+            easyRule.get(rule)?.classList?.add('error');
+            easyRule.get(host)?.classList?.add('error');
+            break;
+        case 'manager_to_match':
+            easyMatch.set(host, easyProxy);
+            easyRule.get(host)?.classList?.add('match');
+            break;
+        case 'manager_to_tempo':
+            easyTempo.set(host, easyProxy);
+            easyRule.get(host)?.classList?.add('tempo');
             break;
     };
+    console.log(action, params);
 });
 
 chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {

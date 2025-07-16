@@ -29,23 +29,21 @@
         </div>
         <div id="options">
             <div i18n-tips="options_preset_title">
-                <label i18n="options_preset">Preset</label>
+                <label i18n="options_preset">Preset Proxy</label>
                 <select id="preset"></select>
-            </div>
-            <div i18n-tips="options_mode_title">
-                <label i18n="options_mode">Mode</label>
                 <select id="proxy-mode">
                     <option value="direct" i18n="proxy_direct">Direct</option>
                     <option value="autopac" i18n="proxy_autopac">PAC</option>
                     <option value="global" i18n="proxy_global">Global</option>
                 </select>
             </div>
-            <div class="checkbox" i18n-tips="options_automate_title">
-                <input type="checkbox" id="automate">
-                <label for="automate" i18n="options_automate">Enable Fallback Auto-Proxy</label>
-            </div>
-            <div i18n-tips="options_handler_title">
-                <button id="manage" i18n="options_handler">Manage</button>
+            <div i18n-tips="options_automate_title">
+                <label i18n="options_automate">Automated Proxy</label>
+                <select id="action">
+                    <option value="match" i18n-tips="automate_storage">Storage</option>
+                    <option value="tempo" i18n-tips="automate_temporary">Temporary</option>
+                    <option value="none" selected i18n-tips="automate_disabled">Disabled</option>
+                </select>
                 <div id="handler">
                     <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
                     <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>

@@ -6,7 +6,7 @@ let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
-let [proxyMenu, modeMenu, automateMenu, manageBtn, managePop, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [proxyMenu, modeMenu, actionMenu, actionPane, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -127,8 +127,10 @@ optionsPane.addEventListener('change', (event) => {
         case 'preset':
             easyStorage.preset = value;
             break;
-        case 'automate':
-            easyStorage.automate = checked;
+        case 'action':
+            easyStorage.action = value;
+            extension.remove('none', 'match', 'tempo')
+            extension.add(value);
             break;
         case 'network':
             easyStorage.network = checked;
@@ -140,13 +142,7 @@ optionsPane.addEventListener('change', (event) => {
     saveBtn.disabled = false;
 });
 
-
-manageBtn.addEventListener('click', (event) => {
-    manageBtn.classList.toggle('clicked');
-    managePop.classList.toggle('popuped');
-});
-
-managePop.addEventListener('click', (event) => {
+actionPane.addEventListener('click', (event) => {
     let click = event.target;
     let value = click.classList[0];
     if (easyHandler.has(value)) {
@@ -165,8 +161,10 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     easyStorage.proxies.forEach(createMatchProfile);
     modeMenu.value = storage.mode;
     proxyMenu.value = storage.preset ?? storage.proxies[0];
+    actionMenu.value = storage.action;
+    extension.add(storage.action);
     networkMenu.checked = storage.network;
-    [...managePop.children].forEach((item) => {
+    [...actionPane.children].forEach((item) => {
         let value = item.classList[0];
         if (easyHandler.has(value)) {
             item.classList.add('checked');

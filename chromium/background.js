@@ -3,7 +3,7 @@ let easyDefault = {
     preset: undefined,
     network: false,
     persistent: false,
-    automate: false,
+    action: 'none',
     handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
     proxies: []
 };
@@ -16,7 +16,7 @@ let easyColor = {
 let easyStorage = {};
 let easyHandler;
 let easyNetwork;
-let easyAuto;
+let easyAction;
 let easyMatch = {};
 let easyTempo = {};
 let easyRegExp;
@@ -222,17 +222,31 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
     if (!easyHandler.has(error)) {
         return;
     }
-    let { host, rule } = easyMatchInspect('manager_report', tabId, url);
     let { preset } = easyStorage;
-    if (easyAuto && preset) {
-        easyTempo[preset].add(host);
-        easyProxyScript();
-    } else {
-        let { flag } = easyInspect[tabId];
-        flag.add(rule);
-        flag.add(host);
+    if (!preset) {
+        return;
     }
+    let { host, rule } = easyMatchInspect('manager_report', tabId, url);
+    switch(easyAction) {
+        case 'none':
+            let { flag } = easyInspect[tabId];
+            flag.add(rule);
+            flag.add(host);
+            break;
+        case 'match':
+            easyMatchAction('manager_to_match', easyMatch[preset], tabId, host);
+            break;
+        case 'tempo':
+            easyMatchAction('manager_to_tempo', easyTempo[preset], tabId, host);
+            break;
+    };
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
+
+function easyMatchAction(action, proxy, tabId, host) {
+    proxy.add(host);
+    easyProxyScript();
+    chrome.runtime.sendMessage({action, params: { tabId, host }});
+}
 
 function easyMatchInspect(action, tabId, url) {
     let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
@@ -265,7 +279,7 @@ chrome.storage.local.get(null, async (json) => {
 function easyStorageInit(json) {
     easyNetwork = json.network;
     easyHandler = new Set(json.handler);
-    easyAuto = json.automate;
+    easyAction = json.action;
     easyProxyScript();
     if (manifest === 3 && json.persistent) {
         easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
