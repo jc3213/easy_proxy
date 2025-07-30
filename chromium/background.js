@@ -5,7 +5,8 @@ let easyDefault = {
     persistent: false,
     action: 'none',
     handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
-    proxies: []
+    proxies: [],
+    exclude: []
 };
 let easyColor = {
     direct: '#2940D9',
@@ -19,6 +20,7 @@ let easyNetwork;
 let easyAction;
 let easyMatch = {};
 let easyTempo = {};
+let easyExclude = new MatchPattern();
 let easyRegExp;
 let easyMode;
 let easyScript;
@@ -243,9 +245,11 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyMatchAction(action, proxy, tabId, host) {
-    proxy.add(host);
-    easyProxyScript();
-    chrome.runtime.sendMessage({action, params: { tabId, host }});
+    if (!easyExlude.test(host)) {
+        proxy.add(host);
+        easyProxyScript();
+        chrome.runtime.sendMessage({action, params: { tabId, host }});
+    }
 }
 
 function easyMatchInspect(action, tabId, url) {
@@ -280,6 +284,7 @@ function easyStorageInit(json) {
     easyNetwork = json.network;
     easyHandler = new Set(json.handler);
     easyAction = json.action;
+    easyExclude.new(json.exclude);
     easyProxyScript();
     if (manifest === 3 && json.persistent) {
         easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
