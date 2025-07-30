@@ -6,6 +6,7 @@ let extension = document.body.classList;
 let [menuPane, profilePane, optionsPane,, managePane, excludePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
+let [, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
 let [proxyMenu, modeMenu, actionMenu, actionPane, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
@@ -66,7 +67,11 @@ function fileSaver(data, type, filename, filetype) {
 }
 
 menuPane.addEventListener('click', (event) => {
-    switch (event.target.getAttribute('i18n')) {
+    let button = event.target.getAttribute('i18n');
+    if (!button) {
+        return;
+    }
+    switch (button) {
         case 'options_profile':
             menuEventNewProf();
             break;
@@ -155,6 +160,30 @@ actionPane.addEventListener('click', (event) => {
     saveBtn.disabled = false;
 });
 
+excludeEntry.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        matchAddNew('exclude', excludeList, excludeEntry);
+    }
+});
+
+excludePane.addEventListener('click', (event) => {
+    let button = event.target.getAttribute('i18n-tips');
+    if (!button) {
+        return;
+    }
+    switch (button) {
+        case 'match_add':
+            matchAddNew('exclude', excludeList, excludeEntry);
+            break;
+        case 'match_resort':
+            profileResort('exclude', excludeList);
+            break;
+        case 'match_remove':
+            matchRemove('exclude', event.target.parentNode);
+            break;
+    };
+});
+
 chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     easyStorage = storage;
     easyHandler = new Set(storage.handler);
@@ -226,18 +255,22 @@ function createMatchProfile(id) {
     let server = document.createElement('option');
     proxy.textContent = server.value = server.textContent = id;
     profile.addEventListener('click', (event) => {
-        switch (event.target.getAttribute('i18n-tips')) {
+        let button = event.target.getAttribute('i18n-tips');
+        if (!button) {
+            return;
+        }
+        switch (button) {
             case 'profile_export':
                 profileExport(id);
-                break;
-            case 'profile_resort':
-                profileResort(id, list);
                 break;
             case 'profile_remove':
                 profileRemove(id);
                 break;
             case 'match_add':
                 matchAddNew(id, list, entry);
+                break;
+            case 'match_resort':
+                profileResort(id, list);
                 break;
             case 'match_remove':
                 matchRemove(id, event.target.parentNode);

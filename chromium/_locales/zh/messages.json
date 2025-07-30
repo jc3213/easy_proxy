@@ -56,7 +56,7 @@
     "profile_export": {
         "message": "将此代理导出为PAC脚本"
     },
-    "profile_resort": {
+    "match_resort": {
         "message": "排序匹配规则"
     },
     "profile_remove": {

@@ -56,7 +56,7 @@
     "profile_export": {
         "message": "Export this proxy profile to PAC script"
     },
-    "profile_resort": {
+    "match_resort": {
         "message": "Resort match patterns"
     },
     "profile_remove": {
