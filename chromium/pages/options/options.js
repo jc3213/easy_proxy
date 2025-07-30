@@ -3,7 +3,7 @@ let easyProxy = {};
 let easyHandler;
 
 let extension = document.body.classList;
-let [menuPane, profilePane, optionsPane,, managePane, template] = document.body.children;
+let [menuPane, profilePane, optionsPane,, managePane, excludePane, template] = document.body.children;
 let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
 let [proxyMenu, modeMenu, actionMenu, actionPane, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');

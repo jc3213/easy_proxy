@@ -111,30 +111,25 @@ input[type="file"], a {
     flex-wrap: wrap;
 }
 
-.profile > input {
-    height: 16px;
-    margin-left: auto;
-    position: relative;
-    top: 5px;
-}
-
-.profile button {
-    font-size: 12px;
-    height: 24px;
-    margin-bottom: auto;
-    margin-top: auto;
-    padding: 3px;
-}
-
-.profile > button:last-of-type {
-    margin-left: auto;
-}
-
 .proxy {
     display: inline-block;
-    font-size: 18px;
+    font-size: 28px;
     font-weight: bold;
-    padding: 5px 0px;
+}
+
+.profile > input {
+    height: 20px;
+    margin: auto 0px auto auto;
+}
+
+.profile > button {
+    height: 28px;
+    margin: auto 0px;
+    padding: 2px;
+}
+
+#manager > .profile > button:last-of-type {
+    margin-left: auto;
 }
 
 .matches {
@@ -150,13 +145,19 @@ input[type="file"], a {
     overflow-y: auto;
 }
 
-.matches > * {
+.rule {
     border-style: outset;
     border-width: 1px;
     display: flex;
     white-space: nowrap;
 }
 
-.matches > * > :first-child {
+.rule > :first-child {
     flex: 1;
+}
+
+.rule > button {
+    font-size: 12px;
+    height: 24px;
+    padding: 3px;
 }

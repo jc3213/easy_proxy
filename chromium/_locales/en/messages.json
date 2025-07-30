@@ -50,6 +50,9 @@
     "options_persistent_title": {
         "message": "Prevent \"ServiceWorker\" from hibernating\n\nThis will cost a bit more cpu power"
     },
+    "options_exclude": {
+        "message": "Exclude Rules"
+    },
     "profile_export": {
         "message": "Export this proxy profile to PAC script"
     },

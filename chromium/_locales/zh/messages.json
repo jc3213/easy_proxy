@@ -50,6 +50,9 @@
     "options_persistent_title": {
         "message": "使得ServiceWorker不再休眠\n\n此功能将额外消耗部分CPU性能"
     },
+    "options_exclude": {
+        "message": "例外规则"
+    },
     "profile_export": {
         "message": "将此代理导出为PAC脚本"
     },
