@@ -138,7 +138,11 @@ function menuEventPurge() {
 }
 
 menuPane.addEventListener('click', (event) => {
-    switch (event.target.getAttribute('i18n')) {
+    let button = event.target.getAttribute('i18n');
+    if (!button) {
+        return;
+    }
+    switch (button) {
         case 'popup_submit':
             proxyStatusChanged('manager_update', 'match', easyMatch);
             break;
