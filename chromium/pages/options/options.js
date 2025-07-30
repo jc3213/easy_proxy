@@ -188,6 +188,7 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     easyStorage = storage;
     easyHandler = new Set(storage.handler);
     easyStorage.proxies.forEach(createMatchProfile);
+    easyStorage.exclude.forEach((value) => createMatchPattern(excludeList, value));
     modeMenu.value = storage.mode;
     proxyMenu.value = storage.preset ?? storage.proxies[0];
     actionMenu.value = storage.action;
@@ -233,7 +234,7 @@ function matchAddNew(id, list, entry) {
         let storage = easyStorage[id];
         result.forEach((value) => {
             if (value && !storage.includes(value)) {
-                createMatchPattern(list, id, value);
+                createMatchPattern(list, value);
                 storage.push(value);
             }
         });
@@ -282,13 +283,13 @@ function createMatchProfile(id) {
             matchAddNew(id, list, entry);
         }
     });
-    easyStorage[id].forEach((value) => createMatchPattern(list, id, value));
+    easyStorage[id].forEach((value) => createMatchPattern(list, value));
     easyProfile[id] = profile;
     proxyMenu.appendChild(server);
     managePane.appendChild(profile);
 }
 
-function createMatchPattern(list, id, value) {
+function createMatchPattern(list, value) {
     let match = matchLET.cloneNode(true);
     let name = match.children[0];
     name.textContent = match.title = value;
