@@ -221,7 +221,6 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         rule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
         host.forEach((host) => pinrtOutputList(host, 'fullhost'));
         flag.forEach((flag) => easyRule.get(flag).classList.add('error'));
-        exclude.forEach((val) => easyRule.get(val).classList.add('exclude'));
     });
 });
 
