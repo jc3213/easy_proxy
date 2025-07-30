@@ -71,17 +71,17 @@ function easyStorageUpdated(json) {
 function easyManageQuery(tabId) {
     let match = {}
     let tempo = {};
-    let {proxies, mode, preset} = easyStorage;
+    let {proxies, mode, preset, exclude} = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
-        return { match, tempo, rule: [], host: [], flag: [], proxies, mode, preset };
+        return { match, tempo, exclude, rule: [], host: [], flag: [], proxies, mode, preset };
     }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
     let {rule, host, flag} = inspect;
-    return { match, tempo, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset };
+    return { match, tempo, exclude, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset };
 }
 
 function easyManageUpdated({add, remove, proxy, tabId}) {

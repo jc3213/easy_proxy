@@ -74,21 +74,27 @@ body.global > :nth-child(-n+2),
 
 .match,
 .tempo,
-.error {
+.error,
+.exclude {
     color: #FFFFFF;
+}
+
+.exclude {
+    background-color: #A39F8C;
+    order: -1;    
 }
 
 .error {
     background-color: #D23F2A;
-    order: -1;
+    order: -2;
 }
 
 .tempo {
     background-color: #E6A92A;
-    order: -2;
+    order: -3;
 }
 
 .match {
     background-color: #34A85D;
-    order: -3;
+    order: -4;
 }

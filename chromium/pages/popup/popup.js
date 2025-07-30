@@ -3,6 +3,7 @@ let easyTempo = new Map();
 let easyRule = new Map();
 let easyChecks = new Map();
 let easyChanges = new Set();
+let easyExclude;
 let lastMatch;
 let lastTempo;
 let easyProxy;
@@ -202,10 +203,11 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({proxies, mode, preset, match, tempo, rule, host, flag}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({proxies, mode, preset, match, tempo, exclude, rule, host, flag}) => {
         if (proxies.length === 0 || rule.length === 0 && host.length === 0) {
             manager.add('asleep');
         }
+        easyExclude = new Set(exclude);
         modeMenu.value = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
         proxies.forEach((proxy) => {
@@ -219,6 +221,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         rule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
         host.forEach((host) => pinrtOutputList(host, 'fullhost'));
         flag.forEach((flag) => easyRule.get(flag).classList.add('error'));
+        exclude.forEach((val) => easyRule.get(val).classList.add('exclude'));
     });
 });
 
@@ -230,7 +233,9 @@ function pinrtOutputList(value, type) {
     }
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
-    if (match) {
+    if (easyExclude.has(value)) {
+        rule.classList.add('exclude');
+    } else if (match) {
         rule.classList.add('match');
     } else if (tempo) {
         rule.classList.add('tempo');
