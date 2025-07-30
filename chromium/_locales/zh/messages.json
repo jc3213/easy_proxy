@@ -56,14 +56,14 @@
     "profile_export": {
         "message": "将此代理导出为PAC脚本"
     },
-    "match_resort": {
-        "message": "排序匹配规则"
-    },
     "profile_remove": {
         "message": "移除此代理"
     },
     "match_add": {
         "message": "添加新规则"
+    },
+    "match_resort": {
+        "message": "排序所有匹配规则"
     },
     "match_remove": {
         "message": "移除此规则"

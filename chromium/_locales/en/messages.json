@@ -54,16 +54,16 @@
         "message": "Exclude Rules"
     },
     "profile_export": {
-        "message": "Export this proxy profile to PAC script"
-    },
-    "match_resort": {
-        "message": "Resort match patterns"
+        "message": "Export this proxy profile as PAC script"
     },
     "profile_remove": {
         "message": "Remove this proxy profile"
     },
     "match_add": {
-        "message": "Add new match pattern"
+        "message": "Add new match patterns"
+    },
+    "match_resort": {
+        "message": "Resort all match patterns"
     },
     "match_remove": {
         "message": "Remove this match pattern"
