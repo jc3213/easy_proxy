@@ -2,11 +2,6 @@ body {
     margin: 4px;
 }
 
-label {
-    flex: 1;
-    text-align: center;
-}
-
 select {
     width: 100%;
 }
@@ -29,39 +24,6 @@ body.global > :nth-child(-n+2),
     display: none !important;
 }
 
-#output {
-    display: flex;
-    flex-direction: column;
-}
-
-#output > div {
-    display: flex;
-    gap: 5px;
-    margin: 1px;
-    padding: 3px;
-}
-
-#context {
-    display: flex;
-    gap: auto;
-    height: 23px;
-    margin-bottom: 3px;
-}
-
-#context > div {
-    flex: 1;
-    text-align: center;
-}
-
-#context > :hover {
-    border-style: outset;
-    border-width: 1px;
-}
-
-#context > :active {
-    border-style: inset;
-}
-
 #menu {
     display: flex;
     gap: 5px;
@@ -72,29 +34,44 @@ body.global > :nth-child(-n+2),
     flex: 1;
 }
 
-.match,
-.tempo,
-.error,
-.exclude {
-    color: #FFFFFF;
-}
-
-.exclude {
-    background-color: #A39F8C;
-    order: -1;    
+.rule {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    margin: 3px 0px;
 }
 
 .error {
+    order: -1;
+}
+
+.error > select {
+    color: #FFFFFF;
     background-color: #D23F2A;
-    order: -2;
+}
+
+.exclude {
+    order: -2;    
+}
+
+.exclude > select {
+    color: #FFFFFF;
+    background-color: #A39F8C;
 }
 
 .tempo {
-    background-color: #E6A92A;
     order: -3;
 }
 
+.tempo > select {
+    color: #FFFFFF;
+    background-color: #E6A92A;
+}
+
 .match {
-    background-color: #34A85D;
     order: -4;
+}
+
+.match > select {
+    color: #FFFFFF;
+    background-color: #34A85D;
 }

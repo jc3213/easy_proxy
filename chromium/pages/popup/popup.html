@@ -8,11 +8,6 @@
     </head>
     <body>
         <div id="output"></div>
-        <div id="context">
-            <div i18n="popup_all">All</div>
-            <div i18n="popup_none">None</div>
-            <div i18n="popup_default">Default</div>
-        </div>
         <select id="proxy"></select>
         <hr>
         <div id="menu">
@@ -21,16 +16,20 @@
                 <option value="autopac" i18n="proxy_autopac">PAC</option>
                 <option value="global" i18n="proxy_global">Global</option>
             </select>
+            <button i18n="popup_purge">Purge</button>
+            <button i18n="popup_switch">Switch</button>
             <button i18n="popup_submit">Submit</button>
-            <button i18n="popup_tempo">Tempo</button>
-            <button style="display: none;" i18n="popup_purge">Purge</button>
-            <button style="display: none;" i18n="popup_express">Express</button>
             <button i18n="popup_options">Options</button>
         </div>
         <div class="template">
-            <div>
-                <input type="checkbox">
-                <label></label>
+            <div class="rule">
+                <div></div>
+                <select>
+                    <option value="match" i18n="popup_match">Storage</option>
+                    <option value="tempo" i18n="popup_tempo">Temporary</option>
+                    <option value="exclude" i18n="popup_exclude">Exclude</option>
+                    <option value="direct" i18n="popup_direct" selected>Direct</option>
+                </select>
             </div>
         </div>
         <script src="popup.js"></script>

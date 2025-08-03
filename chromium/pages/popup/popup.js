@@ -9,12 +9,10 @@ let lastTempo;
 let easyProxy;
 let easyTabs = new Set();
 let easyTab;
-let easyId = 0;
 
 let manager = document.body.classList;
-let [outputPane, contextPane, proxyMenu,, menuPane, template] = document.body.children;
-let [allBtn, noneBtn, defaultBtn] = contextPane.children;
-let [modeMenu, submitBtn, tempoBtn, purgeBtn, expressBtn, optionsBtn] = menuPane.children;
+let [outputPane, proxyMenu,, menuPane, template] = document.body.children;
+let [modeMenu, purgeBtn, switchBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -42,7 +40,7 @@ document.addEventListener('keydown', (event) => {
             shortcutHandler(event, defaultBtn);
             break;
         case 'Tab':
-            shortcutHandler(event, expressBtn);
+            shortcutHandler(event, switchBtn);
             break;
         case 'Enter':
             shortcutHandler(event, submitBtn);
@@ -59,23 +57,6 @@ document.addEventListener('keydown', (event) => {
 outputPane.addEventListener('change', (event) => {
     let check = event.target;
     easyChecks.get(check) === check.checked ? easyChanges.delete(check) : easyChanges.add(check);
-});
-
-contextPane.addEventListener('click', (event) => {
-    let button = event.target.getAttribute('i18n');
-    let inject = button === 'popup_all' ? true : button === 'popup_none' ? false : undefined;
-    easyChecks.forEach((value, check) => {
-        if (inject === undefined) {
-            check.checked = value;
-            easyChanges.delete(check);
-        } else if (inject === value) {
-            check.checked = inject;
-            easyChanges.delete(check);
-        } else {
-            check.checked = inject;
-            easyChanges.add(check);
-        }
-    });
 });
 
 proxyMenu.addEventListener('change', (event) => {
@@ -152,7 +133,7 @@ menuPane.addEventListener('click', (event) => {
         case 'popup_purge':
             menuEventPurge();
             break;
-        case 'popup_express':
+        case 'popup_switch':
             outputPane.classList.toggle('express');
             break;
         case 'popup_options':
@@ -228,36 +209,30 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     });
 });
 
-function pinrtOutputList(value, type) {
-    let rule = easyRule.get(value) ?? printMatchPattern(value, type);
-    let {check} = rule;
-    if (easyChecks.has(check)) {
+function pinrtOutputList(value, cate) {
+    if (easyRule.has(value)) {
         return;
     }
+    let rule = hostLET.cloneNode(true);
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
+    let [item, type] = rule.children;
+    rule.type = type;
+    rule.item = item;
+    rule.title = item.textContent = value;
+    rule.classList.add(cate);
     if (easyExclude.has(value)) {
         rule.classList.add('exclude');
+        type.value = 'exclude';
     } else if (match) {
         rule.classList.add('match');
+        type.value = 'match';
     } else if (tempo) {
         rule.classList.add('tempo');
+        type.value = 'tempo';
+    } else {
+        type.value = 'direct';
     }
-    if (match === easyProxy || tempo === easyProxy) {
-        check.checked = true;
-    }
-    easyChecks.set(check, check.checked);
-    outputPane.append(rule);
-}
-
-function printMatchPattern(value, type) {
-    let rule = hostLET.cloneNode(true);
-    let [check, label] = rule.children;
-    rule.check = check;
-    check.id = 'easyproxy_' + easyId ++;
-    label.setAttribute('for', check.id);
-    rule.title = label.textContent = check.value = value;
-    rule.classList.add(type);
     easyRule.set(value, rule);
-    return rule;
+    outputPane.append(rule);
 }
