@@ -16,13 +16,15 @@ body.global > #menu > button:nth-of-type(-n+2) {
     pointer-events: none;
 }
 
-body.asleep > :first-child,
-body.direct > :first-child,
-body.global > :first-child,
-#output:not(.express) > .fullhost:not(.match):not(.tempo),
-#output.express > .wildcard:not(.match):not(.tempo),
-#output:empty + #context {
-    display: none !important;
+body.asleep > #output,
+body.direct > #output,
+body.global > #output,
+body.asleep > #extra > button,
+body.direct > #extra > button,
+body.global > #extra > button,
+#output:not(.switch) > .fullhost:not(.match):not(.tempo):not(.exclude),
+#output.switch > .wildcard:not(.match):not(.tempo):not(.exclude) {
+    display: none;
 }
 
 #extra, #menu {

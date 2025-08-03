@@ -107,7 +107,7 @@ function menuEventPurge() {
 }
 
 switchBtn.addEventListener('click', (event) => {
-    outputPane.classList.toggle('express'); 
+    outputPane.classList.toggle('switch'); 
 });
 
 menuPane.addEventListener('click', (event) => {
