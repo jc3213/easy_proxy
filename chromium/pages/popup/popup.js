@@ -1,6 +1,6 @@
 let easyMatch = new Map();
 let easyTempo = new Map();
-let easyRule = new Map();
+let easyRules = new Map();
 let easyChecks = new Map();
 let easyChanges = new Set();
 let easyExclude;
@@ -55,18 +55,14 @@ document.addEventListener('keydown', (event) => {
 });
 
 outputPane.addEventListener('change', (event) => {
-    let check = event.target;
-    easyChecks.get(check) === check.checked ? easyChanges.delete(check) : easyChanges.add(check);
+    let { name, prop, value, parentNode } = event.target;
+    let last = parentNode.classList[2];
+    parentNode.className = parentNode.className.replace(last, value);
+    console.log(name, prop, value);
 });
 
 proxyMenu.addEventListener('change', (event) => {
-    easyChecks.forEach((check) => {
-        let host = check.value;
-        let match = easyMatch.get(host);
-        let tempo = easyTempo.get(host);
-        check.checked = match === proxy || tempo === proxy;
-        check.disabled = match && match !== proxy || tempo && tempo !== proxy;
-    });
+    
 });
 
 modeMenu.addEventListener('change', (event) => {
@@ -77,45 +73,23 @@ modeMenu.addEventListener('change', (event) => {
     });
 });
 
-function proxyStatusChanged(action, type, mapping) {
+function proxyStatusChanged() {
     if (easyChanges.size === 0) {
         return;
     }
-    let proxy = proxyMenu.value;
-    let add = [];
-    let remove = [];
-    let except = new Set(['error', type]);
-    easyChanges.forEach((check) => {
-        let {value, checked} = check;
-        let rule = check.parentNode;
-        let status = rule.classList[1];
-        let map = mapping.get(value);
-        if (status && !except.has(status)) {
-            check.checked = easyChecks.get(check);
-        } else if (checked && !map) {
-            mapping.set(value, proxy);
-            add.push(value);
-            rule.classList.add(type);
-            rule.classList.remove('error');
-        } else if (!checked && map) {
-            mapping.delete(value);
-            remove.push(value);
-            rule.classList.remove(type);
-        }
-    });
-    if (add.length !== 0 || remove.length !== 0) {
-        chrome.runtime.sendMessage({ action, params: {add, remove, proxy, tabId: easyTab} });
-    }
+
     easyChanges.clear();
 }
 
 function menuEventPurge() {
-    easyChecks.forEach((value, check) => {
-        check.parentNode.classList.remove('tempo');
-        check.checked = easyTempo.has(check.value) ? false : value;
-    });
-    easyTempo.clear();
     chrome.runtime.sendMessage({action:'manager_purge', params: easyTab});
+    easyTempo.clear();
+    easyRules.forEach((rule) => {
+        if (rule.classList.contains('tempo')) {
+            rule.className = rule.className.replace('tempo', 'direct');
+            rule.type.value = rule.type.prop = 'direct';
+        }
+    });
 }
 
 menuPane.addEventListener('click', (event) => {
@@ -125,10 +99,7 @@ menuPane.addEventListener('click', (event) => {
     }
     switch (button) {
         case 'popup_submit':
-            proxyStatusChanged('manager_update', 'match', easyMatch);
-            break;
-        case 'popup_tempo':
-            proxyStatusChanged('manager_tempo', 'tempo', easyTempo);
+            proxyStatusChanged();
             break;
         case 'popup_purge':
             menuEventPurge();
@@ -154,16 +125,16 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
             manager.remove('asleep');
             break;
         case 'manager_report':
-            easyRule.get(rule)?.classList?.add('error');
-            easyRule.get(host)?.classList?.add('error');
+            easyRules.get(rule)?.classList?.add('error');
+            easyRules.get(host)?.classList?.add('error');
             break;
         case 'manager_to_match':
             easyMatch.set(host, easyProxy);
-            easyRule.get(host)?.classList?.add('match');
+            easyRules.get(host)?.classList?.add('match');
             break;
         case 'manager_to_tempo':
             easyTempo.set(host, easyProxy);
-            easyRule.get(host)?.classList?.add('tempo');
+            easyRules.get(host)?.classList?.add('tempo');
             break;
     };
 });
@@ -173,7 +144,7 @@ chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
         case 'loading':
             if (easyTab === tabId && !easyTabs.has(tabId)) {
                 easyTabs.add(tabId);
-                easyChecks.clear();
+                easyRules.clear();
                 lastMatch = lastTempo = null;
                 outputPane.innerHTML = '';
             }
@@ -205,34 +176,36 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         manager.add(mode);
         rule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
         host.forEach((host) => pinrtOutputList(host, 'fullhost'));
-        flag.forEach((flag) => easyRule.get(flag).classList.add('error'));
+        flag.forEach((flag) => easyRules.get(flag).classList.add('error'));
     });
 });
 
 function pinrtOutputList(value, cate) {
-    if (easyRule.has(value)) {
-        return;
+    let rule = easyRules.get(value);
+    if (!rule) {
+        rule = hostLET.cloneNode(true);
+        let [item, type] = rule.children;
+        rule.type = type;
+        rule.item = item;
+        rule.title = item.textContent = type.name = value;
+        rule.classList.add(cate);
+        easyRules.set(value, rule);
+        outputPane.append(rule);
     }
-    let rule = hostLET.cloneNode(true);
+    let { type } = rule;
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
-    let [item, type] = rule.children;
-    rule.type = type;
-    rule.item = item;
-    rule.title = item.textContent = value;
-    rule.classList.add(cate);
     if (easyExclude.has(value)) {
         rule.classList.add('exclude');
-        type.value = 'exclude';
+        type.value = type.prop = 'exclude';
     } else if (match) {
         rule.classList.add('match');
-        type.value = 'match';
+        type.value = type.prop = 'match';
     } else if (tempo) {
         rule.classList.add('tempo');
-        type.value = 'tempo';
+        type.value = type.prop = 'tempo';
     } else {
-        type.value = 'direct';
+        rule.classList.add('direct');
+        type.value = type.prop = 'direct';
     }
-    easyRule.set(value, rule);
-    outputPane.append(rule);
 }
