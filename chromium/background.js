@@ -84,24 +84,25 @@ function easyManageQuery(tabId) {
     return { match, tempo, exclude, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset };
 }
 
-function easyManageUpdated({add, remove, proxy, tabId}) {
-    easyMatchPattern(easyMatch, {add, remove, proxy, tabId});
-    easyStorage[proxy] = easyMatch[proxy].data;
-    chrome.storage.local.set(easyStorage);
-}
-
-function easyMatchPattern(list, {add = [], remove = [], proxy, tabId}) {
-    let matchpattern = list[proxy];
-    matchpattern.add(add);
-    matchpattern.delete(remove);
+function easyStatusUpdated({added, removed, proxy, tabId}) {
+    let action = { match: easyMatch[proxy], tempo: easyTempo[proxy], exclude: easyExclude };
+    added.forEach(({ type, rule }) => {
+        action[type].add(rule);
+    });
+    removed.forEach(({ type, rule }) => {
+        action[type].delete(rule);
+    });
+    easyStorage[proxy] = action.match.data;
+    easyStorage['exclude'] = easyExclude.data;
     easyProxyScript();
-    chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
+    chrome.storage.local.set(easyStorage);
+    chrome.tabs.reload(tabId);
 }
 
 function easyTempoPurged(tabId) {
-    easyStorage.proxies.forEach((proxy) => easyTempo[proxy].empty());
+    easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
     easyProxyScript();
-    chrome.tabs.update(tabId, {url: easyInspect[tabId].url});
+    chrome.tabs.reload(tabId);
 }
 
 function easyModeChanger(params) {
@@ -125,7 +126,7 @@ chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
             response(easyManageQuery(params));
             break;
         case 'manager_update':
-            easyManageUpdated(params);
+            easyStatusUpdated(params);
             break;
         case 'manager_tempo':
             easyMatchPattern(easyTempo, params);
