@@ -85,14 +85,14 @@ function easyManageQuery(tabId) {
 }
 
 function easyStatusUpdated({added, removed, proxy, tabId}) {
-    let action = { match: easyMatch[proxy], tempo: easyTempo[proxy], exclude: easyExclude };
+    let stats = { match: easyMatch[proxy], tempo: easyTempo[proxy], exclude: easyExclude };
     added.forEach(({ type, rule }) => {
-        action[type].add(rule);
+        stats[type].add(rule);
     });
     removed.forEach(({ type, rule }) => {
-        action[type].delete(rule);
+        stats[type].delete(rule);
     });
-    easyStorage[proxy] = action.match.data;
+    easyStorage[proxy] = stats.match.data;
     easyStorage['exclude'] = easyExclude.data;
     easyProxyScript();
     chrome.storage.local.set(easyStorage);

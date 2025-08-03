@@ -73,15 +73,15 @@ modeMenu.addEventListener('change', (event) => {
 function proxyStatusUpdated() {
     let added = [];
     let removed = [];
-    let action = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
+    let stats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
     easyChanges.forEach((type) => {
         let { name, value, props } = type;
         if (value !== 'direct') {
-            action[value].set(name, easyProxy);
+            stats[value].set(name, easyProxy);
             added.push({ type: value, rule: name });
         }
         if (props !== 'direct') {
-            action[props].delete(name);
+            stats[props].delete(name);
             removed.push({ type: props, rule: name });
         }
         type.props = value;
