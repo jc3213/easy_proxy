@@ -1,16 +1,17 @@
 body {
     margin: 4px;
+    width: max-content;
 }
 
 select {
     width: 100%;
 }
 
-body.asleep > #menu > button:nth-of-type(-n+3),
-body.asleep > #proxy,
-body.direct > #menu > button:nth-of-type(-n+3),
-body.direct > #proxy,
-body.global > #menu > button:nth-of-type(-n+3) {
+body.asleep > #menu > button:nth-of-type(-n+2),
+body.asleep > #extra > #proxy,
+body.direct > #menu > button:nth-of-type(-n+2),
+body.direct > #extra > #proxy,
+body.global > #menu > button:nth-of-type(-n+2) {
     filter: contrast(40%);
     pointer-events: none;
 }
@@ -24,7 +25,7 @@ body.global > :first-child,
     display: none !important;
 }
 
-#menu {
+#extra, #menu {
     display: flex;
     gap: 5px;
     margin: 5px 0px;
@@ -38,6 +39,11 @@ body.global > :first-child,
     display: grid;
     grid-template-columns: 1fr auto;
     margin: 3px 0px;
+}
+
+.rule > :first-child {
+    padding: 3px 0px;
+    white-space: nowrap;
 }
 
 .error {

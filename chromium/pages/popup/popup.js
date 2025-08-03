@@ -8,8 +8,9 @@ let easyProxy;
 let easyTab;
 
 let manager = document.body.classList;
-let [outputPane, proxyMenu,, menuPane, template] = document.body.children;
-let [modeMenu, purgeBtn, switchBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
+let [outputPane, extraPane,, menuPane, template] = document.body.children;
+let [proxyMenu, switchBtn] = extraPane.children;
+let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -27,15 +28,6 @@ function shortcutHandler(event, button) {
 
 document.addEventListener('keydown', (event) => {
     switch (event.key) {
-        case 'a':
-            shortcutHandler(event, allBtn);
-            break;
-        case 'e':
-            shortcutHandler(event, noneBtn);
-            break;
-        case 'd':
-            shortcutHandler(event, defaultBtn);
-            break;
         case 'Tab':
             shortcutHandler(event, switchBtn);
             break;
@@ -65,9 +57,8 @@ outputPane.addEventListener('change', (event) => {
 
 proxyMenu.addEventListener('change', (event) => {
     easyProxy = event.target.value;
-    easyRules.forEach((rule) => {
-        let { title, type } = rule;
-        console.log(type);
+    easyTypes.forEach((type) => {
+        type.disabled = type.title !== easyProxy;
     });
 });
 
@@ -115,6 +106,10 @@ function menuEventPurge() {
     chrome.runtime.sendMessage({ action:'manager_purge', params: easyTab });
 }
 
+switchBtn.addEventListener('click', (event) => {
+    outputPane.classList.toggle('express'); 
+});
+
 menuPane.addEventListener('click', (event) => {
     let button = event.target.getAttribute('i18n');
     if (!button) {
@@ -126,9 +121,6 @@ menuPane.addEventListener('click', (event) => {
             break;
         case 'popup_purge':
             menuEventPurge();
-            break;
-        case 'popup_switch':
-            outputPane.classList.toggle('express');
             break;
         case 'popup_options':
             chrome.runtime.openOptionsPage();
@@ -143,8 +135,8 @@ chrome.runtime.onMessage.addListener(({action, params}) => {
     }
     switch (action) {
         case 'manager_update':
-            pinrtOutputList(rule, 'wildcard');
-            pinrtOutputList(host, 'fullhost');
+            proxyItemListing(rule, 'wildcard');
+            proxyItemListing(host, 'fullhost');
             manager.remove('asleep');
             break;
         case 'manager_report':
@@ -175,42 +167,49 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             match[proxy]?.forEach((e) => easyMatch.set(e, proxy));
             tempo[proxy]?.forEach((e) => easyTempo.set(e, proxy));
             let menu = document.createElement('option');
-            menu.textContent = menu.title = menu.value = proxy;
+            menu.textContent = menu.value = proxy;
             proxyMenu.append(menu);
         });
         manager.add(mode);
-        rule.forEach((rule) => pinrtOutputList(rule, 'wildcard'));
-        host.forEach((host) => pinrtOutputList(host, 'fullhost'));
+        rule.forEach((rule) => proxyItemListing(rule, 'wildcard'));
+        host.forEach((host) => proxyItemListing(host, 'fullhost'));
         flag.forEach((flag) => easyRules.get(flag).classList.add('error'));
     });
 });
 
-function pinrtOutputList(value, _type) {
-    let rule = easyRules.get(value);
-    if (!rule) {
-        rule = hostLET.cloneNode(true);
-        let [item, type] = rule.children;
-        rule.type = type;
-        rule.title = item.textContent = type.name = value;
-        rule.classList.add(_type);
-        easyRules.set(value, rule);
-    }
+function proxyStatusHandler(rule, type, stat, title, disabled) {
+    rule.classList.add(stat);
+    type.value = type.props = stat;
+    type.title = title;
+    type.disabled = disabled;
+}
+
+function proxyItemCreate(value, stat) {
+    rule = hostLET.cloneNode(true);
+    let [item, type] = rule.children;
+    rule.type = type;
+    rule.classList.add(stat);
+    item.textContent = type.name = value;
+    easyRules.set(value, rule);
+    return rule;
+}
+
+function proxyItemListing(value, stat) {
+    let rule = easyRules.get(value) ?? proxyItemCreate(value, stat);
     let { type } = rule;
     if (easyTypes.has(type)) {
         return;
     }
+    let match = easyMatch.get(value);
+    let tempo = easyTempo.get(value);
     if (easyExclude.has(value)) {
-        rule.classList.add('exclude');
-        type.value = type.props = 'exclude';
-    } else if (easyMatch.has(value)) {
-        rule.classList.add('match');
-        type.value = type.props = 'match';
-    } else if (easyTempo.has(value)) {
-        rule.classList.add('tempo');
-        type.value = type.props = 'tempo';
+        proxyStatusHandler(rule, type, 'exclude', '', false);
+    } else if (match) {
+        proxyStatusHandler(rule, type, 'match', match, match !== easyProxy);
+    } else if (tempo) {
+        proxyStatusHandler(rule, type, 'tempo', tempo, tempo !== easyProxy);
     } else {
-        rule.classList.add('direct');
-        type.value = type.props = 'direct';
+        proxyStatusHandler(rule, type, 'direct', '', false);
     }
     easyTypes.add(type);
     outputPane.append(rule);

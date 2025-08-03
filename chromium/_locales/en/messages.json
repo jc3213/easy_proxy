@@ -105,10 +105,10 @@
         "message": "Options"
     },
     "popup_match": {
-        "message": "Storage"
+        "message": "Proxy"
     },
     "popup_tempo": {
-        "message": "Temporary"
+        "message": "Tempo"
     },
     "popup_exclude": {
         "message": "Exclude"
