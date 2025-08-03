@@ -95,23 +95,26 @@
     "popup_submit": {
         "message": "Submit"
     },
-    "popup_tempo": {
-        "message": "Tempo"
-    },
     "popup_purge": {
         "message": "Purge"
+    },
+    "popup_switch": {
+        "message": "Switch"
     },
     "popup_options": {
         "message": "Options"
     },
-    "popup_all": {
-        "message": "All"
+    "popup_match": {
+        "message": "Storage"
     },
-    "popup_none": {
-        "message": "None"
+    "popup_tempo": {
+        "message": "Temporary"
     },
-    "popup_default": {
-        "message": "Default"
+    "popup_exclude": {
+        "message": "Exclude"
+    },
+    "popup_direct": {
+        "message": "Direct"
     },
     "full_host": {
         "message": "Toggle host name match rules"
