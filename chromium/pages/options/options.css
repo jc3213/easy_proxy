@@ -6,9 +6,7 @@ body > div {
     padding: 10px;
 }
 
-body:not(.set_options) > #options,
-body:not(.tempo):not(.match) #handler,
-body.direct #handler {
+body:not(.set_options) > #options {
     display: none;
 }
 
@@ -53,6 +51,7 @@ input[type="file"], a {
 #handler {
     border-style: solid;
     border-width: 1px;
+    display: none;
     left: calc(100% + 16px);
     position: absolute;
     top: -12px;

@@ -128,8 +128,7 @@ optionsPane.addEventListener('change', (event) => {
             break;
         case 'action':
             easyStorage.action = value;
-            extension.remove('none', 'match', 'tempo')
-            extension.add(value);
+            actionPane.style.display = value === 'none' ? '' : 'block';
             break;
         case 'network':
             easyStorage.network = checked;
@@ -186,8 +185,8 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     modeMenu.value = storage.mode;
     proxyMenu.value = storage.preset ?? storage.proxies[0];
     actionMenu.value = storage.action;
-    extension.add(storage.action);
     networkMenu.checked = storage.network;
+    actionPane.style.display = storage.action === 'none' ? '' : 'block';
     [...actionPane.children].forEach((item) => {
         let value = item.classList[0];
         if (easyHandler.has(value)) {
