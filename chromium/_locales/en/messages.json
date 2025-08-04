@@ -98,6 +98,9 @@
     "popup_purge": {
         "message": "Purge"
     },
+    "popup_default": {
+        "message": "Default"
+    },
     "popup_switch": {
         "message": "Switch"
     },

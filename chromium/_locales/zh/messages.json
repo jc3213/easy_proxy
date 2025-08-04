@@ -98,6 +98,9 @@
     "popup_purge": {
         "message": "清除"
     },
+    "popup_default": {
+        "message": "默认"
+    },
     "popup_switch": {
         "message": "切换"
     },

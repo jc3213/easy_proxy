@@ -9,7 +9,7 @@ let easyTab;
 
 let manager = document.body.classList;
 let [outputPane, extraPane,, menuPane, template] = document.body.children;
-let [proxyMenu, switchBtn] = extraPane.children;
+let [proxyMenu, defaultBtn, switchBtn] = extraPane.children;
 let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
@@ -106,8 +106,25 @@ function menuEventPurge() {
     chrome.runtime.sendMessage({ action:'manager_purge', params: easyTab });
 }
 
-switchBtn.addEventListener('click', (event) => {
-    outputPane.classList.toggle('switch'); 
+extraPane.addEventListener('click', (event) => {
+    let button = event.target.getAttribute('i18n');
+    if (!button) {
+        return;
+    }
+    switch (button) {
+        case 'popup_default':
+            easyRules.forEach((rule) => {
+                let { type } = rule;
+                let { props } = type;
+                let last = rule.classList[2];
+                type.value = props;
+                rule.className = rule.className.replace(last, props);
+            });
+        break;
+        case 'popup_switch':
+            outputPane.classList.toggle('switch'); 
+        break;
+    };
 });
 
 menuPane.addEventListener('click', (event) => {

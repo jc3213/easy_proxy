@@ -27,10 +27,14 @@ body.global > #extra > button,
     display: none;
 }
 
-#extra, #menu {
+#output, #extra, #menu {
     display: flex;
     gap: 5px;
     margin: 5px 0px;
+}
+
+#output {
+    flex-direction: column;
 }
 
 #menu > * {
@@ -40,7 +44,6 @@ body.global > #extra > button,
 .rule {
     display: grid;
     grid-template-columns: 1fr auto;
-    margin: 3px 0px;
 }
 
 .rule > :first-child {
@@ -48,26 +51,17 @@ body.global > #extra > button,
     white-space: nowrap;
 }
 
-.error {
-    order: -1;
+.match {
+    order: 0;
 }
 
-.error > select {
+.match > select {
     color: #FFFFFF;
-    background-color: #D23F2A;
-}
-
-.exclude {
-    order: -2;    
-}
-
-.exclude > select {
-    color: #FFFFFF;
-    background-color: #A39F8C;
+    background-color: #34A85D;
 }
 
 .tempo {
-    order: -3;
+    order: 1;
 }
 
 .tempo > select {
@@ -75,11 +69,24 @@ body.global > #extra > button,
     background-color: #E6A92A;
 }
 
-.match {
-    order: -4;
+.exclude {
+    order: 2;    
 }
 
-.match > select {
+.exclude > select {
     color: #FFFFFF;
-    background-color: #34A85D;
+    background-color: #A39F8C;
+}
+
+.error {
+    order: 3;
+}
+
+.error > select {
+    color: #FFFFFF;
+    background-color: #D23F2A;
+}
+
+.direct {
+    order: 4;
 }
