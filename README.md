@@ -32,4 +32,4 @@
 <img width="1280" height="800" alt="Toolbar" src="https://github.com/user-attachments/assets/447609fe-a09e-493d-9913-08a7281bd834" />
 <img width="1280" height="800" alt="Toolbar 2" src="https://github.com/user-attachments/assets/2661bf7f-36d5-494e-81a1-db448877a8d2" />
 <img width="1280" height="800" alt="Toolbar Switch" src="https://github.com/user-attachments/assets/7d89ff15-db8c-49eb-b2a8-a67cfacc87ea" />
-<img width="1280" height="800" alt="Options" src="https://github.com/user-attachments/assets/77acdae5-963b-4235-9746-1c38a5e20b25" />
+<img width="1280" height="800" alt="Options" src="https://github.com/user-attachments/assets/8019de41-1747-4548-a8e3-6bebc7ed9a4b" />
