@@ -35,10 +35,10 @@ document.addEventListener('keydown', (event) => {
             shortcutHandler(event, submitBtn);
             break;
         case ' ':
-            shortcutHandler(event, tempoBtn);
+            shortcutHandler(event, purgeBtn);
             break;
         case 'Backspace':
-            shortcutHandler(event, purgeBtn);
+            shortcutHandler(event, defaultBtn);
             break;
     }
 });
