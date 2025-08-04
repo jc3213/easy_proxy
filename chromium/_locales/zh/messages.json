@@ -8,11 +8,8 @@
     "options_title": {
         "message": "简易代理设置"
     },
-    "options_profile": {
-        "message": "新档案"
-    },
     "options_advance": {
-        "message": "选项"
+        "message": "进阶设置"
     },
     "options_save": {
         "message": "保存"
