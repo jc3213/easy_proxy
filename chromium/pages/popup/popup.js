@@ -123,6 +123,7 @@ extraPane.addEventListener('click', (event) => {
             break;
         case 'popup_switch':
             outputPane.classList.toggle('switch'); 
+            switchBtn.classList.toggle('checked');
             break;
     };
 });
