@@ -1,6 +1,6 @@
 let easyDefault = {
     mode: 'autopac',
-    preset: undefined,
+    preset: null,
     network: false,
     persistent: false,
     action: 'none',
@@ -61,6 +61,11 @@ function easyStorageUpdated(json) {
             return true;
         }
     });
+    if (json.proxies.length === 0) {
+        json.preset = null;
+    } else {
+        json.preset ??= json.proxies[0];
+    }
     MatchPattern.delete(removed);
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
