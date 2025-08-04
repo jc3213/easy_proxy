@@ -62,50 +62,6 @@ proxyMenu.addEventListener('change', (event) => {
     });
 });
 
-modeMenu.addEventListener('change', (event) => {
-    let params = event.target.value;
-    chrome.runtime.sendMessage({action: 'easyproxy_mode', params}, () => {
-        manager.remove('direct', 'autopac', 'global');
-        manager.add(params);
-    });
-});
-
-function proxyStatusUpdated() {
-    let added = [];
-    let removed = [];
-    let stats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
-    easyChanges.forEach((type) => {
-        let { name, value, props } = type;
-        if (value !== 'direct') {
-            stats[value].set(name, easyProxy);
-            added.push({ type: value, rule: name });
-        }
-        if (props !== 'direct') {
-            stats[props].delete(name);
-            removed.push({ type: props, rule: name });
-        }
-        type.props = value;
-    });
-    easyChanges.clear();
-    if (added.length !== 0 || removed.length !== 0) {
-        easyTypes.clear();
-        outputPane.innerHTML = '';
-        chrome.runtime.sendMessage({ action: 'manager_update', params: {added, removed, proxy: easyProxy, tabId: easyTab} });
-    }
-}
-
-function menuEventPurge() {
-    easyTempo.clear();
-    easyTypes.clear();
-    easyRules.forEach((rule) => {
-        if (rule.classList.contains('tempo')) {
-            rule.className = rule.className.replace('tempo', 'direct');
-            rule.type.value = rule.type.props = 'direct';
-        }
-    });
-    chrome.runtime.sendMessage({ action:'manager_purge', params: easyTab });
-}
-
 extraPane.addEventListener('click', (event) => {
     let button = event.target.getAttribute('i18n');
     if (!button) {
@@ -128,6 +84,52 @@ extraPane.addEventListener('click', (event) => {
     };
 });
 
+modeMenu.addEventListener('change', (event) => {
+    let params = event.target.value;
+    chrome.runtime.sendMessage({action: 'easyproxy_mode', params}, () => {
+        manager.remove('direct', 'autopac', 'global');
+        manager.add(params);
+    });
+});
+
+function menuEventSubmit() {
+    let added = [];
+    let removed = [];
+    let stats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
+    easyChanges.forEach((type) => {
+        let { name, value, props } = type;
+        if (value !== 'direct') {
+            stats[value].set(name, easyProxy);
+            added.push({ type: value, rule: name });
+        }
+        if (props !== 'direct') {
+            stats[props].delete(name);
+            removed.push({ type: props, rule: name });
+        }
+        type.props = value;
+    });
+    easyChanges.clear();
+    purgeBtn.disabled = easyTempo.size === 0;
+    if (added.length !== 0 || removed.length !== 0) {
+        easyTypes.clear();
+        outputPane.innerHTML = '';
+        chrome.runtime.sendMessage({ action: 'manager_update', params: {added, removed, proxy: easyProxy, tabId: easyTab} });
+    }
+}
+
+function menuEventPurge() {
+    easyTempo.clear();
+    easyTypes.clear();
+    easyRules.forEach((rule) => {
+        if (rule.classList.contains('tempo')) {
+            rule.className = rule.className.replace('tempo', 'direct');
+            rule.type.value = rule.type.props = 'direct';
+        }
+    });
+    chrome.runtime.sendMessage({ action:'manager_purge', params: easyTab });
+    purgeBtn.disabled = true;
+}
+
 menuPane.addEventListener('click', (event) => {
     let button = event.target.getAttribute('i18n');
     if (!button) {
@@ -135,7 +137,7 @@ menuPane.addEventListener('click', (event) => {
     }
     switch (button) {
         case 'popup_submit':
-            proxyStatusUpdated();
+            menuEventSubmit();
             break;
         case 'popup_purge':
             menuEventPurge();
@@ -188,6 +190,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             menu.textContent = menu.value = proxy;
             proxyMenu.append(menu);
         });
+        purgeBtn.disabled = easyTempo.size === 0;
         manager.add(mode);
         rule.forEach((rule) => proxyItemListing(rule, 'wildcard'));
         host.forEach((host) => proxyItemListing(host, 'fullhost'));
