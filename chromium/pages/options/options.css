@@ -140,8 +140,8 @@ input[type="file"], a {
     grid-column-gap: 3px;
     grid-template-columns: repeat(3, 1fr);
     margin-bottom: 30px;
-    max-height: 174px;
-    min-height: 25px;
+    max-height: 182px;
+    min-height: 26px;
     overflow-y: auto;
 }
 
