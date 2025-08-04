@@ -3,9 +3,8 @@ let easyProxy = {};
 let easyHandler;
 
 let extension = document.body.classList;
-let [menuPane, profilePane, optionsPane,, managePane, excludePane, template] = document.body.children;
-let [newBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
-let [schemeEntry, hostEntry, portEntry, submitBtn] = profilePane.children;
+let [menuPane, optionsPane,, managePane, excludePane, template] = document.body.children;
+let [schemeEntry, proxyEntry, submitBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
 let [, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
 let [proxyMenu, modeMenu, actionMenu, actionPane, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
@@ -31,8 +30,8 @@ document.addEventListener('keydown', (event) => {
         case 's':
             shortcutHandler(event, ctrlKey, saveBtn);
             break;
-        case 'e':
-            shortcutHandler(event, ctrlKey, newBtn);
+        case 'Enter':
+            shortcutHandler(event, ctrlKey, submitBtn);
             break;
         case 'q':
             shortcutHandler(event, ctrlKey, optionsBtn);
@@ -40,14 +39,23 @@ document.addEventListener('keydown', (event) => {
     };
 });
 
-function menuEventNewProf() {
-    extension.remove('set_options');
-    extension.toggle('new_profile');
+function menuEventSubmit() {
+    let profile = schemeEntry.value + ' ' + proxyEntry.value ;
+    if (easyStorage[profile] || !/^(HTTPS?|SOCKS5?) ([^.]+\.)+[^.:]*:\d+$/.test(profile)) {
+        return;
+    }
+    easyStorage[profile] = [];
+    easyStorage.proxies.push(profile);
+    createMatchProfile(profile);
+    schemeEntry.value = 'HTTP';
+    proxyEntry.value = '';
+    extension.remove('new_profile');
+    saveBtn.disabled = false;
 }
 
-function menuEventAdvance() {
-    extension.remove('new_profile');
+function menuEventOptions() {
     extension.toggle('set_options');
+    optionsBtn.classList.toggle('checked');
 }
 
 function menuEventSave() {
@@ -72,11 +80,11 @@ menuPane.addEventListener('click', (event) => {
         return;
     }
     switch (button) {
-        case 'options_profile':
-            menuEventNewProf();
+        case 'options_submit':
+            menuEventSubmit();
             break;
         case 'options_advance':
-            menuEventAdvance();
+            menuEventOptions();
             break;
         case 'options_save':
             menuEventSave();
@@ -87,18 +95,10 @@ menuPane.addEventListener('click', (event) => {
     };
 });
 
-submitBtn.addEventListener('click', (event) => {
-    let profile = schemeEntry.value + ' ' + hostEntry.value + ':' + portEntry.value;
-    if (!hostEntry.value || !portEntry.value || easyStorage[profile]) {
-        return;
+menuPane.addEventListener('keydown', (event) => {
+    if (event.target.name === 'proxy' && event.key === 'Enter') {
+        submitBtn.click();
     }
-    easyStorage[profile] = [];
-    easyStorage.proxies.push(profile);
-    createMatchProfile(profile);
-    schemeEntry.value = 'HTTP';
-    hostEntry.value = portEntry.value = '';
-    extension.remove('new_profile');
-    saveBtn.disabled = false;
 });
 
 importEntry.addEventListener('change', (event) => {
@@ -113,12 +113,6 @@ importEntry.addEventListener('change', (event) => {
         chrome.runtime.sendMessage({action: 'storage_update', params});
     };
     reader.readAsText(event.target.files[0]);
-});
-
-profilePane.addEventListener('keydown', (event) => {
-    if (event.target.localName === 'input' && event.key === 'Enter') {
-        submitBtn.click();
-    }
 });
 
 optionsPane.addEventListener('change', (event) => {

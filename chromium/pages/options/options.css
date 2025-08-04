@@ -6,7 +6,6 @@ body > div {
     padding: 10px;
 }
 
-body:not(.new_profile) > #profile,
 body:not(.set_options) > #options,
 body:not(.tempo):not(.match) #handler,
 body.direct #handler {
@@ -27,22 +26,13 @@ input[type="file"], a {
     gap: 3px;
 }
 
-#menu > :nth-child(3) {
+#menu > button:nth-last-of-type(3) {
     margin-left: auto;
 }
 
-#profile, #options {
+#options {
     border-style: inset;
     border-width: 2px;
-}
-
-#profile {
-    display: grid;
-    gap: 3px;
-    grid-template-columns: auto 1fr auto auto;
-}
-
-#options {
     display: flex;
     flex-wrap: wrap;
     gap: 10px 5px;
@@ -90,15 +80,6 @@ input[type="file"], a {
 
 #handler > .checked::before {
     visibility: visible;
-}
-
-.clicked {
-    border-style: inset;
-}
-
-.new_profile #new-profile,
-.set_options #set-options {
-    border-style: inset;
 }
 
 .checkbox {

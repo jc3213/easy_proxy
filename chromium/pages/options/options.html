@@ -8,24 +8,20 @@
     </head>
     <body>
         <div id="menu" class="flex">
-            <button id="new-profile" i18n="options_profile">New Profile</button>
-            <button id="set-options" i18n="options_advance">Options</button>
-            <button i18n="options_save" disabled>Save</button>
-            <button><label for="import-options" i18n="options_import">Import</label></button>
-            <button i18n="options_export">Export</button>
-            <input id="import-options" type="file" accept=".json">
-            <a></a>
-        </div>
-        <div id="profile">
             <select name="scheme">
                 <option value="HTTP" selected>HTTP</option>
                 <option value="HTTPS">HTTPS</option>
                 <option value="SOCKS">SOCKS</option>
                 <option value="SOCKS5">SOCKS5</option>
             </select>
-            <input name="host" type="text" placeholder="localhost">
-            <input name="port" type="number" placeholder="1080">
+            <input name="proxy" type="text" placeholder="localhost:8080">
             <button i18n="options_submit">Submit</button>
+            <button id="set-options" i18n="options_advance">Options</button>
+            <button i18n="options_save" disabled>Save</button>
+            <button><label for="import-options" i18n="options_import">Import</label></button>
+            <button i18n="options_export">Export</button>
+            <input id="import-options" type="file" accept=".json">
+            <a></a>
         </div>
         <div id="options">
             <div i18n-tips="options_preset_title">
