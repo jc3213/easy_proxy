@@ -27,3 +27,9 @@
     - `空格`：添加临时规则
     - `回车`：添加规则储存
 - 火狐必须勾选隐私模式才能正常工作
+
+## 界面截图
+<img width="1280" height="800" alt="Toolbar" src="https://github.com/user-attachments/assets/447609fe-a09e-493d-9913-08a7281bd834" />
+<img width="1280" height="800" alt="Toolbar 2" src="https://github.com/user-attachments/assets/2661bf7f-36d5-494e-81a1-db448877a8d2" />
+<img width="1280" height="800" alt="Toolbar Switch" src="https://github.com/user-attachments/assets/7d89ff15-db8c-49eb-b2a8-a67cfacc87ea" />
+<img width="1280" height="800" alt="Options" src="https://github.com/user-attachments/assets/92eed2bc-ee76-47d1-b83e-4a1c1179cc0d" />
