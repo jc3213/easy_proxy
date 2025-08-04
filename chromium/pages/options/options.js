@@ -105,7 +105,7 @@ importEntry.addEventListener('change', (event) => {
     let reader = new FileReader();
     reader.onload = (event) => {
         let params = JSON.parse(reader.result);
-        managePane.innerHTML = excludePane.innerHTML = '';
+        managePane.innerHTML = excludeList.innerHTML = '';
         saveBtn.disabled = true;
         storageHandler(params);
         chrome.runtime.sendMessage({action: 'storage_update', params});
