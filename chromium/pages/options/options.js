@@ -105,12 +105,11 @@ importEntry.addEventListener('change', (event) => {
     let reader = new FileReader();
     reader.onload = (event) => {
         let params = JSON.parse(reader.result);
-        managePane.innerHTML = '';
-        easyStorage = params;
-        easyStorage.proxies.forEach(createMatchProfile);
-        event.target.value = '';
+        managePane.innerHTML = excludePane.innerHTML = '';
         saveBtn.disabled = true;
+        storageHandler(params);
         chrome.runtime.sendMessage({action: 'storage_update', params});
+        importEntry.value = '';
     };
     reader.readAsText(event.target.files[0]);
 });
@@ -177,24 +176,28 @@ excludePane.addEventListener('click', (event) => {
     };
 });
 
-chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
-    easyStorage = storage;
-    easyHandler = new Set(storage.handler);
-    easyStorage.proxies.forEach(createMatchProfile);
-    easyStorage.exclude.forEach((value) => createMatchPattern(excludeList, value));
-    modeMenu.value = storage.mode;
-    proxyMenu.value = storage.preset ?? storage.proxies[0];
-    actionMenu.value = storage.action;
-    networkMenu.checked = storage.network;
-    actionPane.style.display = storage.action === 'none' ? '' : 'block';
+function storageHandler(json) {
+    easyStorage = json;
+    easyHandler = new Set(json.handler);
+    json.proxies.forEach(createMatchProfile);
+    json.exclude.forEach((value) => createMatchPattern(excludeList, value));
+    modeMenu.value = json.mode;
+    proxyMenu.value = json.preset ?? json.proxies[0];
+    actionMenu.value = json.action;
+    networkMenu.checked = json.network;
+    actionPane.style.display = json.action === 'none' ? '' : 'block';
     [...actionPane.children].forEach((item) => {
         let value = item.classList[0];
         if (easyHandler.has(value)) {
             item.classList.add('checked');
         }
     });
+}
+
+chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
+    storageHandler(storage);
     if (manifest === 3) {
-        persistMenu.checked = storage.persistent;
+        persistMenu.checked = json.persistent;
     } else {
         persistMenu.parentNode.remove();
     }
