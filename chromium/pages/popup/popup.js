@@ -9,7 +9,7 @@ let easyTab;
 
 let manager = document.body.classList;
 let [outputPane, extraPane,, menuPane, template] = document.body.children;
-let [proxyMenu, defaultBtn, switchBtn] = extraPane.children;
+let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
 let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
@@ -120,10 +120,10 @@ extraPane.addEventListener('click', (event) => {
                 type.value = props;
                 rule.className = rule.className.replace(last, props);
             });
-        break;
+            break;
         case 'popup_switch':
             outputPane.classList.toggle('switch'); 
-        break;
+            break;
     };
 });
 
