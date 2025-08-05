@@ -43,32 +43,27 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-function proxyStatusChanged(rule, type, value, props) {
-    if (props !== value) {
-        rule.classList.remove(props);
+function proxyStatusChanged(type) {
+    if (type.props !== type.value) {
         easyChanges.add(type);
     } else {
-        rule.classList.add(props);
         easyChanges.delete(type);
     }
     submitBtn.disabled = easyChanges.size === 0;
 }
 
 outputPane.addEventListener('change', (event) => {
-    let type = event.target;
-    let { props, value, parentNode } = type;
-    proxyStatusChanged(parentNode, type, value, props)
+    proxyStatusChanged(event.target);
 });
 
 outputPane.addEventListener('wheel', (event) => {
     let { target, deltaY } = event;
-    let { localName, selectedIndex, props, parentNode } = target;
-    if (localName !== 'select') {
+    if (target.localName !== 'select') {
         return;
     }
     let index = target.selectedIndex + deltaY / 100;
     target.selectedIndex = index < 0 ? 0 : index > 3 ? 3 : index;
-    proxyStatusChanged(parentNode, target, target.value, props);
+    proxyStatusChanged(target);
 });
 
 proxyMenu.addEventListener('change', (event) => {

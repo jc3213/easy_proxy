@@ -46,7 +46,6 @@ body.global > #extra > button,
 .rule {
     display: grid;
     grid-template-columns: 1fr auto;
-    order: 4;
 }
 
 .rule > :first-child {
@@ -88,4 +87,8 @@ body.global > #extra > button,
 .error > select {
     color: #FFFFFF;
     background-color: #D23F2A;
+}
+
+.direct {
+    order: 4;
 }
