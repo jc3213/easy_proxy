@@ -35,6 +35,8 @@ body.global > #extra > button,
 
 #output {
     flex-direction: column;
+    max-height: 335px;
+    overflow-y: auto;
 }
 
 #menu > * {
