@@ -5,6 +5,9 @@
     "extension_description": {
         "message": "一个简单易用的自动代理扩展"
     },
+    "common_submit": {
+        "message": "提交"
+    },
     "options_title": {
         "message": "简易代理设置"
     },
@@ -19,9 +22,6 @@
     },
     "options_export": {
         "message": "导出"
-    },
-    "options_submit": {
-        "message": "提交"
     },
     "options_preset": {
         "message": "预设代理"
@@ -88,9 +88,6 @@
     },
     "popup_title": {
         "message": "简易代理管理"
-    },
-    "popup_submit": {
-        "message": "添加"
     },
     "popup_purge": {
         "message": "清除"

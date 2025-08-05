@@ -5,6 +5,9 @@
     "extension_description": {
         "message": "An ease to use auto-proxy browser extension"
     },
+    "common_submit": {
+        "message": "Submit"
+    },
     "options_title": {
         "message": "Easy Proxy Options"
     },
@@ -19,9 +22,6 @@
     },
     "options_export": {
         "message": "Export"
-    },
-    "options_submit": {
-        "message": "Submit"
     },
     "options_preset": {
         "message": "Preset Proxy"
@@ -88,9 +88,6 @@
     },
     "popup_title": {
         "message": "Easy Proxy Manager"
-    },
-    "popup_submit": {
-        "message": "Submit"
     },
     "popup_purge": {
         "message": "Purge"
