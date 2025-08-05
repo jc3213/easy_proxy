@@ -7,11 +7,11 @@ select {
     width: 100%;
 }
 
-body.asleep > #menu > button:nth-of-type(-n+2),
+body.asleep > #menu > button:first-of-type,
 body.asleep > #extra > #proxy,
-body.direct > #menu > button:nth-of-type(-n+2),
+body.direct > #menu > button:first-of-type,
 body.direct > #extra > #proxy,
-body.global > #menu > button:nth-of-type(-n+2) {
+body.global > #menu > button:first-of-type {
     filter: contrast(40%);
     pointer-events: none;
 }
@@ -46,6 +46,7 @@ body.global > #extra > button,
 .rule {
     display: grid;
     grid-template-columns: 1fr auto;
+    order: 4;
 }
 
 .rule > :first-child {
@@ -87,8 +88,4 @@ body.global > #extra > button,
 .error > select {
     color: #FFFFFF;
     background-color: #D23F2A;
-}
-
-.direct {
-    order: 4;
 }

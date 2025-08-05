@@ -43,23 +43,32 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-outputPane.addEventListener('change', (event) => {
-    let type = event.target;
-    let { props, value } = type;
+function proxyStatusChanged(rule, type, value, props) {
     if (props !== value) {
+        rule.classList.remove(props);
         easyChanges.add(type);
     } else {
+        rule.classList.add(props);
         easyChanges.delete(type);
     }
+    submitBtn.disabled = easyChanges.size === 0;
+}
+
+outputPane.addEventListener('change', (event) => {
+    let type = event.target;
+    let { props, value, parentNode } = type;
+    proxyStatusChanged(parentNode, type, value, props)
 });
 
 outputPane.addEventListener('wheel', (event) => {
     let { target, deltaY } = event;
-    if (target.localName !== 'select') {
+    let { localName, selectedIndex, props, parentNode } = target;
+    if (localName !== 'select') {
         return;
     }
     let index = target.selectedIndex + deltaY / 100;
     target.selectedIndex = index < 0 ? 0 : index > 3 ? 3 : index;
+    proxyStatusChanged(parentNode, target, target.value, props);
 });
 
 proxyMenu.addEventListener('change', (event) => {
@@ -114,12 +123,10 @@ function menuEventSubmit() {
         type.props = value;
     });
     easyChanges.clear();
+    easyTypes.clear();
     purgeBtn.disabled = easyTempo.size === 0;
-    if (added.length !== 0 || removed.length !== 0) {
-        easyTypes.clear();
-        outputPane.innerHTML = '';
-        chrome.runtime.sendMessage({ action: 'manager_update', params: {added, removed, proxy: easyProxy, tabId: easyTab} });
-    }
+    outputPane.innerHTML = '';
+    chrome.runtime.sendMessage({ action: 'manager_update', params: {added, removed, proxy: easyProxy, tabId: easyTab} });
 }
 
 function menuEventPurge() {
