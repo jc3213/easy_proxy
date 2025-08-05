@@ -109,7 +109,7 @@ function menuEventSubmit() {
             stats[props].delete(name);
             removed.push({ type: props, rule: name });
         }
-        parentNode.classList.remove(props);
+        parentNode.classList.remove(props, 'error');
         parentNode.classList.add(value);
         type.props = value;
     });
