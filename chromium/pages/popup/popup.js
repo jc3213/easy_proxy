@@ -53,6 +53,15 @@ outputPane.addEventListener('change', (event) => {
     }
 });
 
+outputPane.addEventListener('wheel', (event) => {
+    let { target, deltaY } = event;
+    if (target.localName !== 'select') {
+        return;
+    }
+    let index = target.selectedIndex + deltaY / 100;
+    target.selectedIndex = index < 0 ? 0 : index > 3 ? 3 : index;
+});
+
 proxyMenu.addEventListener('change', (event) => {
     easyProxy = event.target.value;
     easyTypes.forEach((type) => {
