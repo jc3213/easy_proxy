@@ -45,9 +45,7 @@ document.addEventListener('keydown', (event) => {
 
 outputPane.addEventListener('change', (event) => {
     let type = event.target;
-    let { name, props, value, parentNode } = type;
-    let last = parentNode.classList[2];
-    parentNode.className = parentNode.className.replace(last, value);
+    let { props, value } = type;
     if (props !== value) {
         easyChanges.add(type);
     } else {
@@ -97,7 +95,7 @@ function menuEventSubmit() {
     let removed = [];
     let stats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
     easyChanges.forEach((type) => {
-        let { name, value, props } = type;
+        let { name, value, props, parentNode } = type;
         if (value !== 'direct') {
             stats[value].set(name, easyProxy);
             added.push({ type: value, rule: name });
@@ -106,6 +104,8 @@ function menuEventSubmit() {
             stats[props].delete(name);
             removed.push({ type: props, rule: name });
         }
+        parentNode.classList.remove(props);
+        parentNode.classList.add(value);
         type.props = value;
     });
     easyChanges.clear();
@@ -198,13 +198,6 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     });
 });
 
-function proxyStatusHandler(rule, type, stat, title, disabled) {
-    rule.classList.add(stat);
-    type.value = type.props = stat;
-    type.title = title;
-    type.disabled = disabled;
-}
-
 function proxyItemCreate(value, stat) {
     rule = hostLET.cloneNode(true);
     let [item, type] = rule.children;
@@ -213,6 +206,13 @@ function proxyItemCreate(value, stat) {
     item.textContent = type.name = value;
     easyRules.set(value, rule);
     return rule;
+}
+
+function proxyItemStatus(rule, type, stat, title, disabled) {
+    rule.classList.add(stat);
+    type.value = type.props = stat;
+    type.title = title;
+    type.disabled = disabled;
 }
 
 function proxyItemListing(value, stat) {
@@ -224,13 +224,13 @@ function proxyItemListing(value, stat) {
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
     if (easyExclude.has(value)) {
-        proxyStatusHandler(rule, type, 'exclude', '', false);
+        proxyItemStatus(rule, type, 'exclude', '', false);
     } else if (match) {
-        proxyStatusHandler(rule, type, 'match', match, match !== easyProxy);
+        proxyItemStatus(rule, type, 'match', match, match !== easyProxy);
     } else if (tempo) {
-        proxyStatusHandler(rule, type, 'tempo', tempo, tempo !== easyProxy);
+        proxyItemStatus(rule, type, 'tempo', tempo, tempo !== easyProxy);
     } else {
-        proxyStatusHandler(rule, type, 'direct', '', false);
+        proxyItemStatus(rule, type, 'direct', '', false);
     }
     easyTypes.add(type);
     outputPane.append(rule);
