@@ -76,12 +76,8 @@ extraPane.addEventListener('click', (event) => {
     }
     switch (button) {
         case 'popup_default':
-            easyRules.forEach((rule) => {
-                let { type } = rule;
-                let { props } = type;
-                let last = rule.classList[2];
-                type.value = props;
-                rule.className = rule.className.replace(last, props);
+            easyTypes.forEach((type) => {
+                type.value = type.props;
             });
             break;
         case 'popup_switch':
