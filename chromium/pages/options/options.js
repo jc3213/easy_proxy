@@ -30,10 +30,7 @@ document.addEventListener('keydown', (event) => {
         case 's':
             shortcutHandler(event, ctrlKey, saveBtn);
             break;
-        case 'Enter':
-            shortcutHandler(event, ctrlKey, submitBtn);
-            break;
-        case 'q':
+        case 't':
             shortcutHandler(event, ctrlKey, optionsBtn);
             break;
     };
@@ -80,7 +77,7 @@ menuPane.addEventListener('click', (event) => {
         return;
     }
     switch (button) {
-        case 'options_submit':
+        case 'common_submit':
             menuEventSubmit();
             break;
         case 'options_advance':

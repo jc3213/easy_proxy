@@ -62,7 +62,7 @@ outputPane.addEventListener('wheel', (event) => {
         return;
     }
     let index = target.selectedIndex + deltaY / 100;
-    target.selectedIndex = index < 0 ? 0 : index > 3 ? 3 : index;
+    target.selectedIndex = index < 0 ? 3 : index > 3 ? 0 : index;
     proxyStatusChanged(target);
 });
 
@@ -143,7 +143,7 @@ menuPane.addEventListener('click', (event) => {
         return;
     }
     switch (button) {
-        case 'popup_submit':
+        case 'common_submit':
             menuEventSubmit();
             break;
         case 'popup_purge':
