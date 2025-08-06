@@ -61,11 +61,7 @@ function easyStorageUpdated(json) {
             return true;
         }
     });
-    if (json.proxies.length === 0) {
-        json.preset = null;
-    } else {
-        json.preset ??= json.proxies[0];
-    }
+    json.preset = json.proxies.length === 0 ? null : json.preset ?? json.proxies[0];
     MatchPattern.delete(removed);
     easyStorage = json;
     easyStorageInit(json);

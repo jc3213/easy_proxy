@@ -49,7 +49,7 @@ function proxyStatusChanged(type) {
     } else {
         easyChanges.delete(type);
     }
-    submitBtn.disabled = easyChanges.size === 0;
+    submitBtn.disabled = defaultBtn.disabled = easyChanges.size === 0;
 }
 
 outputPane.addEventListener('change', (event) => {
@@ -80,9 +80,11 @@ extraPane.addEventListener('click', (event) => {
     }
     switch (button) {
         case 'popup_default':
-            easyTypes.forEach((type) => {
+            easyChanges.forEach((type) => {
                 type.value = type.props;
             });
+            easyChanges.clear();
+            submitBtn.disabled = defaultBtn.disabled = true;
             break;
         case 'popup_switch':
             outputPane.classList.toggle('switch'); 
