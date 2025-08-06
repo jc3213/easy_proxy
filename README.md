@@ -29,7 +29,8 @@
 - 火狐必须勾选隐私模式才能正常工作
 
 ## 界面截图
-<img width="1280" height="800" alt="Toolbar" src="https://github.com/user-attachments/assets/447609fe-a09e-493d-9913-08a7281bd834" />
-<img width="1280" height="800" alt="Toolbar 2" src="https://github.com/user-attachments/assets/2661bf7f-36d5-494e-81a1-db448877a8d2" />
-<img width="1280" height="800" alt="Toolbar Switch" src="https://github.com/user-attachments/assets/7d89ff15-db8c-49eb-b2a8-a67cfacc87ea" />
-<img width="1280" height="800" alt="Options" src="https://github.com/user-attachments/assets/8019de41-1747-4548-a8e3-6bebc7ed9a4b" />
+<img width="1280" height="800" alt="Options - Empty" src="https://github.com/user-attachments/assets/62a6c02f-f38b-41d1-934f-b6fe27de01dd" />
+<img width="1280" height="800" alt="Options - Advanced" src="https://github.com/user-attachments/assets/68acc25b-1eff-4887-8587-7c8c538781aa" />
+<img width="1280" height="800" alt="Toolbar" src="https://github.com/user-attachments/assets/644a7433-6bff-45aa-bf8e-6f9610812b59" />
+<img width="1280" height="800" alt="Toolbar - Switch" src="https://github.com/user-attachments/assets/ebaefe27-9f97-4098-8ac0-b6d8e5cf2437" />
+<img width="1280" height="800" alt="Toolbar - Proxy Rule" src="https://github.com/user-attachments/assets/ae48e74b-d673-4a41-a6f8-de54e316b7ec" />
