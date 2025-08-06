@@ -5,8 +5,26 @@
     "extension_description": {
         "message": "An ease to use auto-proxy browser extension"
     },
+    "common_direct": {
+        "message": "Direct"
+    },
+    "common_autopac": {
+        "message": "Auto"
+    },
+    "common_global": {
+        "message": "Global"
+    },
     "common_submit": {
         "message": "Submit"
+    },
+    "common_match": {
+        "message": "Storage"
+    },
+    "common_tempo": {
+        "message": "Session"
+    },
+    "common_disable": {
+        "message": "Disabled"
     },
     "options_title": {
         "message": "Easy Proxy Options"
@@ -77,15 +95,6 @@
     "error_dnserr": {
         "message": "DNS Failed to Resolve"
     },
-    "proxy_direct": {
-        "message": "Direct"
-    },
-    "proxy_autopac": {
-        "message": "Auto"
-    },
-    "proxy_global": {
-        "message": "Global"
-    },
     "popup_title": {
         "message": "Easy Proxy Manager"
     },
@@ -100,12 +109,6 @@
     },
     "popup_options": {
         "message": "Options"
-    },
-    "popup_match": {
-        "message": "Proxy"
-    },
-    "popup_tempo": {
-        "message": "Tempo"
     },
     "popup_exclude": {
         "message": "Exclude"

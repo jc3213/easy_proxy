@@ -5,8 +5,26 @@
     "extension_description": {
         "message": "一个简单易用的自动代理扩展"
     },
+    "common_direct": {
+        "message": "直连"
+    },
+    "common_autopac": {
+        "message": "智能"
+    },
+    "common_global": {
+        "message": "全局"
+    },
     "common_submit": {
         "message": "提交"
+    },
+    "common_match": {
+        "message": "储存"
+    },
+    "common_tempo": {
+        "message": "临时"
+    },
+    "common_disable": {
+        "message": "禁用"
     },
     "options_title": {
         "message": "简易代理设置"
@@ -77,15 +95,6 @@
     "error_dnserr": {
         "message": "无法解析域名"
     },
-    "proxy_direct": {
-        "message": "直连"
-    },
-    "proxy_autopac": {
-        "message": "智能"
-    },
-    "proxy_global": {
-        "message": "全局"
-    },
     "popup_title": {
         "message": "简易代理管理"
     },
@@ -100,12 +109,6 @@
     },
     "popup_options": {
         "message": "设置"
-    },
-    "popup_match": {
-        "message": "代理"
-    },
-    "popup_tempo": {
-        "message": "临时"
     },
     "popup_exclude": {
         "message": "例外"
