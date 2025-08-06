@@ -67,10 +67,10 @@ function easyStorageUpdated(json) {
         json.preset ??= json.proxies[0];
     }
     MatchPattern.delete(removed);
-    chrome.storage.local.remove([...invalid, ...removed]);
-    chrome.storage.local.set(json);
     easyStorage = json;
     easyStorageInit(json);
+    chrome.storage.local.remove([...invalid, ...removed]);
+    chrome.storage.local.set(json);
 }
 
 function easyManageQuery(tabId) {
