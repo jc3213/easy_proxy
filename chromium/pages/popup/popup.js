@@ -121,6 +121,7 @@ function menuEventSubmit() {
     });
     easyChanges.clear();
     easyTypes.clear();
+    submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = easyTempo.size === 0;
     outputPane.innerHTML = '';
     chrome.runtime.sendMessage({ action: 'manager_update', params: {added, removed, proxy: easyProxy, tabId: easyTab} });
