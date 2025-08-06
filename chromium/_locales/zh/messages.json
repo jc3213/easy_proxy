@@ -110,9 +110,6 @@
     "popup_exclude": {
         "message": "例外"
     },
-    "popup_direct": {
-        "message": "直连"
-    },
     "full_host": {
         "message": "切换域名匹配规则"
     }

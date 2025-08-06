@@ -110,9 +110,6 @@
     "popup_exclude": {
         "message": "Exclude"
     },
-    "popup_direct": {
-        "message": "Direct"
-    },
     "full_host": {
         "message": "Toggle host name match rules"
     }
