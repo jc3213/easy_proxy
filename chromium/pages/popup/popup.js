@@ -10,7 +10,7 @@ let easyTab;
 let manager = document.body.classList;
 let [outputPane, extraPane,, menuPane, template] = document.body.children;
 let [proxyMenu, switchBtn] = extraPane.children;
-let [modeMenu, purgeBtn, defaultBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
+let [modeMenu, purgeBtn, defaultBtn, submitBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
@@ -73,24 +73,9 @@ proxyMenu.addEventListener('change', (event) => {
     });
 });
 
-extraPane.addEventListener('click', (event) => {
-    let button = event.target.getAttribute('i18n');
-    if (!button) {
-        return;
-    }
-    switch (button) {
-        case 'popup_default':
-            easyChanges.forEach((type) => {
-                type.value = type.props;
-            });
-            easyChanges.clear();
-            submitBtn.disabled = defaultBtn.disabled = true;
-            break;
-        case 'popup_switch':
-            outputPane.classList.toggle('switch'); 
-            switchBtn.classList.toggle('checked');
-            break;
-    };
+switchBtn.addEventListener('click', (event) => {
+    outputPane.classList.toggle('switch'); 
+    switchBtn.classList.toggle('checked');
 });
 
 modeMenu.addEventListener('change', (event) => {
@@ -148,6 +133,13 @@ menuPane.addEventListener('click', (event) => {
     switch (button) {
         case 'common_submit':
             menuEventSubmit();
+            break;
+        case 'popup_default':
+            easyChanges.forEach((type) => {
+                type.value = type.props;
+            });
+            easyChanges.clear();
+            submitBtn.disabled = defaultBtn.disabled = true;
             break;
         case 'popup_purge':
             menuEventPurge();
