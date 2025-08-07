@@ -9,8 +9,8 @@ let easyTab;
 
 let manager = document.body.classList;
 let [outputPane, extraPane,, menuPane, template] = document.body.children;
-let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
-let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
+let [proxyMenu, switchBtn] = extraPane.children;
+let [modeMenu, purgeBtn, defaultBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
 document.querySelectorAll('[i18n]').forEach((node) => {
