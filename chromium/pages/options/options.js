@@ -17,21 +17,20 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
     node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
 });
 
-function shortcutHandler(event, ctrlKey, button) {
-    if (ctrlKey) {
+function shortcutHandler(event, button) {
+    if (event.ctrlKey) {
         event.preventDefault();
         button.click();
     }
 }
 
 document.addEventListener('keydown', (event) => {
-    let {key, ctrlKey} = event;
-    switch (key) {
+    switch (event.key) {
         case 's':
-            shortcutHandler(event, ctrlKey, saveBtn);
+            shortcutHandler(event, saveBtn);
             break;
-        case 't':
-            shortcutHandler(event, ctrlKey, optionsBtn);
+        case 'q':
+            shortcutHandler(event, optionsBtn);
             break;
     };
 });
