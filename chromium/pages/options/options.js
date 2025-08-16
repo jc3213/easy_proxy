@@ -17,22 +17,17 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
     node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
 });
 
-function shortcutHandler(event, button) {
-    if (event.ctrlKey) {
-        event.preventDefault();
-        button.click();
-    }
-}
+const shortcutMap = {
+    's': saveBtn,
+    'q': optionsBtn
+};
 
 document.addEventListener('keydown', (event) => {
-    switch (event.key) {
-        case 's':
-            shortcutHandler(event, saveBtn);
-            break;
-        case 'q':
-            shortcutHandler(event, optionsBtn);
-            break;
-    };
+    let key = shortcutMap[event.key];
+    if (key && event.ctrlKey) {
+        event.preventDefault();
+        key.click();
+    }
 });
 
 function menuEventSubmit() {
@@ -70,25 +65,16 @@ function fileSaver(data, type, filename, filetype) {
     exporter.click();
 }
 
+const menuEventMap = {
+    'common_submit': menuEventSubmit,
+    'options_advance': menuEventOptions,
+    'options_save': menuEventSave,
+    'options_export': menuEventExport
+};
+
 menuPane.addEventListener('click', (event) => {
-    let button = event.target.getAttribute('i18n');
-    if (!button) {
-        return;
-    }
-    switch (button) {
-        case 'common_submit':
-            menuEventSubmit();
-            break;
-        case 'options_advance':
-            menuEventOptions();
-            break;
-        case 'options_save':
-            menuEventSave();
-            break;
-        case 'options_export':
-            menuEventExport();
-            break;
-    };
+    let menu = event.target.getAttribute('i18n');
+    menuEventMap[menu]?.();
 });
 
 menuPane.addEventListener('keydown', (event) => {
@@ -110,28 +96,30 @@ importEntry.addEventListener('change', (event) => {
     reader.readAsText(event.target.files[0]);
 });
 
+const optionsChangeMap = {
+    'proxy-mode': ({ value }) => {
+        easyStorage.mode = value;
+        extension.remove('autopac', 'direct', 'global');
+        extension.add(value);
+    },
+    'preset': ({ value }) => {
+        easyStorage.preset = value;
+    },
+    'action': ({ value }) => {
+        easyStorage.action = value;
+        actionPane.style.display = value === 'none' ? '' : 'block';
+    },
+    'network': ({ checked }) => {
+        easyStorage.network = checked;
+    },
+    'persistent': ({ checked }) => {
+        easyStorage.persistent = checked;
+    }
+};
+
 optionsPane.addEventListener('change', (event) => {
-    let {id, value, checked} = event.target;
-    switch (id) {
-        case 'proxy-mode':
-            easyStorage.mode = value;
-            extension.remove('autopac', 'direct', 'global');
-            extension.add(value);
-            break;
-        case 'preset':
-            easyStorage.preset = value;
-            break;
-        case 'action':
-            easyStorage.action = value;
-            actionPane.style.display = value === 'none' ? '' : 'block';
-            break;
-        case 'network':
-            easyStorage.network = checked;
-            break;
-        case 'persistent':
-            easyStorage.persistent = checked;
-            break;
-    };
+    let entry = event.target;
+    optionsChangeMap[entry.id]?.(entry);
     saveBtn.disabled = false;
 });
 
@@ -154,22 +142,15 @@ excludeEntry.addEventListener('keydown', (event) => {
     }
 });
 
+const excludeEventMap = {
+    'match_add': matchAddNew,
+    'match_resort': profileResort,
+    'match_remove': (id, $, _, event) => matchRemove(id, event.target.parentNode)
+};
+
 excludePane.addEventListener('click', (event) => {
-    let button = event.target.getAttribute('i18n-tips');
-    if (!button) {
-        return;
-    }
-    switch (button) {
-        case 'match_add':
-            matchAddNew('exclude', excludeList, excludeEntry);
-            break;
-        case 'match_resort':
-            profileResort('exclude', excludeList);
-            break;
-        case 'match_remove':
-            matchRemove('exclude', event.target.parentNode);
-            break;
-    };
+    let menu = event.target.getAttribute('i18n-tips');
+    excludeEventMap[menu]?.('exclude', excludeList, excludeEntry, event);
 });
 
 function storageHandler(json) {
@@ -178,6 +159,7 @@ function storageHandler(json) {
     json.proxies.forEach(createMatchProfile);
     json.exclude.forEach((value) => createMatchPattern(excludeList, value));
     modeMenu.value = json.mode;
+    extension.add(json.mode);
     proxyMenu.value = json.preset ?? json.proxies[0];
     actionMenu.value = json.action;
     networkMenu.checked = json.network;
@@ -220,7 +202,7 @@ function profileRemove(id) {
 }
 
 function matchAddNew(id, list, entry) {
-    let result = entry.value.match(/[^\s\r\n+=,;"'`\\|/?!@#$%^&()\[\]{}<>]+/g);
+    let result = entry.value.match(/[^ :.,]+\.+[^ ;.,]+/g);
     if (result) {
         saveBtn.disabled = false;
         let storage = easyStorage[id];
@@ -242,33 +224,22 @@ function matchRemove(id, rule) {
     easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
 }
 
+const profileEventMap = {
+    'profile_export': profileExport,
+    'profile_remove': profileRemove,
+    'match_add': matchAddNew,
+    'match_resort': profileResort,
+    'match_remove': (id, $, _, event) => matchRemove(id, event.target.parentNode)
+};
+
 function createMatchProfile(id) {
     let profile = profileLET.cloneNode(true);
     let [proxy,, entry,,,, list] = profile.children;
     let server = document.createElement('option');
     proxy.textContent = server.value = server.textContent = id;
     profile.addEventListener('click', (event) => {
-        let button = event.target.getAttribute('i18n-tips');
-        if (!button) {
-            return;
-        }
-        switch (button) {
-            case 'profile_export':
-                profileExport(id);
-                break;
-            case 'profile_remove':
-                profileRemove(id);
-                break;
-            case 'match_add':
-                matchAddNew(id, list, entry);
-                break;
-            case 'match_resort':
-                profileResort(id, list);
-                break;
-            case 'match_remove':
-                matchRemove(id, event.target.parentNode);
-                break;
-        };
+        let menu = event.target.getAttribute('i18n-tips');
+        profileEventMap[menu]?.(id, list, entry, event);
     });
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {

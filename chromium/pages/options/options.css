@@ -10,6 +10,10 @@ body:not(.set_options) > #options {
     display: none;
 }
 
+body.direct > options > :nth-child(2) > #handler {
+    display: none !important;
+}
+
 body.direct > #options > :nth-child(n+2):nth-child(-n+3) > * {
     filter: contrast(20%);
     pointer-events: none;

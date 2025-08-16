@@ -34,7 +34,7 @@ if (manifest === 3) {
     importScripts('libs/matchpattern.js');
 }
 
-function easyStorageUpdated(json) {
+function easyStorageUpdated(response, json) {
     let invalid = [];
     Object.keys(json).forEach((key) => {
         if (key in easyDefault) {
@@ -69,23 +69,24 @@ function easyStorageUpdated(json) {
     chrome.storage.local.set(json);
 }
 
-function easyManageQuery(tabId) {
+function easyManageQuery(response, tabId) {
     let match = {}
     let tempo = {};
-    let {proxies, mode, preset, exclude} = easyStorage;
+    let { proxies, mode, preset, exclude } = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
-        return { match, tempo, exclude, rule: [], host: [], flag: [], proxies, mode, preset };
+        response({ match, tempo, exclude, rule: [], host: [], flag: [], proxies, mode, preset });
+        return;
     }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
-    let {rule, host, flag} = inspect;
-    return { match, tempo, exclude, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset };
+    let { rule, host, flag } = inspect;
+    response({ match, tempo, exclude, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset });
 }
 
-function easyStatusUpdated({added, removed, proxy, tabId}) {
+function easyManagerUpdated(response, {added, removed, proxy, tabId}) {
     let stats = { match: easyMatch[proxy], tempo: easyTempo[proxy], exclude: easyExclude };
     added.forEach(({ type, rule }) => {
         stats[type].add(rule);
@@ -100,92 +101,66 @@ function easyStatusUpdated({added, removed, proxy, tabId}) {
     chrome.tabs.reload(tabId);
 }
 
-function easyTempoPurged(tabId) {
+function easyTempoPurged(response, tabId) {
     easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
     easyProxyScript();
     chrome.tabs.reload(tabId);
 }
 
-function easyModeChanger(params) {
+function easyModeChanger(response, params) {
     easyStorage.mode = params;
     chrome.storage.local.set(easyStorage);
     easyProxyMode();
 }
 
-chrome.runtime.onMessage.addListener(({action, params}, sender, response) => {
-    switch (action) {
-        case 'storage_query': 
-            response({ storage: easyStorage, manifest });
-            break;
-        case 'storage_update':
-            easyStorageUpdated(params);
-            break;
-        case 'pacscript_query':
-            response(easyMatch[params].pac_script);
-            break;
-        case 'manager_query':
-            response(easyManageQuery(params));
-            break;
-        case 'manager_update':
-            easyStatusUpdated(params);
-            break;
-        case 'manager_tempo':
-            easyMatchPattern(easyTempo, params);
-            break;
-        case 'manager_purge':
-            easyTempoPurged(params);
-            break;
-        case 'easyproxy_mode':
-            response(easyModeChanger(params));
-            break;
-    };
+const messageHandlers = {
+    'storage_query': (response) => response({ storage: easyStorage, manifest }),
+    'storage_update': easyStorageUpdated,
+    'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
+    'manager_query': easyManageQuery,
+    'manager_update': easyManagerUpdated,
+    'manager_purge': easyTempoPurged,
+    'easyproxy_mode': easyModeChanger
+};
+
+chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
+    messageHandlers[action]?.(response, params);
+    return true;
 });
 
-function firefoxScheme(scheme, url) {
-    switch (scheme) {
-        case 'HTTP':
-            return { http: 'http://' + url };
-        case 'HTTPS':
-            return { ssl: 'https://' + url };
-        case 'SOCKS':
-            return { socks: 'socks://' + url, socksVersion: 4 };
-        case 'SOCKS5':
-            return { socks: 'socks://' + url, socksVersion: 5 };
-    };
-}
-
-function firefoxHandler(mode) {
-    switch (mode) {
-        case 'autopac':
-            return { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + easyScript };
-        case 'direct':
-            return { proxyType: 'none' };
-        case 'global':
+const modeHandlers = {
+    'HTTP': (url) => ({ http: 'http://' + url }),
+    'HTTPS': (url) => ({ ssl: 'https://' + url }),
+    'SOCKS': (url) => ({ socks: 'socks://' + url, socksVersion: 4 }),
+    'SOCKS5': (url) => ({ socks: 'socks://' + url, socksVersion: 5 }),
+    'firefox': {
+        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + easyScript }),
+        'direct': () => ({ proxyType: 'none' }),
+        'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
             let [scheme, url] = proxy.split(' ');
-            let config = firefoxScheme(scheme, url);
-            return { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1', ...config };
-    };
-}
-
-function chromiumHandler(mode) {
-    switch (mode) {
-        case 'autopac':
-            return { mode: 'pac_script', pacScript: { data: easyScript } };
-        case 'direct':
-            return { mode: 'direct' };
-        case 'global':
+            let config = modeHandlers[scheme](url);
+            config.proxyType = 'manual';
+            config.passthrough = 'localhost, 127.0.0.1';
+            return config;
+        }
+    },
+    'chromium': {
+        'autopac': () => ({ mode: 'pac_script', pacScript: { data: easyScript } }),
+        'direct': () => ({ mode: 'direct' }),
+        'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
             let [scheme, host, port] = proxy.split(/[\s:]/);
             let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
             return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
-    };
-}
+        }
+    }
+};
 
 function easyProxyMode() {
     let {mode} = easyStorage;
     let color = easyColor[mode];
-    let value = firefox ? firefoxHandler(mode) : chromiumHandler(mode);
+    let value = firefox ? modeHandlers['firefox'][mode]() : modeHandlers['chromium'][mode]();
     easyMode = mode;
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
@@ -197,19 +172,19 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
-chrome.tabs.onUpdated.addListener((tabId, {status}, {url}) => {
-    switch (status) {
-        case 'loading':
-            if (url.startsWith('http') && !easyTabs.has(tabId)) {
-                easyTabs.add(tabId);
-                let {host, rule} = easyMatchInspect('manager_update', tabId, url);
-                easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), flag: new Set(), index: 0, url };
-            }
-            break;
-        case 'complete':
-            easyTabs.delete(tabId);
-            break;
-    };
+const tabHandlers = {
+    'loading': (tabId, url) => {
+        if (url.startsWith('http') && !easyTabs.has(tabId)) {
+            easyTabs.add(tabId);
+            let {host, rule} = easyMatchInspect('manager_update', tabId, url);
+            easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), flag: new Set(), index: 0, url };
+        }
+    },
+    'complete': (tabId) => easyTabs.delete(tabId)
+};
+
+chrome.tabs.onUpdated.addListener((tabId, { status }, { url }) => {
+    tabHandlers[status]?.(tabId, url);
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
@@ -222,6 +197,16 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
+const automateMap = {
+    'none': () => {
+        let { flag } = easyInspect[tabId];
+        flag.add(rule);
+        flag.add(host);
+    },
+    'match': (tabId, preset, host) => easyMatchAction('manager_to_match', easyMatch[preset], tabId, host),
+    'tempo': (tabId, preset, host) => easyMatchAction('manager_to_tempo', easyTempo[preset], tabId, host)
+};
+
 chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
     if (!easyHandler.has(error)) {
         return;
@@ -231,19 +216,7 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
         return;
     }
     let { host, rule } = easyMatchInspect('manager_report', tabId, url);
-    switch(easyAction) {
-        case 'none':
-            let { flag } = easyInspect[tabId];
-            flag.add(rule);
-            flag.add(host);
-            break;
-        case 'match':
-            easyMatchAction('manager_to_match', easyMatch[preset], tabId, host);
-            break;
-        case 'tempo':
-            easyMatchAction('manager_to_tempo', easyTempo[preset], tabId, host);
-            break;
-    };
+    automateMap[easyAction]?.(tabId, preset, host, rule);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
 function easyMatchAction(action, proxy, tabId, host) {

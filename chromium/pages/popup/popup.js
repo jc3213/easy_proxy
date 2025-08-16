@@ -26,22 +26,18 @@ function shortcutHandler(event, button) {
     button.click();
 }
 
+const shortcutMap = {
+    'Tab': () => switchBtn.click(),
+    'Enter': () => submitBtn.click(),
+    ' ': () => submitBtn.click(),
+    'Escape': (event) => shortcutHandler(event, defaultBtn),
+    'Backspace': () => purgeBtn.click()
+};
+
 document.addEventListener('keydown', (event) => {
-    switch (event.key) {
-        case 'Tab':
-            shortcutHandler(event, switchBtn);
-            break;
-        case 'Enter':
-            shortcutHandler(event, submitBtn);
-            break;
-        case ' ':
-            shortcutHandler(event, purgeBtn);
-            break;
-        case 'Backspace':
-            shortcutHandler(event, defaultBtn);
-            break;
-    }
+    shortcutMap[event.key]?.(event);
 });
+
 
 function proxyStatusChanged(type) {
     if (type.props !== type.value) {
@@ -71,26 +67,6 @@ proxyMenu.addEventListener('change', (event) => {
     easyTypes.forEach((type) => {
         type.disabled = type.title !== easyProxy;
     });
-});
-
-extraPane.addEventListener('click', (event) => {
-    let button = event.target.getAttribute('i18n');
-    if (!button) {
-        return;
-    }
-    switch (button) {
-        case 'popup_default':
-            easyChanges.forEach((type) => {
-                type.value = type.props;
-            });
-            easyChanges.clear();
-            submitBtn.disabled = defaultBtn.disabled = true;
-            break;
-        case 'popup_switch':
-            outputPane.classList.toggle('switch'); 
-            switchBtn.classList.toggle('checked');
-            break;
-    };
 });
 
 modeMenu.addEventListener('change', (event) => {
@@ -140,48 +116,63 @@ function menuEventPurge() {
     purgeBtn.disabled = true;
 }
 
+function extraEventDefault() {
+    easyChanges.forEach(type => {
+        type.value = type.props;
+    });
+    easyChanges.clear();
+    submitBtn.disabled = defaultBtn.disabled = true;
+}
+
+function extraEventSwitch() {
+    outputPane.classList.toggle('switch'); 
+    switchBtn.classList.toggle('checked');
+}
+
+const menuEventMap = {
+    'common_submit': menuEventSubmit,
+    'popup_purge': menuEventPurge,
+    'popup_options': () => chrome.runtime.openOptionsPage(),
+    'popup_default': extraEventDefault,
+    'popup_switch': extraEventSwitch
+};
+
 menuPane.addEventListener('click', (event) => {
-    let button = event.target.getAttribute('i18n');
-    if (!button) {
-        return;
-    }
-    switch (button) {
-        case 'common_submit':
-            menuEventSubmit();
-            break;
-        case 'popup_purge':
-            menuEventPurge();
-            break;
-        case 'popup_options':
-            chrome.runtime.openOptionsPage();
-            break;
-    };
+    let menu = event.target.getAttribute('i18n');
+    menuEventMap[menu]?.();
 });
 
-chrome.runtime.onMessage.addListener(({action, params}) => {
+extraPane.addEventListener('click', (event) => {
+    let menu = event.target.getAttribute('i18n');
+    menuEventMap[menu]?.();
+});
+
+const messageHandlers = {
+    'manager_update': (host, rule) => {
+        proxyItemListing(rule, 'wildcard');
+        proxyItemListing(host, 'fullhost');
+        manager.remove('asleep');
+    },
+    'manager_report': (host, rule) => {
+        easyRules.get(rule)?.classList?.add('error');
+        easyRules.get(host)?.classList?.add('error');
+    },
+    'manager_to_match': (host) => {
+        easyMatch.set(host, easyProxy);
+        easyRules.get(host)?.classList?.add('match');
+    },
+    'manager_to_tempo': (host) => {
+        easyTempo.set(host, easyProxy);
+        easyRules.get(host)?.classList?.add('tempo');
+    }
+};
+
+chrome.runtime.onMessage.addListener(({ action, params }) => {
     let {tabId, rule, host} = params;
     if (!easyProxy || tabId !== easyTab) {
         return;
     }
-    switch (action) {
-        case 'manager_update':
-            proxyItemListing(rule, 'wildcard');
-            proxyItemListing(host, 'fullhost');
-            manager.remove('asleep');
-            break;
-        case 'manager_report':
-            easyRules.get(rule)?.classList?.add('error');
-            easyRules.get(host)?.classList?.add('error');
-            break;
-        case 'manager_to_match':
-            easyMatch.set(host, easyProxy);
-            easyRules.get(host)?.classList?.add('match');
-            break;
-        case 'manager_to_tempo':
-            easyTempo.set(host, easyProxy);
-            easyRules.get(host)?.classList?.add('tempo');
-            break;
-    };
+    messageHandlers[action]?.(host, rule);
 });
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
