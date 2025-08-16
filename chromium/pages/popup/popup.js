@@ -38,7 +38,6 @@ document.addEventListener('keydown', (event) => {
     shortcutMap[event.key]?.(event);
 });
 
-
 function proxyStatusChanged(type) {
     if (type.props !== type.value) {
         easyChanges.add(type);
