@@ -1,29 +1,25 @@
-@media (prefers-color-scheme: light) {
-    body, div {
-        background-color: #FFFFFF;
-    }
-
-    button, input, select, option {
-        background-color: #F3F3F3;
-    }
-
-    body, div, button, input, select, option {
-        color: #000000;
-    }
+:root {
+    --color-body: #FFFFFF;
+    --color-child: #F3F3F3;
+    --color-text: #000000;
 }
 
 @media (prefers-color-scheme: dark) {
-    body, div {
-        background-color: #202124;
+    :root {
+        --color-body: #202124;
+        --color-child: #56585D;
+        --color-text: #FFFFFF;
     }
-    
-    button, input, select, option {
-        background-color: #56585D;
-    }
+}
 
-    body, div, button, input, select, option {
-        color: #FFFFFF;
-    }
+body, div {
+    color: var(--color-text);
+    background-color: var(--color-body);
+}
+
+button, input, select, option {
+    color: var(--color-text);
+    background-color: var(--color-child);
 }
 
 * {
@@ -112,3 +108,4 @@ body.global #proxy-mode {
 body.direct #proxy-mode {
     background-color: #C1272D;
 }
+
