@@ -172,6 +172,13 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
+function easyMatchInspect(action, tabId, url) {
+    let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
+    let rule = MatchPattern.make(host);
+    chrome.runtime.sendMessage({action, params: { tabId, rule, host }});
+    return {host, rule};
+}
+
 const tabHandlers = {
     'loading': (tabId, url) => {
         if (url.startsWith('http') && !easyTabs.has(tabId)) {
@@ -197,6 +204,14 @@ chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
     }
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
 
+function easyMatchAction(action, proxy, tabId, host) {
+    if (!easyExclude.test(host)) {
+        proxy.add(host);
+        easyProxyScript();
+        chrome.runtime.sendMessage({action, params: { tabId, host }});
+    }
+}
+
 const automateMap = {
     'none': () => {
         let { flag } = easyInspect[tabId];
@@ -218,21 +233,6 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
     let { host, rule } = easyMatchInspect('manager_report', tabId, url);
     automateMap[easyAction]?.(tabId, preset, host, rule);
 }, {urls: [ 'http://*/*', 'https://*/*' ]});
-
-function easyMatchAction(action, proxy, tabId, host) {
-    if (!easyExlude.test(host)) {
-        proxy.add(host);
-        easyProxyScript();
-        chrome.runtime.sendMessage({action, params: { tabId, host }});
-    }
-}
-
-function easyMatchInspect(action, tabId, url) {
-    let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
-    let rule = MatchPattern.make(host);
-    chrome.runtime.sendMessage({action, params: { tabId, rule, host }});
-    return {host, rule};
-}
 
 function easyNetworkCounter(tabId, index, host) {
     if (easyMode === 'direct' || !easyRegExp.test(host)) {
