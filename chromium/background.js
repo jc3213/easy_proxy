@@ -13,6 +13,11 @@ let easyColor = {
     autopac: '#C1272D',
     global: '#208020'
 };
+let manifest = chrome.runtime.getManifest().manifest_version;
+let firefox = typeof browser !== 'undefined';
+if (manifest === 3) {
+    importScripts('libs/matchpattern.js');
+}
 
 let easyStorage = {};
 let easyHandler;
@@ -27,12 +32,6 @@ let easyScript;
 let easyPersistent;
 let easyTabs = new Set();
 let easyInspect = {};
-
-let manifest = chrome.runtime.getManifest().manifest_version;
-let firefox = typeof browser !== 'undefined';
-if (manifest === 3) {
-    importScripts('libs/matchpattern.js');
-}
 
 function easyStorageUpdated(response, json) {
     let invalid = [];
