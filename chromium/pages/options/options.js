@@ -175,7 +175,7 @@ function storageHandler(json) {
 chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
     storageHandler(storage);
     if (manifest === 3) {
-        persistMenu.checked = json.persistent;
+        persistMenu.checked = storage.persistent;
     } else {
         persistMenu.parentNode.remove();
     }
