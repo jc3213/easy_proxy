@@ -107,7 +107,7 @@ function menuEventPurge() {
     easyTypes.clear();
     easyRules.forEach((rule) => {
         if (rule.classList.contains('tempo')) {
-            rule.className = rule.className.replace('tempo', 'direct');
+            rule.classList.replace('tempo', 'direct');
             rule.type.value = rule.type.props = 'direct';
         }
     });
