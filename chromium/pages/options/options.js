@@ -61,7 +61,7 @@ function menuEventExport() {
 function fileSaver(data, type, filename, filetype) {
     let blob = new Blob([data], {type: 'application/' + type + ';charset=utf-8;'});
     exporter.href = URL.createObjectURL(blob);
-    exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[\/\s:]/g, '_') + filetype;
+    exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[/: ]/g, '_') + filetype;
     exporter.click();
 }
 
@@ -183,7 +183,7 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
 
 function profileExport(id) {
     chrome.runtime.sendMessage({action: 'pacscript_query', params: id}, (pac_script) => {
-        fileSaver(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[\s:]/g, '_'), '.pac');
+        fileSaver(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[: ]/g, '_'), '.pac');
     });
 }
 
