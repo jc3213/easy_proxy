@@ -110,6 +110,7 @@ function easyModeChanger(response, params) {
     easyStorage.mode = params;
     chrome.storage.local.set(easyStorage);
     easyProxyMode();
+    response(true);
 }
 
 const messageHandlers = {

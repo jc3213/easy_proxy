@@ -4,6 +4,7 @@ let easyExclude = new Map();
 let easyRules = new Map();
 let easyTypes = new Set();
 let easyChanges = new Set();
+let easyMode;
 let easyProxy;
 let easyTab;
 
@@ -71,8 +72,8 @@ proxyMenu.addEventListener('change', (event) => {
 modeMenu.addEventListener('change', (event) => {
     let params = event.target.value;
     chrome.runtime.sendMessage({ action: 'easyproxy_mode', params }, () => {
-        manager.remove('direct', 'autopac', 'global');
-        manager.add(params);
+        manager.replace(easyMode, params);
+        easyMode = params;
     });
 });
 
@@ -180,7 +181,7 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         if (proxies.length === 0 || rule.length === 0 && host.length === 0) {
             manager.add('asleep');
         }
-        modeMenu.value = mode;
+        modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
         exclude.forEach((rule) => easyExclude.set(rule, 'DIRECT'));
         proxies.forEach((proxy) => {
