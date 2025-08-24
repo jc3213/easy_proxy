@@ -193,9 +193,9 @@ chrome.tabs.onUpdated.addListener((tabId, { status }, { url }) => {
     tabHandlers[status]?.(tabId, url);
 });
 
-chrome.webRequest.onBeforeRequest.addListener(({tabId, type, url}) => {
+chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), flag: new Set(), index: 0 };
-    let {host, rule} = easyMatchInspect('manager_update', tabId, url);
+    let { host, rule } = easyMatchInspect('manager_update', tabId, url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyNetwork) {
@@ -221,7 +221,7 @@ const automateMap = {
     'tempo': (tabId, preset, host) => easyMatchAction('manager_to_tempo', easyTempo[preset], tabId, host)
 };
 
-chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
+chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     if (!easyHandler.has(error)) {
         return;
     }
@@ -231,7 +231,7 @@ chrome.webRequest.onErrorOccurred.addListener(({tabId, error, url}) => {
     }
     let { host, rule } = easyMatchInspect('manager_report', tabId, url);
     automateMap[easyAction]?.(tabId, preset, host, rule);
-}, {urls: [ 'http://*/*', 'https://*/*' ]});
+}, { urls: ['http://*/*', 'https://*/*'] });
 
 function easyNetworkCounter(tabId, index, host) {
     if (easyMode === 'direct' || !easyRegExp.test(host)) {

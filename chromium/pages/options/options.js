@@ -51,15 +51,15 @@ function menuEventOptions() {
 
 function menuEventSave() {
     saveBtn.disabled = true;
-    chrome.runtime.sendMessage({action: 'storage_update', params: easyStorage});
+    chrome.runtime.sendMessage({ action: 'storage_update', params: easyStorage });
 }
 
 function menuEventExport() {
-    fileSaver(JSON.stringify(easyStorage, null, 4), 'json', 'easy_proxy', '.json');
+    fileSaver(JSON.stringify(easyStorage, null, 4), 'easy_proxy', '.json');
 }
 
-function fileSaver(data, type, filename, filetype) {
-    let blob = new Blob([data], {type: 'application/' + type + ';charset=utf-8;'});
+function fileSaver(data, filename, filetype) {
+    let blob = new Blob([data]);
     exporter.href = URL.createObjectURL(blob);
     exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[/: ]/g, '_') + filetype;
     exporter.click();
@@ -90,7 +90,7 @@ importEntry.addEventListener('change', (event) => {
         managePane.innerHTML = excludeList.innerHTML = '';
         saveBtn.disabled = true;
         storageHandler(params);
-        chrome.runtime.sendMessage({action: 'storage_update', params});
+        chrome.runtime.sendMessage({ action: 'storage_update', params });
         importEntry.value = '';
     };
     reader.readAsText(event.target.files[0]);
@@ -172,7 +172,7 @@ function storageHandler(json) {
     });
 }
 
-chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
+chrome.runtime.sendMessage({action: 'storage_query'}, ({ storage, manifest }) => {
     storageHandler(storage);
     if (manifest === 3) {
         persistMenu.checked = storage.persistent;
@@ -182,8 +182,8 @@ chrome.runtime.sendMessage({action: 'storage_query'}, ({storage, manifest}) => {
 });
 
 function profileExport(id) {
-    chrome.runtime.sendMessage({action: 'pacscript_query', params: id}, (pac_script) => {
-        fileSaver(pac_script, 'x-ns-proxy-autoconfig;', id.replace(/[: ]/g, '_'), '.pac');
+    chrome.runtime.sendMessage({ action: 'pacscript_query', params: id }, (pac_script) => {
+        fileSaver(pac_script, id.replace(/[: ]/g, '_'), '.pac');
     });
 }
 

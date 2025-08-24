@@ -70,7 +70,7 @@ proxyMenu.addEventListener('change', (event) => {
 
 modeMenu.addEventListener('change', (event) => {
     let params = event.target.value;
-    chrome.runtime.sendMessage({action: 'easyproxy_mode', params}, () => {
+    chrome.runtime.sendMessage({ action: 'easyproxy_mode', params }, () => {
         manager.remove('direct', 'autopac', 'global');
         manager.add(params);
     });
@@ -99,7 +99,7 @@ function menuEventSubmit() {
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = easyTempo.size === 0;
     outputPane.innerHTML = '';
-    chrome.runtime.sendMessage({ action: 'manager_update', params: {added, removed, proxy: easyProxy, tabId: easyTab} });
+    chrome.runtime.sendMessage({ action: 'manager_update', params: { added, removed, proxy: easyProxy, tabId: easyTab } });
 }
 
 function menuEventPurge() {
@@ -176,7 +176,7 @@ chrome.runtime.onMessage.addListener(({ action, params }) => {
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({proxies, mode, preset, match, tempo, exclude, rule, host, flag}) => {
+    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({ proxies, mode, preset, match, tempo, exclude, rule, host, flag }) => {
         if (proxies.length === 0 || rule.length === 0 && host.length === 0) {
             manager.add('asleep');
         }
