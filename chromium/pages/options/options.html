@@ -23,7 +23,7 @@
             <input id="import-options" type="file" accept=".json">
             <a></a>
         </div>
-        <div id="options">
+        <div id="options" class="hidden">
             <div i18n-tips="options_preset_title">
                 <label i18n="options_preset">Preset Proxy</label>
                 <select id="preset"></select>
@@ -33,7 +33,7 @@
                     <option value="global" i18n="common_global">Global</option>
                 </select>
             </div>
-            <div i18n-tips="options_automate_title">
+            <div class="x-direct x-global" i18n-tips="options_automate_title">
                 <label i18n="options_automate">Automated Proxy</label>
                 <select id="action">
                     <option value="match" i18n="common_match" i18n-tips="automate_storage">Storage</option>
@@ -47,7 +47,7 @@
                     <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
                 </div>
             </div>
-            <div class="checkbox" i18n-tips="options_network_title">
+            <div class="checkbox x-direct" i18n-tips="options_network_title">
                 <input type="checkbox" id="network">
                 <label for="network" i18n="options_network">Proxied Network</label>
             </div>

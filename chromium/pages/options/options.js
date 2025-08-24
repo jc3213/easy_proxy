@@ -45,8 +45,8 @@ function menuEventSubmit() {
 }
 
 function menuEventOptions() {
-    extension.toggle('set_options');
     optionsBtn.classList.toggle('checked');
+    optionsPane.classList.toggle('hidden');
 }
 
 function menuEventSave() {
@@ -89,6 +89,7 @@ importEntry.addEventListener('change', (event) => {
         let params = JSON.parse(reader.result);
         managePane.innerHTML = excludeList.innerHTML = '';
         saveBtn.disabled = true;
+        actionPane.classList.replace(easyStorage.action, params.action);
         storageHandler(params);
         chrome.runtime.sendMessage({ action: 'storage_update', params });
         importEntry.value = '';
@@ -105,8 +106,8 @@ const optionsChangeMap = {
         easyStorage.preset = value;
     },
     'action': ({ value }) => {
+        actionPane.classList.replace(easyStorage.action, value);
         easyStorage.action = value;
-        actionPane.style.display = value === 'none' ? '' : 'block';
     },
     'network': ({ checked }) => {
         easyStorage.network = checked;
@@ -162,7 +163,6 @@ function storageHandler(json) {
     proxyMenu.value = json.preset ?? json.proxies[0];
     actionMenu.value = json.action;
     networkMenu.checked = json.network;
-    actionPane.style.display = json.action === 'none' ? '' : 'block';
     [...actionPane.children].forEach((item) => {
         let value = item.classList[0];
         if (easyHandler.has(value)) {
@@ -173,6 +173,7 @@ function storageHandler(json) {
 
 chrome.runtime.sendMessage({action: 'storage_query'}, ({ storage, manifest }) => {
     storageHandler(storage);
+    actionPane.classList.add(storage.action);
     if (manifest === 3) {
         persistMenu.checked = storage.persistent;
     } else {

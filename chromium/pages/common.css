@@ -95,8 +95,8 @@ button.checked {
     border-style: inset;
 }
 
-.template {
-    display: none;
+.hidden, .template {
+    display: none !important;
 }
 
 #proxy-mode {
