@@ -98,9 +98,8 @@ importEntry.addEventListener('change', (event) => {
 
 const optionsChangeMap = {
     'proxy-mode': ({ value }) => {
+        extension.replace(easyStorage.mode, value);
         easyStorage.mode = value;
-        extension.remove('autopac', 'direct', 'global');
-        extension.add(value);
     },
     'preset': ({ value }) => {
         easyStorage.preset = value;
