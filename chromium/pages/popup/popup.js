@@ -147,32 +147,34 @@ extraPane.addEventListener('click', (event) => {
     menuEventMap[menu]?.();
 });
 
-const messageHandlers = {
-    'manager_update': (host, rule) => {
+function messageHandler({ tabId, rule, host }, callback) {
+    if (easyProxy || tabId === easyTab) {
+        callback(host, rule);
+    }
+}
+
+const messageDispatch = {
+    'manager_update': (params) => messageHandler(params, (host, rule) => {
         proxyItemListing(rule, 'wildcard');
         proxyItemListing(host, 'fullhost');
         manager.remove('asleep');
-    },
-    'manager_report': (host, rule) => {
+    }),
+    'manager_report': (params) => messageHandler(params, (host, rule) => {
         easyRules.get(rule)?.classList?.add('error');
         easyRules.get(host)?.classList?.add('error');
-    },
-    'manager_to_match': (host) => {
+    }),
+    'manager_to_match': (params) => messageHandler(params, (host) => {
         easyMatch.set(host, easyProxy);
         easyRules.get(host)?.classList?.add('match');
-    },
-    'manager_to_tempo': (host) => {
+    }),
+    'manager_to_tempo': (params) => messageHandler(params, (host) => {
         easyTempo.set(host, easyProxy);
         easyRules.get(host)?.classList?.add('tempo');
-    }
+    })
 };
 
 chrome.runtime.onMessage.addListener(({ action, params }) => {
-    let {tabId, rule, host} = params;
-    if (!easyProxy || tabId !== easyTab) {
-        return;
-    }
-    messageHandlers[action]?.(host, rule);
+    messageDispatch[action]?.(params);
 });
 
 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
