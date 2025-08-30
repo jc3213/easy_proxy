@@ -148,7 +148,7 @@ extraPane.addEventListener('click', (event) => {
 });
 
 function messageHandler({ tabId, rule, host }, callback) {
-    if (easyProxy || tabId === easyTab) {
+    if (easyProxy && tabId === easyTab) {
         callback(host, rule);
     }
 }
