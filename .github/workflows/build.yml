@@ -23,42 +23,47 @@ jobs:
       - name: Install tools
         run: sudo apt-get install -y zip jq
 
-      - name: Extract version
-        id: version
+      - name: Extract and define versions
         run: |
-          VERSION=$(jq -r .version chromium/manifest.json)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          get_version() { jq -r .version "$1/manifest.json"; }
 
-      - name: Package Chromium
-        run: |
-          ZIP_NAME="chromium-${{ steps.version.outputs.version }}.zip"
-          (cd chromium && zip -r "../$ZIP_NAME" .)
+          MV2_VERSION=$(get_version chromium)
+          MV3_VERSION=$(get_version chromium_mv3)
+          FF_VERSION=$(get_version firefox)
 
-      - name: Package Chromium MV3
-        run: |
-          ZIP_NAME="chromium_mv3-${{ steps.version.outputs.version }}.zip"
-          mkdir -p build_mv3
-          cp -r chromium/* build_mv3/
-          cp -r chromium_mv3/* build_mv3/
-          (cd build_mv3 && zip -r "../$ZIP_NAME" .)
-          rm -rf build_mv3
+          echo "MV2_VERSION=$MV2_VERSION" >> $GITHUB_ENV
+          echo "MV3_VERSION=$MV3_VERSION" >> $GITHUB_ENV
+          echo "FF_VERSION=$FF_VERSION" >> $GITHUB_ENV
 
-      - name: Package Firefox
+          RELEASE_VERSION=$(printf "%s\n%s\n%s" "$MV2_VERSION" "$MV3_VERSION" "$FF_VERSION" | sort -V | tail -n 1)
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+
+      - name: Package Extensions
         run: |
-          ZIP_NAME="firefox-${{ steps.version.outputs.version }}.zip"
-          mkdir -p build_firefox
-          cp -r chromium/* build_firefox/
-          cp -r firefox/* build_firefox/
-          (cd build_firefox && zip -r "../$ZIP_NAME" .)
-          rm -rf build_firefox
+          package() {
+            SRC1="$1"
+            SRC2="$2"
+            BUILD_DIR="$3"
+            ZIP_NAME="$4"
+
+            mkdir -p "$BUILD_DIR"
+            cp -r "$SRC1"/* "$BUILD_DIR/"
+            [ -n "$SRC2" ] && cp -r "$SRC2"/* "$BUILD_DIR/"
+            cd "$BUILD_DIR"
+            zip -r "../$ZIP_NAME" .
+            cd ..
+            rm -rf "$BUILD_DIR"
+          }
+
+          package "chromium" "" "build_mv2" "chromium-${MV2_VERSION}.zip"
+          package "chromium" "chromium_mv3" "build_mv3" "chromium_mv3-${MV3_VERSION}.zip"
+          package "chromium" "firefox" "build_firefox" "firefox-${FF_VERSION}.zip"
 
       - name: Create GitHub Release
         run: |
-          TAG="${{ steps.version.outputs.version }}"
-          TITLE="v${TAG}"
-          gh release create "$TAG" \
-            "chromium-${TAG}.zip" \
-            "chromium_mv3-${TAG}.zip" \
-            "firefox-${TAG}.zip" \
-            --title "$TITLE" \
-            --notes "Auto-packaged extensions for version $TITLE"
+          gh release create "v${RELEASE_VERSION}" \
+            "chromium-${MV2_VERSION}.zip" \
+            "chromium_mv3-${MV3_VERSION}.zip" \
+            "firefox-${FF_VERSION}.zip" \
+            --title "v${RELEASE_VERSION}" \
+            --notes "Auto-packaged extensions for version v${RELEASE_VERSION}"
