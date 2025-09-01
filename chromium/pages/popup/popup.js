@@ -65,7 +65,7 @@ outputPane.addEventListener('wheel', (event) => {
 proxyMenu.addEventListener('change', (event) => {
     easyProxy = event.target.value;
     easyTypes.forEach((type) => {
-        type.disabled = type.title !== easyProxy;
+        type.disabled = type.title && type.title !== easyProxy;
     });
 });
 
@@ -82,7 +82,10 @@ function menuEventSubmit() {
     let removed = [];
     let stats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
     easyChanges.forEach((type) => {
-        let { name, value, props, parentNode } = type;
+        let { name, value, props, parentNode, disabled } = type;
+        if (disabled) {
+            return;
+        }
         if (value !== 'direct') {
             stats[value].set(name, easyProxy);
             added.push({ type: value, rule: name });
