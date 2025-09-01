@@ -1,5 +1,4 @@
 let easyProfile = {};
-let easyProxy = {};
 let easyHandler;
 
 let extension = document.body.classList;
@@ -31,16 +30,15 @@ document.addEventListener('keydown', (event) => {
 });
 
 function menuEventSubmit() {
-    let profile = schemeEntry.value + ' ' + proxyEntry.value ;
-    if (easyStorage[profile] || !/^(HTTPS?|SOCKS5?) ([^.]+\.)+[^.:]*:\d+$/.test(profile)) {
+    let id = schemeEntry.value + ' ' + proxyEntry.value ;
+    if (easyStorage[id] || !/^(HTTPS?|SOCKS5?) ([^.]+\.)+[^.:]*:\d+$/.test(id)) {
         return;
     }
-    easyStorage[profile] = [];
-    easyStorage.proxies.push(profile);
-    createMatchProfile(profile);
+    easyStorage[id] = [];
+    easyStorage.proxies.push(id);
+    createMatchProfile(id);
     schemeEntry.value = 'HTTP';
     proxyEntry.value = '';
-    extension.remove('new_profile');
     saveBtn.disabled = false;
 }
 
@@ -124,16 +122,16 @@ optionsPane.addEventListener('change', (event) => {
 });
 
 actionPane.addEventListener('click', (event) => {
-    let click = event.target;
-    let value = click.classList[0];
+    saveBtn.disabled = false;
+    let error = event.target;
+    let value = error.classList[0];
     if (easyHandler.has(value)) {
         easyHandler.delete(value);
     } else {
         easyHandler.add(value);
     }
-    click.classList.toggle('checked');
+    error.classList.toggle('checked');
     easyStorage.handler = [...easyHandler];
-    saveBtn.disabled = false;
 });
 
 excludeEntry.addEventListener('keydown', (event) => {
@@ -196,9 +194,15 @@ function profileResort(id, list) {
 
 function profileRemove(id) {
     saveBtn.disabled = false;
-    easyProfile[id].remove();
-    easyStorage.proxies.splice(easyStorage.proxies.indexOf(id), 1);
+    let { profile, server } = easyProfile[id];
+    let { proxies } = easyStorage;
+    proxies.splice(proxies.indexOf(id), 1);
     delete easyStorage[id];
+    profile.remove();
+    server.remove();
+    if (!proxies.includes(easyStorage.preset)) {
+        proxyMenu.value = easyStorage.preset = null;
+    }
 }
 
 function matchAddNew(id, list, entry) {
@@ -220,8 +224,9 @@ function matchAddNew(id, list, entry) {
 function matchRemove(id, rule) {
     saveBtn.disabled = false;
     let value = rule.title;
+    let profile = easyStorage[id];
     rule.remove();
-    easyStorage[id].splice(easyStorage[id].indexOf(value), 1);
+    profile.splice(profile.indexOf(value), 1);
 }
 
 const profileEventMap = {
@@ -247,7 +252,7 @@ function createMatchProfile(id) {
         }
     });
     easyStorage[id].forEach((value) => createMatchPattern(list, value));
-    easyProfile[id] = profile;
+    easyProfile[id] = { profile, server };
     proxyMenu.appendChild(server);
     managePane.appendChild(profile);
 }

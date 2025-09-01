@@ -50,6 +50,10 @@ input[type="file"], a {
     font-weight: bold;
 }
 
+#preset {
+    min-width: 200px;
+}
+
 #handler {
     border-style: solid;
     border-width: 1px;
