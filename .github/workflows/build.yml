@@ -59,6 +59,11 @@ jobs:
           package "chromium" "chromium_mv3" "build_mv3" "chromium_mv3-${MV3_VERSION}.zip"
           package "chromium" "firefox" "build_firefox" "firefox-${FF_VERSION}.zip"
 
+      - name: Debug GITHUB_TOKEN permissions
+        run: |
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               https://api.github.com/repos/${{ github.repository }}/releases
+
       - name: Create GitHub Release
         run: |
           gh release create "v${RELEASE_VERSION}" \
