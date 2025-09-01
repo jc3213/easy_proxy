@@ -1,0 +1,15 @@
+{
+    "mode": "autopac",
+    "preset": null,
+    "network": false,
+    "persistent": false,
+    "action": "none",
+    "handler": [
+        "net::ERR_CONNECTION_REFUSED",
+        "net::ERR_CONNECTION_RESET",
+        "net::ERR_CONNECTION_TIMED_OUT",
+        "net::ERR_NAME_NOT_RESOLVED"
+    ],
+    "proxies": [],
+    "exclude": []
+}
