@@ -1,6 +1,7 @@
 let easyMatch = new Map();
 let easyTempo = new Map();
 let easyExclude = new Map();
+let easyStats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
 let easyRules = new Map();
 let easyTypes = new Set();
 let easyChanges = new Set();
@@ -77,15 +78,14 @@ modeMenu.addEventListener('change', (event) => {
 function menuEventSubmit() {
     let added = [];
     let removed = [];
-    let stats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
     easyChanges.forEach((type) => {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
-            stats[props].delete(name);
+            easyStats[props].delete(name);
             removed.push({ type: props, proxy: title, rule: name });
         }
         if (value !== 'direct') {
-            stats[value].set(name, easyProxy);
+            easyStats[value].set(name, easyProxy);
             added.push({ type: value, proxy: easyProxy, rule: name });
             type.title = value === 'exclude' ? '' : easyProxy;
         }
@@ -208,11 +208,10 @@ function proxyItemCreate(value, stat) {
     return rule;
 }
 
-function proxyItemStatus(rule, type, stat, title, disabled) {
+function proxyItemStatus(rule, type, stat, title) {
     rule.classList.add(stat);
     type.value = type.props = stat;
     type.title = title;
-    type.disabled = disabled;
 }
 
 function proxyItemListing(value, stat) {
@@ -224,13 +223,13 @@ function proxyItemListing(value, stat) {
     let match = easyMatch.get(value);
     let tempo = easyTempo.get(value);
     if (easyExclude.has(value)) {
-        proxyItemStatus(rule, type, 'exclude', '', false);
+        proxyItemStatus(rule, type, 'exclude', '');
     } else if (match) {
-        proxyItemStatus(rule, type, 'match', match, match !== easyProxy);
+        proxyItemStatus(rule, type, 'match', match);
     } else if (tempo) {
-        proxyItemStatus(rule, type, 'tempo', tempo, tempo !== easyProxy);
+        proxyItemStatus(rule, type, 'tempo', tempo);
     } else {
-        proxyItemStatus(rule, type, 'direct', '', false);
+        proxyItemStatus(rule, type, 'direct', '');
     }
     easyTypes.add(type);
     outputPane.append(rule);
