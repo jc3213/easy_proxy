@@ -64,9 +64,6 @@ outputPane.addEventListener('wheel', (event) => {
 
 proxyMenu.addEventListener('change', (event) => {
     easyProxy = event.target.value;
-    easyTypes.forEach((type) => {
-        type.disabled = type.title && type.title !== easyProxy;
-    });
 });
 
 modeMenu.addEventListener('change', (event) => {
@@ -82,28 +79,25 @@ function menuEventSubmit() {
     let removed = [];
     let stats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
     easyChanges.forEach((type) => {
-        let { name, value, props, parentNode, disabled } = type;
-        if (disabled) {
-            return;
+        let { name, value, props, title, parentNode } = type;
+        if (props !== 'direct') {
+            stats[props].delete(name);
+            removed.push({ type: props, proxy: title, rule: name });
         }
         if (value !== 'direct') {
             stats[value].set(name, easyProxy);
-            added.push({ type: value, rule: name });
-        }
-        if (props !== 'direct') {
-            stats[props].delete(name);
-            removed.push({ type: props, rule: name });
+            added.push({ type: value, proxy: easyProxy, rule: name });
+            type.title = value === 'exclude' ? '' : easyProxy;
         }
         parentNode.classList.remove(props, 'error');
         parentNode.classList.add(value);
         type.props = value;
     });
-    easyChanges.clear();
     easyTypes.clear();
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = easyTempo.size === 0;
     outputPane.innerHTML = '';
-    chrome.runtime.sendMessage({ action: 'manager_update', params: { added, removed, proxy: easyProxy, tabId: easyTab } });
+    chrome.runtime.sendMessage({ action: 'manager_update', params: { added, removed, tabId: easyTab } });
 }
 
 function menuEventPurge() {
