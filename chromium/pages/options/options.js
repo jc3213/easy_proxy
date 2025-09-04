@@ -206,19 +206,15 @@ function profileRemove(id) {
 }
 
 function matchAddNew(id, list, entry) {
-    let result = entry.value.match(/[^ :.,]+\.+[^ ;.,]+/g);
-    if (result) {
+    let storage = easyStorage[id];
+    let value = entry.value.match(/([^.]+\.)+[^.]+/)?.[0];
+    if (value && !storage.includes(value)) {
         saveBtn.disabled = false;
-        let storage = easyStorage[id];
-        result.forEach((value) => {
-            if (value && !storage.includes(value)) {
-                createMatchPattern(list, value);
-                storage.push(value);
-            }
-        });
-        entry.value = '';
+        createMatchPattern(list, value);
+        storage.push(value);
         list.scrollTop = list.scrollHeight;
     }
+    entry.value = '';
 }
 
 function matchRemove(id, rule) {
