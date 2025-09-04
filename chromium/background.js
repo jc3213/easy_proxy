@@ -25,6 +25,7 @@ let easyNetwork;
 let easyAction;
 let easyMatch = {};
 let easyTempo = {};
+let easyStats = { match: easyMatch, tempo: easyTempo };
 let easyExclude = new MatchPattern();
 let easyRegExp;
 let easyMode;
@@ -85,15 +86,18 @@ function easyManageQuery(response, tabId) {
     response({ match, tempo, exclude, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset });
 }
 
-function easyManagerUpdated(response, {added, removed, proxy, tabId}) {
-    let stats = { match: easyMatch[proxy], tempo: easyTempo[proxy], exclude: easyExclude };
-    added.forEach(({ type, rule }) => {
-        stats[type].add(rule);
+function easyManagerUpdated(response, { added, removed, tabId }) {
+    added.forEach(({ type, proxy, rule }) => {
+        let map = type === 'exclude' ? easyExclude : easyStats[type][proxy];
+        map.add(rule);
     });
-    removed.forEach(({ type, rule }) => {
-        stats[type].delete(rule);
+    removed.forEach(({ type, proxy, rule }) => {
+        let map = type === 'exclude' ? easyExclude : easyStats[type][proxy];
+        map.delete(rule);
     });
-    easyStorage[proxy] = stats.match.data;
+    easyStorage.proxies.forEach((proxy) => {
+        easyStorage[proxy] = easyMatch[proxy].data;
+    });
     easyStorage['exclude'] = easyExclude.data;
     easyProxyScript();
     chrome.storage.local.set(easyStorage);
@@ -113,7 +117,7 @@ function easyModeChanger(response, params) {
     response(true);
 }
 
-const messageHandlers = {
+const messageDispatch = {
     'storage_query': (response) => response({ storage: easyStorage, manifest }),
     'storage_update': easyStorageUpdated,
     'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
@@ -124,7 +128,7 @@ const messageHandlers = {
 };
 
 chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
-    messageHandlers[action]?.(response, params);
+    messageDispatch[action]?.(response, params);
     return true;
 });
 
