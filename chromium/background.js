@@ -25,7 +25,6 @@ let easyNetwork;
 let easyAction;
 let easyMatch = {};
 let easyTempo = {};
-let easyStats = { match: easyMatch, tempo: easyTempo };
 let easyExclude = new MatchPattern();
 let easyRegExp;
 let easyMode;
@@ -86,13 +85,19 @@ function easyManageQuery(response, tabId) {
     response({ match, tempo, exclude, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset });
 }
 
+const manageDispatch = {
+    'match': (proxy) => easyMatch[proxy],
+    'tempo': (proxy) => easyTempo[proxy],
+    'exclude': () => easyExclude
+};
+
 function easyManagerUpdated(response, { added, removed, tabId }) {
     added.forEach(({ type, proxy, rule }) => {
-        let map = type === 'exclude' ? easyExclude : easyStats[type][proxy];
+        let map = manageDispatch[type](proxy);
         map.add(rule);
     });
     removed.forEach(({ type, proxy, rule }) => {
-        let map = type === 'exclude' ? easyExclude : easyStats[type][proxy];
+        let map = manageDispatch[type](proxy);
         map.delete(rule);
     });
     easyStorage.proxies.forEach((proxy) => {
