@@ -93,6 +93,7 @@ function menuEventSubmit() {
         parentNode.classList.add(value);
         type.props = value;
     });
+    easyChanges.clear();
     easyTypes.clear();
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = easyTempo.size === 0;
