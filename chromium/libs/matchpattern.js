@@ -87,7 +87,7 @@ class MatchPattern {
         return rule;
     }
     static test (host) {
-        return MatchPattern.#instances.some((that) => that.test(host));
+        return MatchPattern.#instances.some((that) => that.#proxy !== 'DIRECT' && that.test(host));
     }
     static delete (arg) {
         let removed = new Set(Array.isArray(arg) ? arg : [arg]);
