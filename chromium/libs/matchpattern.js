@@ -41,11 +41,15 @@ class MatchPattern {
         return this.#regexp.test(host);
     }
     #update () {
-        this.#regexp = this.#data.size === 0 ? /!/ : this.#data.has('*') ? /.*/ : new RegExp(`(^|\\.)(${this.data.map((i) => i.replace(/\./g, '\\.')).join('|')})$`);
+        this.#regexp = this.#data.size === 0 ? /!/
+            : this.#data.has('*') ? /.*/
+            : new RegExp(`(^|\\.)(${this.data.map((i) => i.replace(/\./g, '\\.')).join('|')})$`);
         this.#build();
     }
     #build () {
-        this.#pacScript = this.#data.size === 0 || this.#proxy === 'DIRECT' ? '' : [...this.#data].map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
+        this.#pacScript = this.#data.size === 0 || this.#proxy === 'DIRECT' ? ''
+            : this.#data.has('*') ? `    return "${this.#proxy};"`
+            : this.data.map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
     }
     static #instances = [];
     static #tlds = new Set([
