@@ -26,7 +26,6 @@ let easyAction;
 let easyMatch = {};
 let easyTempo = {};
 let easyExclude = new MatchPattern();
-let easyRegExp;
 let easyMode;
 let easyScript;
 let easyPersistent;
@@ -104,14 +103,14 @@ function easyManagerUpdated(response, { added, removed, tabId }) {
         easyStorage[proxy] = easyMatch[proxy].data;
     });
     easyStorage['exclude'] = easyExclude.data;
-    easyProxyScript();
+    easyProxyMode();
     chrome.storage.local.set(easyStorage);
     chrome.tabs.reload(tabId);
 }
 
 function easyTempoPurged(response, tabId) {
     easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
-    easyProxyScript();
+    easyProxyMode();
     chrome.tabs.reload(tabId);
 }
 
@@ -143,7 +142,7 @@ const modeHandlers = {
     'SOCKS': (url) => ({ socks: 'socks://' + url, socksVersion: 4 }),
     'SOCKS5': (url) => ({ socks: 'socks://' + url, socksVersion: 5 }),
     'firefox': {
-        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + easyScript }),
+        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + MatchPattern.pac_script }),
         'direct': () => ({ proxyType: 'none' }),
         'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
@@ -155,7 +154,7 @@ const modeHandlers = {
         }
     },
     'chromium': {
-        'autopac': () => ({ mode: 'pac_script', pacScript: { data: easyScript } }),
+        'autopac': () => ({ mode: 'pac_script', pacScript: { data: MatchPattern.pac_script } }),
         'direct': () => ({ mode: 'direct' }),
         'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
@@ -216,7 +215,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
 function easyMatchAction(action, proxy, tabId, host) {
     if (!easyExclude.test(host)) {
         proxy.add(host);
-        easyProxyScript();
+        easyProxyMode();
         chrome.runtime.sendMessage({action, params: { tabId, host }});
     }
 }
@@ -244,7 +243,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function easyNetworkCounter(tabId, index, host) {
-    if (easyMode === 'direct' || !easyRegExp.test(host)) {
+    if (easyMode === 'direct' || !MatchPattern.test(host)) {
         return 0;
     }
     chrome.action.setBadgeText({tabId, text: String(++index)});
@@ -269,17 +268,10 @@ function easyStorageInit(json) {
     easyHandler = new Set(json.handler);
     easyAction = json.action;
     easyExclude.new(json.exclude);
-    easyProxyScript();
+    easyProxyMode();
     if (manifest === 3 && json.persistent) {
         easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
     } else {
         clearInterval(easyPersistent);
     }
-}
-
-function easyProxyScript() {
-    let result = MatchPattern.combine();
-    easyScript = result.pac_script;
-    easyRegExp = result.regexp;
-    easyProxyMode();
 }

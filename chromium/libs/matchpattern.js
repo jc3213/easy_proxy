@@ -88,21 +88,15 @@ class MatchPattern {
         MatchPattern.#caches.set(host, rule);
         return rule;
     }
+    static test (host) {
+        return MatchPattern.#instances.some((instance) => instance.test(host));
+    }
     static delete (arg) {
         let removed = new Set(Array.isArray(arg) ? arg : [arg]);
         MatchPattern.#instances = MatchPattern.#instances.filter((that) => !removed.has(that.proxy));
     }
-    static combine () {
-        let text = [];
-        let pac = [];
-        MatchPattern.#instances.forEach((that) => {
-            if (that.#text && that.#pacScript) {
-                text.push(that.#text);
-                pac.push(that.#pacScript);
-            }
-        });
-        let regexp = text.length === 0 ? /!/ : new RegExp(`(${text.join('|')})`);
-        let pac_script = `function FindProxyForURL(url, host) {\n${pac.join('\n')}\n    return "DIRECT";\n}`;
-        return { regexp , pac_script };
+    static get pac_script () {
+        let pac = MatchPattern.#instances.map((instance) => instance.#pacScript).join('\n');
+        return `function FindProxyForURL(url, host) {${pac}\n    return "DIRECT";\n}`;
     }
 }
