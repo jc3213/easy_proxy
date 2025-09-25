@@ -41,7 +41,7 @@ class MatchPattern {
         return this.#regexp.test(host);
     }
     #update () {
-        this.#regexp = this.#data.size === 0 ? /!/ : this.#data.has('*') ? /.*/ : new RegExp(`(${this.data.map((i) => i.replace(/\./g, '\\.')).join('|')})$`, 'i');;
+        this.#regexp = this.#data.size === 0 ? /!/ : this.#data.has('*') ? /.*/ : new RegExp(`(^|\\.)(${this.data.map((i) => i.replace(/\./g, '\\.')).join('|')})$`);
         this.#build();
     }
     #build () {
