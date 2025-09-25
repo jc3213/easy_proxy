@@ -89,14 +89,14 @@ class MatchPattern {
         return rule;
     }
     static test (host) {
-        return MatchPattern.#instances.some((instance) => instance.test(host));
+        return MatchPattern.#instances.some((that) => that.test(host));
     }
     static delete (arg) {
         let removed = new Set(Array.isArray(arg) ? arg : [arg]);
         MatchPattern.#instances = MatchPattern.#instances.filter((that) => !removed.has(that.proxy));
     }
     static get pac_script () {
-        let pac = MatchPattern.#instances.map((instance) => instance.#pacScript).join('\n');
+        let pac = MatchPattern.#instances.map((that) => that.#pacScript).join('\n');
         return `function FindProxyForURL(url, host) {${pac}\n    return "DIRECT";\n}`;
     }
 }
