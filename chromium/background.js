@@ -27,7 +27,6 @@ let easyMatch = {};
 let easyTempo = {};
 let easyExclude = new MatchPattern();
 let easyMode;
-let easyScript;
 let easyPersistent;
 let easyTabs = new Set();
 let easyInspect = {};
