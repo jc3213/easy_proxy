@@ -35,20 +35,18 @@ class MatchPattern {
     }
     clear () {
         this.#data.clear();
-        this.#text = this.#pacScript = '';
+        this.#pacScript = '';
         this.#regexp = /!/;
     }
     test (host) {
         return this.#regexp.test(host);
     }
     #update () {
-        let data = this.#data;
-        this.#text = data.size === 0 ? '' : data.has('*') ? '.*' : `^(${[...data].join('|').replace(/\./g, '\\.').replace(/\*\\\./g, '([^.]+\\.)*').replace(/\\\.\*/g, '(\\.[^.]+)*')})$`;
-        this.#regexp = new RegExp(this.#text || '!');
+        this.#regexp = this.#data.size === 0 ? /!/ : this.#data.has('*') ? /.*/ : new RegExp(`(${this.data.map((i) => i.replace(/\./g, '\\.')).join('|')})$`, 'i');;
         this.#parser();
     }
     #parser () {
-        this.#pacScript = this.#text && this.#proxy !== 'DIRECT' ? `    if (/${this.#text}/i.test(host)) {\n        return "${this.#proxy}";\n    }` : '';
+        this.#pacScript = this.#data.size === 0 || this.#proxy === 'DIRECT' ? '' : [...this.#data].map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
     }
     static #instances = [];
     static #tlds = new Set([
@@ -83,7 +81,7 @@ class MatchPattern {
             rule = host.replace(/\d+\.\d+$/, '*');
         } else {
             let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
-            rule = sbd && MatchPattern.#tlds.has(sld) ? `*.${sbd}.${sld}.${tld}` : `*.${sld}.${tld}`;
+            rule = sbd && MatchPattern.#tlds.has(sld) ? `${sbd}.${sld}.${tld}` : `${sld}.${tld}`;
         }
         MatchPattern.#caches.set(host, rule);
         return rule;
