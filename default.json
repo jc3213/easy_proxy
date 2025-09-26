@@ -2,7 +2,6 @@
     "mode": "autopac",
     "preset": null,
     "network": false,
-    "persistent": false,
     "action": "none",
     "handler": [
         "net::ERR_CONNECTION_REFUSED",

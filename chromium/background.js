@@ -262,8 +262,12 @@ chrome.storage.local.get(null, async (json) => {
     easyStorage.proxies.forEach((proxy) => {
         let match = new MatchPattern();
         let tempo = new MatchPattern();
+        // hotfix
+            let data = easyStorage[proxy].filter(i => !i.endsWith('.*')).map(i => i.replace('*.', ''));
+            easyStorage[proxy] = data;
+        //
         match.proxy = tempo.proxy = proxy;
-        match.new(easyStorage[proxy]);
+        match.new(data);
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
     });
