@@ -262,15 +262,12 @@ chrome.storage.local.get(null, async (json) => {
     easyStorage.proxies.forEach((proxy) => {
         let match = new MatchPattern();
         let tempo = new MatchPattern();
-        let array = easyStorage[proxy].filter((i) => !i.endsWith('.*')).map((i) => i.replace('*.', ''));
         match.proxy = tempo.proxy = proxy;
-        match.new(array);
+        match.new(easyStorage[proxy]);
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
-        easyStorage[proxy] = array;
     });
     easyStorageInit(easyStorage);
-    chrome.storage.local.set(easyStorage);
 });
 
 if (manifest === 3 ) {
