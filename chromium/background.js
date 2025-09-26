@@ -255,6 +255,8 @@ function easyStorageInit(json) {
     easyProxyMode();
 }
 
+chrome.storage.local.remove('persistent');
+
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
     easyStorage.proxies.forEach((proxy) => {
