@@ -20,7 +20,7 @@ class MatchPattern {
         return this.#proxy;
     }
     get pacScript () {
-        return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n    return "DIRECT";\n}`;
+        return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n${this.#global ? '' : '    return "DIRECT";\n'}}`;
     }
     new (arg) {
         this.#data = new Set(Array.isArray(arg) ? arg : [arg]);
@@ -36,16 +36,13 @@ class MatchPattern {
     }
     clear () {
         this.#data.clear();
+        this.#dataSet = [];
         this.#empty = true;
         this.#global = false;
-        this.#dataSet = [];
         this.#pacScript = '';
     }
     test (host) {
-        if (this.#empty) {
-            return false;
-        }
-        return this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`));
+        return !this.#empty && (this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`)));
     }
     #update () {
         this.#dataSet = [...this.#data];
