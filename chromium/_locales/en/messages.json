@@ -59,12 +59,6 @@
     "options_network_title": {
         "message": "Record proxied network requests for each tab\n\nThis won't work for \"Direct\" mode"
     },
-    "options_persistent": {
-        "message": "Persistent Background"
-    },
-    "options_persistent_title": {
-        "message": "Prevent \"ServiceWorker\" from hibernating\n\nThis will cost a bit more cpu power"
-    },
     "options_exclude": {
         "message": "Exclude Rules"
     },

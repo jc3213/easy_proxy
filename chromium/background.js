@@ -2,7 +2,6 @@ let easyDefault = {
     mode: 'autopac',
     preset: null,
     network: false,
-    persistent: false,
     action: 'none',
     handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
     proxies: [],
@@ -27,7 +26,6 @@ let easyMatch = {};
 let easyTempo = {};
 let easyExclude = new MatchPattern();
 let easyMode;
-let easyPersistent;
 let easyTabs = new Set();
 let easyInspect = {};
 
@@ -249,6 +247,14 @@ function easyNetworkCounter(tabId, index, host) {
     return index;
 }
 
+function easyStorageInit(json) {
+    easyNetwork = json.network;
+    easyHandler = new Set(json.handler);
+    easyAction = json.action;
+    easyExclude.new(json.exclude);
+    easyProxyMode();
+}
+
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
     easyStorage.proxies.forEach((proxy) => {
@@ -265,15 +271,6 @@ chrome.storage.local.get(null, async (json) => {
     chrome.storage.local.set(easyStorage);
 });
 
-function easyStorageInit(json) {
-    easyNetwork = json.network;
-    easyHandler = new Set(json.handler);
-    easyAction = json.action;
-    easyExclude.new(json.exclude);
-    easyProxyMode();
-    if (manifest === 3 && json.persistent) {
-        easyPersistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
-    } else {
-        clearInterval(easyPersistent);
-    }
+if (manifest === 3 ) {
+    let persistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
 }

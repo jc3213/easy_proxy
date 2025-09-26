@@ -59,12 +59,6 @@
     "options_network_title": {
         "message": "记录各标签页已代理的网络请求\n\n此功能\"直连\"模式不会生效"
     },
-    "options_persistent": {
-        "message": "永驻后台"
-    },
-    "options_persistent_title": {
-        "message": "使得ServiceWorker不再休眠\n\n此功能将额外消耗部分CPU性能"
-    },
     "options_exclude": {
         "message": "例外规则"
     },

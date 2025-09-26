@@ -95,7 +95,7 @@ importEntry.addEventListener('change', (event) => {
     reader.readAsText(event.target.files[0]);
 });
 
-const optionsChangeMap = {
+const optionHandlers = {
     'proxy-mode': ({ value }) => {
         extension.replace(easyStorage.mode, value);
         easyStorage.mode = value;
@@ -109,15 +109,12 @@ const optionsChangeMap = {
     },
     'network': ({ checked }) => {
         easyStorage.network = checked;
-    },
-    'persistent': ({ checked }) => {
-        easyStorage.persistent = checked;
     }
 };
 
 optionsPane.addEventListener('change', (event) => {
     let entry = event.target;
-    optionsChangeMap[entry.id]?.(entry);
+    optionHandlers[entry.id]?.(entry);
     saveBtn.disabled = false;
 });
 
@@ -172,11 +169,6 @@ function storageHandler(json) {
 chrome.runtime.sendMessage({action: 'storage_query'}, ({ storage, manifest }) => {
     storageHandler(storage);
     actionPane.classList.add(storage.action);
-    if (manifest === 3) {
-        persistMenu.checked = storage.persistent;
-    } else {
-        persistMenu.parentNode.remove();
-    }
 });
 
 function profileExport(id) {
