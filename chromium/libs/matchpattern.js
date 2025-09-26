@@ -48,14 +48,14 @@ class MatchPattern {
         return this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`));
     }
     #update () {
-        this.#empty = this.#data.size === 0;
+        this.#empty = this.#dataSet.length === 0;
         this.#global = !this.#empty && this.#data.has('*');
         this.#dataSet = [...this.#data];
         this.#build();
     }
     #build () {
-        this.#pacScript = this.#data.size === 0 || this.#proxy === 'DIRECT' ? ''
-            : this.#data.has('*') ? `    return "${this.#proxy};"`
+        this.#pacScript = this.#empty || this.#proxy === 'DIRECT' ? ''
+            : this.#global ? `    return "${this.#proxy};"`
             : this.#dataSet.map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
     }
     static #instances = [];
