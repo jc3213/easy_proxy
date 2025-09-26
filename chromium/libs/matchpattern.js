@@ -4,11 +4,11 @@ class MatchPattern {
     }
     version = '1.0';
     #data = new Set();
-    #regexp = /!/;
+    #dataSet = [];
     #pacScript = '';
     #proxy = 'DIRECT';
     get data () {
-        return [...this.#data];
+        return this.#dataSet;
     }
     set proxy (proxy) {
         this.#proxy = /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+(:\d{2,5})?$/.test(proxy) ? proxy : 'DIRECT';
@@ -34,16 +34,17 @@ class MatchPattern {
     }
     clear () {
         this.#data.clear();
+        this.#dataSet = [];
         this.#pacScript = '';
-        this.#regexp = /!/;
     }
     test (host) {
-        return this.data.some((i) => i === host || host.endsWith(`.${i}`));
+        return this.#data.has('*') || this.#dataSet.some((i) => host === i || host.endsWith(`.${i}`));
     }
     #build () {
+        this.#dataSet = [...this.#data];
         this.#pacScript = this.#data.size === 0 || this.#proxy === 'DIRECT' ? ''
             : this.#data.has('*') ? `    return "${this.#proxy};"`
-            : this.data.map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
+            : this.#dataSet.map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
     }
     static #instances = [];
     static #tlds = new Set([
