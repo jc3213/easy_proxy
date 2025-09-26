@@ -5,6 +5,7 @@ class MatchPattern {
     version = '1.0';
     #data = new Set();
     #dataSet = [];
+    #empty = true;
     #global = false;
     #pacScript = '';
     #proxy = 'DIRECT';
@@ -35,15 +36,20 @@ class MatchPattern {
     }
     clear () {
         this.#data.clear();
+        this.#empty = true;
         this.#global = false;
         this.#dataSet = [];
         this.#pacScript = '';
     }
     test (host) {
+        if (this.#empty) {
+            return false;
+        }
         return this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`));
     }
     #update () {
-        this.#global = this.#data.has('*');
+        this.#empty = this.#data.size === 0;
+        this.#global = !this.#empty && this.#data.has('*');
         this.#dataSet = [...this.#data];
         this.#build();
     }
