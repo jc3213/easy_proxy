@@ -121,7 +121,7 @@ function easyModeChanger(response, params) {
 const messageDispatch = {
     'storage_query': (response) => response({ storage: easyStorage, manifest }),
     'storage_update': easyStorageUpdated,
-    'pacscript_query': (response, params) => response(easyMatch[params].pac_script),
+    'pacscript_query': (response, params) => response(easyMatch[params].pacScript),
     'manager_query': easyManageQuery,
     'manager_update': easyManagerUpdated,
     'manager_purge': easyTempoPurged,
@@ -139,7 +139,7 @@ const modeHandlers = {
     'SOCKS': (url) => ({ socks: 'socks://' + url, socksVersion: 4 }),
     'SOCKS5': (url) => ({ socks: 'socks://' + url, socksVersion: 5 }),
     'firefox': {
-        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + MatchPattern.pac_script }),
+        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + MatchPattern.pacScript }),
         'direct': () => ({ proxyType: 'none' }),
         'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
@@ -151,7 +151,7 @@ const modeHandlers = {
         }
     },
     'chromium': {
-        'autopac': () => ({ mode: 'pac_script', pacScript: { data: MatchPattern.pac_script } }),
+        'autopac': () => ({ mode: 'pac_script', pacScript: { data: MatchPattern.pacScript } }),
         'direct': () => ({ mode: 'direct' }),
         'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
@@ -271,5 +271,5 @@ chrome.storage.local.get(null, async (json) => {
 });
 
 if (manifest === 3 ) {
-    let persistent = setInterval(chrome.runtime.getPlatformInfo, 26000);
+    let persistent = setInterval(chrome.runtime.getPlatformInfo, 28000);
 }
