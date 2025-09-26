@@ -48,9 +48,9 @@ class MatchPattern {
         return this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`));
     }
     #update () {
+        this.#dataSet = [...this.#data];
         this.#empty = this.#dataSet.length === 0;
         this.#global = !this.#empty && this.#data.has('*');
-        this.#dataSet = [...this.#data];
         this.#build();
     }
     #build () {
