@@ -12,10 +12,13 @@ let easyColor = {
     autopac: '#C1272D',
     global: '#208020'
 };
+
 let manifest = chrome.runtime.getManifest().manifest_version;
 let firefox = typeof browser !== 'undefined';
+
 if (manifest === 3) {
     importScripts('libs/matchpattern.js');
+    let persistent = setInterval(chrome.runtime.getPlatformInfo, 28000);
 }
 
 let easyStorage = {};
@@ -267,13 +270,9 @@ chrome.storage.local.get(null, async (json) => {
             easyStorage[proxy] = data;
         //
         match.proxy = tempo.proxy = proxy;
-        match.new(data);
+        match.new(easyStorage[proxy]);
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
     });
     easyStorageInit(easyStorage);
 });
-
-if (manifest === 3 ) {
-    let persistent = setInterval(chrome.runtime.getPlatformInfo, 28000);
-}
