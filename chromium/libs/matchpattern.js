@@ -5,6 +5,7 @@ class MatchPattern {
     version = '1.0';
     #data = new Set();
     #dataSet = [];
+    #global = false;
     #pacScript = '';
     #proxy = 'DIRECT';
     get data () {
@@ -22,26 +23,31 @@ class MatchPattern {
     }
     new (arg) {
         this.#data = new Set(Array.isArray(arg) ? arg : [arg]);
-        this.#build();
+        this.#update();
     }
     add (arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#data.add(i)) : this.#data.add(arg);
-        this.#build();
+        this.#update();
     }
     delete (arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#data.delete(i)) : this.#data.delete(arg);
-        this.#build();
+        this.#update();
     }
     clear () {
         this.#data.clear();
+        this.#global = false;
         this.#dataSet = [];
         this.#pacScript = '';
     }
     test (host) {
-        return this.#data.has('*') || this.#dataSet.some((i) => host === i || host.endsWith(`.${i}`));
+        return this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`));
+    }
+    #update () {
+        this.#global = this.#data.has('*');
+        this.#dataSet = [...this.#data];
+        this.#build();
     }
     #build () {
-        this.#dataSet = [...this.#data];
         this.#pacScript = this.#data.size === 0 || this.#proxy === 'DIRECT' ? ''
             : this.#data.has('*') ? `    return "${this.#proxy};"`
             : this.#dataSet.map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
