@@ -175,9 +175,9 @@ chrome.runtime.onMessage.addListener(({ action, params }) => {
     messageDispatch[action]?.(params);
 });
 
-chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({action: 'manager_query', params: easyTab}, ({ proxies, mode, preset, match, tempo, exclude, rule, host, flag }) => {
+    chrome.runtime.sendMessage({ action: 'manager_query', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rule, host, flag }) => {
         if (proxies.length === 0 || rule.length === 0 && host.length === 0) {
             manager.add('asleep');
         }

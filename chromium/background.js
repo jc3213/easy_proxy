@@ -62,7 +62,7 @@ function easyStorageUpdated(response, json) {
     json.preset = json.proxies.length === 0 ? null : json.preset ?? json.proxies[0];
     MatchPattern.delete(removed);
     easyStorage = json;
-    easyStorageInit(json);
+    easyStorageUpdated();
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
 }
@@ -166,7 +166,7 @@ const modeHandlers = {
 };
 
 function easyProxyMode() {
-    let {mode} = easyStorage;
+    let { mode } = easyStorage;
     let color = easyColor[mode];
     let value = firefox ? modeHandlers['firefox'][mode]() : modeHandlers['chromium'][mode]();
     easyMode = mode;
@@ -183,15 +183,15 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 function easyMatchInspect(action, tabId, url) {
     let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
     let rule = MatchPattern.make(host);
-    chrome.runtime.sendMessage({action, params: { tabId, rule, host }});
-    return {host, rule};
+    chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
+    return { host, rule };
 }
 
 const tabHandlers = {
     'loading': (tabId, url) => {
         if (url.startsWith('http') && !easyTabs.has(tabId)) {
+            let { host, rule } = easyMatchInspect('manager_update', tabId, url);
             easyTabs.add(tabId);
-            let {host, rule} = easyMatchInspect('manager_update', tabId, url);
             easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), flag: new Set(), index: 0, url };
         }
     },
@@ -210,13 +210,13 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (easyNetwork) {
         inspect.index = easyNetworkCounter(tabId, inspect.index, host);
     }
-}, {urls: [ 'http://*/*', 'https://*/*' ]});
+}, { urls: ['http://*/*', 'https://*/*'] });
 
 function easyMatchAction(action, proxy, tabId, host) {
     if (!easyExclude.test(host)) {
         proxy.add(host);
         easyProxyMode();
-        chrome.runtime.sendMessage({action, params: { tabId, host }});
+        chrome.runtime.sendMessage({ action, params: { tabId, host } });
     }
 }
 
@@ -246,19 +246,17 @@ function easyNetworkCounter(tabId, index, host) {
     if (easyMode === 'direct' || !MatchPattern.test(host)) {
         return 0;
     }
-    chrome.action.setBadgeText({tabId, text: String(++index)});
+    chrome.action.setBadgeText({ tabId, text: String(++index) });
     return index;
 }
 
-function easyStorageInit(json) {
+function easyStorageUpdated() {
     easyNetwork = json.network;
     easyHandler = new Set(json.handler);
     easyAction = json.action;
     easyExclude.new(json.exclude);
     easyProxyMode();
 }
-
-chrome.storage.local.remove('persistent');
 
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
@@ -274,5 +272,9 @@ chrome.storage.local.get(null, async (json) => {
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
     });
-    easyStorageInit(easyStorage);
+    easyStorageUpdated();
+    // hotfix-1
+        chrome.storage.local.set(easyStorage);
+        chrome.storage.local.remove('persistent');
+    //
 });
