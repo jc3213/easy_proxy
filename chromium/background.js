@@ -251,10 +251,10 @@ function easyNetworkCounter(tabId, index, host) {
 }
 
 function easyStorageUpdated() {
-    easyNetwork = json.network;
-    easyHandler = new Set(json.handler);
-    easyAction = json.action;
-    easyExclude.new(json.exclude);
+    easyNetwork = easyStorage.network;
+    easyHandler = new Set(easyStorage.handler);
+    easyAction = easyStorage.action;
+    easyExclude.new(easyStorage.exclude);
     easyProxyMode();
 }
 
