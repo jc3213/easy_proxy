@@ -42,12 +42,12 @@ class MatchPattern {
         this.#pacScript = '';
     }
     test (host) {
-        return !this.#empty && (this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`)));
+        return this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`));
     }
     #update () {
         this.#dataSet = [...this.#data];
         this.#empty = this.#dataSet.length === 0;
-        this.#global = !this.#empty && this.#data.has('*');
+        this.#global = this.#data.has('*');
         this.#build();
     }
     #build () {
