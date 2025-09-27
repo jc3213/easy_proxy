@@ -62,7 +62,7 @@ function easyStorageUpdated(response, json) {
     json.preset = json.proxies.length === 0 ? null : json.preset ?? json.proxies[0];
     MatchPattern.delete(removed);
     easyStorage = json;
-    easyStorageUpdated();
+    easyOptionDispatch();
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json);
 }
@@ -250,7 +250,7 @@ function easyNetworkCounter(tabId, index, host) {
     return index;
 }
 
-function easyStorageUpdated() {
+function easyOptionDispatch() {
     easyNetwork = easyStorage.network;
     easyHandler = new Set(easyStorage.handler);
     easyAction = easyStorage.action;
@@ -272,7 +272,7 @@ chrome.storage.local.get(null, async (json) => {
         easyMatch[proxy] = match;
         easyTempo[proxy] = tempo;
     });
-    easyStorageUpdated();
+    easyOptionDispatch();
     // hotfix-1
         chrome.storage.local.set(easyStorage);
         chrome.storage.local.remove('persistent');
