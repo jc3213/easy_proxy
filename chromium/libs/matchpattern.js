@@ -53,7 +53,7 @@ class MatchPattern {
     #build () {
         this.#pacScript = this.#empty || this.#proxy === 'DIRECT' ? ''
             : this.#global ? `    return "${this.#proxy};"`
-            : this.#dataSet.map((i) => `    if (dnsDomainIs(host, "${i}")) {\n        return "${this.#proxy}";\n    }`).join('\n');
+            : `    if (${[...this.#dataSet].map(i => `dnsDomainIs(host, "${i}")`).join(' ||\n        ')}) {\n        return "${this.#proxy}";\n    }`;
     }
     static #instances = [];
     static #tlds = new Set([
