@@ -17,7 +17,7 @@ let manifest = chrome.runtime.getManifest().manifest_version;
 let firefox = typeof browser !== 'undefined';
 
 if (manifest === 3) {
-    importScripts('libs/matchpattern.js');
+    importScripts('libs/easyproxy.js');
     let persistent = setInterval(chrome.runtime.getPlatformInfo, 28000);
 }
 
@@ -27,7 +27,7 @@ let easyNetwork;
 let easyAction;
 let easyMatch = {};
 let easyTempo = {};
-let easyExclude = new MatchPattern();
+let easyExclude = new EasyProxy();
 let easyMode;
 let easyTabs = new Set();
 let easyInspect = {};
@@ -46,8 +46,8 @@ function easyStorageUpdated(response, json) {
         if (easyStorage.proxies.includes(key)) {
             easyMatch[key].new(json[key]);
         } else {
-            easyMatch[key] = new MatchPattern();
-            easyTempo[key] = new MatchPattern();
+            easyMatch[key] = new EasyProxy();
+            easyTempo[key] = new EasyProxy();
             easyMatch[key].proxy = key;
             easyTempo[key].proxy = key;
         }
@@ -60,7 +60,7 @@ function easyStorageUpdated(response, json) {
         }
     });
     json.preset = json.proxies.length === 0 ? null : json.preset ?? json.proxies[0];
-    MatchPattern.delete(removed);
+    EasyProxy.delete(removed);
     easyStorage = json;
     easyOptionDispatch();
     chrome.storage.local.remove([...invalid, ...removed]);
@@ -142,7 +142,7 @@ const modeHandlers = {
     'SOCKS': (url) => ({ socks: 'socks://' + url, socksVersion: 4 }),
     'SOCKS5': (url) => ({ socks: 'socks://' + url, socksVersion: 5 }),
     'firefox': {
-        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + MatchPattern.pacScript }),
+        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript }),
         'direct': () => ({ proxyType: 'none' }),
         'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
@@ -154,7 +154,7 @@ const modeHandlers = {
         }
     },
     'chromium': {
-        'autopac': () => ({ mode: 'pac_script', pacScript: { data: MatchPattern.pacScript } }),
+        'autopac': () => ({ mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } }),
         'direct': () => ({ mode: 'direct' }),
         'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
@@ -182,7 +182,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 
 function easyMatchInspect(action, tabId, url) {
     let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
-    let rule = MatchPattern.make(host);
+    let rule = EasyProxy.make(host);
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
     return { host, rule };
 }
@@ -243,7 +243,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function easyNetworkCounter(tabId, index, host) {
-    if (easyMode === 'direct' || !MatchPattern.test(host)) {
+    if (easyMode === 'direct' || !EasyProxy.test(host)) {
         return 0;
     }
     chrome.action.setBadgeText({ tabId, text: String(++index) });
@@ -261,8 +261,8 @@ function easyOptionDispatch() {
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
     easyStorage.proxies.forEach((proxy) => {
-        let match = new MatchPattern();
-        let tempo = new MatchPattern();
+        let match = new EasyProxy();
+        let tempo = new EasyProxy();
         // hotfix
             let data = easyStorage[proxy].filter(i => !i.endsWith('.*')).map(i => i.replace('*.', ''));
             easyStorage[proxy] = data;
