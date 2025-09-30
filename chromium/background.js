@@ -18,7 +18,7 @@ let firefox = typeof browser !== 'undefined';
 
 if (manifest === 3) {
     importScripts('libs/easyproxy.js');
-    let persistent = setInterval(chrome.runtime.getPlatformInfo, 28000);
+    setInterval(chrome.runtime.getPlatformInfo, 28000);
 }
 
 let easyStorage = {};
@@ -278,3 +278,4 @@ chrome.storage.local.get(null, async (json) => {
         chrome.storage.local.remove('persistent');
     //
 });
+
