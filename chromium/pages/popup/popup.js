@@ -31,7 +31,6 @@ function shortcutHandler(event, button) {
 const shortcutMap = {
     'Tab': () => switchBtn.click(),
     'Enter': () => submitBtn.click(),
-    ' ': () => submitBtn.click(),
     'Escape': (event) => shortcutHandler(event, defaultBtn),
     'Backspace': () => purgeBtn.click()
 };
@@ -61,6 +60,13 @@ outputPane.addEventListener('wheel', (event) => {
     let index = target.selectedIndex + deltaY / 100;
     target.selectedIndex = index < 0 ? 3 : index > 3 ? 0 : index;
     proxyStatusChanged(target);
+});
+
+outputPane.addEventListener('auxclick', (event) => {
+    if (event.button === 1) {
+        event.preventDefault();
+        submitBtn.click();
+    }
 });
 
 proxyMenu.addEventListener('change', (event) => {
