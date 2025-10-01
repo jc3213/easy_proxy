@@ -3,17 +3,18 @@ class EasyProxy {
         EasyProxy.#instances.push(this);
     }
     version = '1.0';
-    #data = new Set();
-    #dataSet = [];
+    #set = new Set();
+    #data = [];
+    #test = [];
     #empty = true;
     #global = false;
     #pacScript = '';
     #proxy = 'DIRECT';
     get data () {
-        return this.#dataSet;
+        return this.#data;
     }
-    set proxy (proxy) {
-        this.#proxy = /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+(:\d{2,5})?$/.test(proxy) ? proxy : 'DIRECT';
+    set proxy (string) {
+        this.#proxy = /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+(:\d{2,5})?$/.test(string) ? string : 'DIRECT';
         this.#build();
     }
     get proxy () {
@@ -23,37 +24,39 @@ class EasyProxy {
         return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n${this.#global ? '' : '    return "DIRECT";\n'}}`;
     }
     new (arg) {
-        this.#data = new Set(Array.isArray(arg) ? arg : [arg]);
+        this.#set = new Set(Array.isArray(arg) ? arg : [arg]);
         this.#update();
     }
     add (arg) {
-        Array.isArray(arg) ? arg.forEach((i) => this.#data.add(i)) : this.#data.add(arg);
+        Array.isArray(arg) ? arg.forEach((i) => this.#set.add(i)) : this.#set.add(arg);
         this.#update();
     }
     delete (arg) {
-        Array.isArray(arg) ? arg.forEach((i) => this.#data.delete(i)) : this.#data.delete(arg);
+        Array.isArray(arg) ? arg.forEach((i) => this.#set.delete(i)) : this.#set.delete(arg);
         this.#update();
     }
     clear () {
-        this.#data.clear();
-        this.#dataSet = [];
+        this.#set.clear();
+        this.#data = [];
+        this.#test = [];
         this.#empty = true;
         this.#global = false;
         this.#pacScript = '';
     }
-    test (host) {
-        return this.#global || this.#data.has(host) || this.#dataSet.some((i) => host.endsWith(`.${i}`));
+    test (string) {
+        return this.#global || this.#set.has(string) || this.#test.some((i) => string.endsWith(i));
     }
     #update () {
-        this.#dataSet = [...this.#data];
-        this.#empty = this.#dataSet.length === 0;
-        this.#global = this.#data.has('*');
+        this.#data = [...this.#set];
+        this.#test = this.#data.map((i) => `.${i}`);
+        this.#empty = this.#data.length === 0;
+        this.#global = this.#set.has('*');
         this.#build();
     }
     #build () {
         this.#pacScript = this.#empty || this.#proxy === 'DIRECT' ? ''
             : this.#global ? `    return "${this.#proxy};"`
-            : `    if (${[...this.#dataSet].map(i => `dnsDomainIs(host, "${i}")`).join(' ||\n        ')}) {\n        return "${this.#proxy}";\n    }`;
+            : `    if (${[...this.#data].map(i => `dnsDomainIs(host, "${i}")`).join(' ||\n        ')}) {\n        return "${this.#proxy}";\n    }`;
     }
     static #instances = [];
     static #tlds = new Set([
@@ -79,22 +82,22 @@ class EasyProxy {
     static get caches () {
         return EasyProxy.#caches;
     }
-    static make (host) {
-        let rule = EasyProxy.#caches.get(host);
+    static make (string) {
+        let rule = EasyProxy.#caches.get(string);
         if (rule) {
             return rule;
         }
-        let [, sbd, sld, tld] = host.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
+        let [, sbd, sld, tld] = string.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
         rule = sbd && EasyProxy.#tlds.has(sld) ? `${sbd}.${sld}.${tld}` : `${sld}.${tld}`;
-        EasyProxy.#caches.set(host, rule);
+        EasyProxy.#caches.set(string, rule);
         return rule;
     }
-    static test (host) {
-        return EasyProxy.#instances.some((that) => that.#proxy !== 'DIRECT' && that.test(host));
+    static test (string) {
+        return EasyProxy.#instances.some((that) => that.#proxy !== 'DIRECT' && that.test(string));
     }
     static delete (arg) {
-        let removed = new Set(Array.isArray(arg) ? arg : [arg]);
-        EasyProxy.#instances = EasyProxy.#instances.filter((that) => !removed.has(that.proxy));
+        let remove = new Set(Array.isArray(arg) ? arg : [arg]);
+        EasyProxy.#instances = EasyProxy.#instances.filter((that) => !remove.has(that.proxy));
     }
     static get pacScript () {
         let pac = EasyProxy.#instances.map((that) => that.#pacScript).join('\n');
