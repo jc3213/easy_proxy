@@ -13,7 +13,7 @@ body:not(.autopac) #handler,
 
 body.direct .x-direct > :is(select, input, label),
 body.global .x-global > :is(select, input, label) {
-    filter: contrast(20%);
+    filter: var(--item-disabled);
     pointer-events: none;
 }
 
@@ -70,11 +70,11 @@ input[type="file"], a {
 }
 
 #handler > :hover {
-    filter: contrast(80%);
+    filter: var(--item-hover);
 }
 
 #handler > :active {
-    filter: contrast(60%);
+    filter: var(--item-active);
 }
 
 #handler > ::before {

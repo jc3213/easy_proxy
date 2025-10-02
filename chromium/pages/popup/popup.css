@@ -12,7 +12,7 @@ body.asleep > #extra > #proxy,
 body.direct > #menu > button:first-of-type,
 body.direct > #extra > #proxy,
 body.global > #menu > button:first-of-type {
-    filter: contrast(40%);
+    filter: var(--item-disabled);
     pointer-events: none;
 }
 

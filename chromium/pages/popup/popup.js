@@ -62,7 +62,7 @@ outputPane.addEventListener('wheel', (event) => {
     proxyStatusChanged(target);
 });
 
-outputPane.addEventListener('auxclick', (event) => {
+outputPane.addEventListener('mousedown', (event) => {
     if (event.button === 1) {
         event.preventDefault();
         submitBtn.click();
