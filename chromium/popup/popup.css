@@ -1,0 +1,94 @@
+body {
+    margin: 4px;
+    width: max-content;
+}
+
+select {
+    width: 100%;
+}
+
+body.asleep > #menu > button:first-of-type,
+body.asleep > #extra > #proxy,
+body.direct > #menu > button:first-of-type,
+body.direct > #extra > #proxy,
+body.global > #menu > button:first-of-type {
+    filter: var(--item-disabled);
+    pointer-events: none;
+}
+
+body.asleep > #output,
+body.direct > #output,
+body.global > #output,
+body.asleep > #extra > button,
+body.direct > #extra > button,
+body.global > #extra > button,
+#output:not(.switch) > .fullhost:not(.match):not(.tempo):not(.exclude),
+#output.switch > .wildcard:not(.match):not(.tempo):not(.exclude) {
+    display: none;
+}
+
+#output, #extra, #menu {
+    display: flex;
+    gap: 5px;
+    margin: 5px 0px;
+}
+
+#output {
+    flex-direction: column;
+    max-height: 335px;
+    overflow-y: auto;
+}
+
+#menu > * {
+    flex: 1;
+}
+
+.rule {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+
+.rule > :first-child {
+    padding: 3px 0px;
+    white-space: nowrap;
+}
+
+.match {
+    order: 0;
+}
+
+.match > select {
+    color: #FFFFFF;
+    background-color: #34A85D;
+}
+
+.tempo {
+    order: 1;
+}
+
+.tempo > select {
+    color: #FFFFFF;
+    background-color: #E6A92A;
+}
+
+.exclude {
+    order: 2;    
+}
+
+.exclude > select {
+    color: #FFFFFF;
+    background-color: #A39F8C;
+}
+
+.error {
+    order: 3;
+}
+
+.error > select {
+    color: #FFFFFF;
+    background-color: #D23F2A;
+}
+
+.direct {
+    order: 4;
+}

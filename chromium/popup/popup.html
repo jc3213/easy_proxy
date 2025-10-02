@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title i18n="popup_title">Easy Proxy Manager</title>
+        <link rel="stylesheet" href="/pages/common.css">
+        <link rel="stylesheet" href="popup.css">
+    </head>
+    <body>
+        <div id="output"></div>
+        <div id="extra">
+            <select id="proxy"></select>
+            <button i18n="popup_switch">Switch</button>
+            <button i18n="popup_default" disabled>Default</button>
+        </div>
+        <hr>
+        <div id="menu">
+            <select id="proxy-mode">
+                <option value="direct" i18n="common_direct">Direct</option>
+                <option value="autopac" i18n="common_autopac">Auto</option>
+                <option value="global" i18n="common_global">Global</option>
+            </select>
+            <button i18n="popup_purge">Purge</button>
+            <button i18n="common_submit" disabled>Submit</button>
+            <button i18n="popup_options">Options</button>
+        </div>
+        <div class="template">
+            <div class="rule">
+                <div></div>
+                <select>
+                    <option value="match" i18n="common_match">Storage</option>
+                    <option value="tempo" i18n="common_tempo">Session</option>
+                    <option value="exclude" i18n="popup_exclude">Exclude</option>
+                    <option value="direct" i18n="common_direct" selected>Direct</option>
+                </select>
+            </div>
+        </div>
+        <script src="popup.js"></script>
+    </body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title i18n="options_title">Easy Proxy Options</title>
+        <link rel="stylesheet" href="/pages/common.css">
+        <link rel="stylesheet" href="options.css">
+    </head>
+    <body>
+        <div id="menu" class="flex">
+            <select name="scheme">
+                <option value="HTTP" selected>HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+                <option value="SOCKS">SOCKS</option>
+                <option value="SOCKS5">SOCKS5</option>
+            </select>
+            <input name="proxy" type="text" placeholder="localhost:8080">
+            <button i18n="common_submit">Submit</button>
+            <button id="set-options" i18n="options_advance">Options</button>
+            <button i18n="options_save" disabled>Save</button>
+            <button><label for="import-options" i18n="options_import">Import</label></button>
+            <button i18n="options_export">Export</button>
+            <input id="import-options" type="file" accept=".json">
+            <a></a>
+        </div>
+        <div id="options" class="hidden">
+            <div i18n-tips="options_preset_title">
+                <label i18n="options_preset">Preset Proxy</label>
+                <select id="preset"></select>
+                <select id="proxy-mode">
+                    <option value="direct" i18n="common_direct">Direct</option>
+                    <option value="autopac" i18n="common_autopac">Auto</option>
+                    <option value="global" i18n="common_global">Global</option>
+                </select>
+            </div>
+            <div class="x-direct x-global" i18n-tips="options_automate_title">
+                <label i18n="options_automate">Automated Proxy</label>
+                <select id="action">
+                    <option value="match" i18n="common_match" i18n-tips="automate_storage">Storage</option>
+                    <option value="tempo" i18n="common_tempo" i18n-tips="automate_temporary">Session</option>
+                    <option value="none" i18n="common_disable" i18n-tips="automate_disabled">Disabled</option>
+                </select>
+                <div id="handler">
+                    <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
+                    <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
+                    <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
+                    <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
+                </div>
+            </div>
+            <div class="checkbox x-direct" i18n-tips="options_network_title">
+                <input type="checkbox" id="network">
+                <label for="network" i18n="options_network">Proxied Network</label>
+            </div>
+        </div>
+        <hr>
+        <div id="manager"></div>
+        <div id="exclude" class="profile">
+            <div class="proxy" i18n="options_exclude">Exclude</div>
+            <input type="text">
+            <button i18n-tips="match_add">➕</button>
+            <button i18n-tips="match_resort">🧲</button>
+            <div class="matches"></div>
+        </div>
+        <div class="template">
+            <div class="profile">
+                <div class="proxy"></div>
+                <button i18n-tips="profile_export">💾</button>
+                <input type="text">
+                <button i18n-tips="match_add">➕</button>
+                <button i18n-tips="match_resort">🧲</button>
+                <button i18n-tips="profile_remove">❌</button>
+                <div class="matches"></div>
+            </div>
+            <div class="rule">
+                <div></div>
+                <button i18n-tips="match_remove">❌</button>
+            </div>
+        </div>
+        <script src="options.js"></script>
+    </body>
+</html>
