@@ -1,0 +1,109 @@
+:root {
+    --color-body: #FFFFFF;
+    --color-text: #000000;
+    --color-item: #F3F3F3;
+    --item-hover: brightness(1.1) contrast(0.8);
+    --item-active: brightness(1.0) contrast(0.8);
+    --item-disabled: brightness(0.9) contrast(0.8) opacity(0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-body: #202124;
+        --color-text: #FFFFFF;
+        --color-item: #56585D;
+    }
+}
+
+* {
+    border-color: #AAB0B6;
+}
+
+body, button, input, select {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 16px;
+}
+
+body, div {
+    background-color: var(--color-body);
+    color: var(--color-text);
+    user-select: none;
+    position: relative;
+}
+
+body {
+    margin: auto;
+}
+
+button, input, select, option {
+    color: var(--color-text);
+    background-color: var(--color-item);
+}
+
+input, option {
+    border-style: inset;
+    border-width: 1px;
+}
+
+input, option {
+    padding: 1px 5px;
+}
+
+input[type="checkbox"] {
+    accent-color: #006cbe;
+    transform: scale(1.5);
+    width: auto;
+}
+
+select {
+    padding: 0px 5px;
+}
+
+option:checked {
+    font-weight: bold;
+}
+
+button {
+    border-width: 1px;
+    border-style: outset;
+    padding: 3px 5px;
+    white-space: nowrap;
+}
+
+button:enabled:hover {
+    cursor: pointer;
+    filter: var(--item-hover);
+}
+
+button:enabled:active {
+    border-style: inset;
+    filter: var(--item-active);
+}
+
+button:disabled {
+    border-width: 0px;
+    filter: var(--item-disabled);
+    padding: 4px 6px;
+}
+
+button.checked {
+    border-style: inset;
+}
+
+.hidden, .template {
+    display: none !important;
+}
+
+#proxy-mode {
+    background-color: #2940D9;
+    color: #FFFFFF;
+    width: fit-content;
+}
+
+body.global #proxy-mode {
+    background-color: #208020;
+}
+
+body.direct #proxy-mode {
+    background-color: #C1272D;
+}
