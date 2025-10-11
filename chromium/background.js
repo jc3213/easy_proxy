@@ -181,7 +181,8 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 function easyMatchInspect(action, tabId, url) {
-    let host = url.match(/^(?:(?:http|ftp|ws)s?:?\/\/)?(([^./:]+\.)+[^./:]+)(?::\d+)?\/?/)[1];
+    let data = url.split('/')[2];
+    let host = data.includes('@') ? data.split('@')[1] : data;
     let rule = EasyProxy.make(host);
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
     return { host, rule };
@@ -278,4 +279,3 @@ chrome.storage.local.get(null, async (json) => {
         chrome.storage.local.remove('persistent');
     //
 });
-
