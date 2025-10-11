@@ -3,8 +3,8 @@
     --color-text: #000000;
     --color-item: #F3F3F3;
     --item-hover: brightness(1.1) contrast(0.8);
-    --item-active: brightness(0.9) contrast(0.8);
-    --item-disabled: brightness(0.8) contrast(0.8) opacity(0.8);
+    --item-active: brightness(1.0) contrast(0.8);
+    --item-disabled: brightness(0.9) contrast(0.8) opacity(0.8);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,7 +17,6 @@
 
 * {
     border-color: #AAB0B6;
-    border-radius: 3px;
 }
 
 body, button, input, select {
@@ -26,8 +25,8 @@ body, button, input, select {
 }
 
 body, div {
-    color: var(--color-text);
     background-color: var(--color-body);
+    color: var(--color-text);
     user-select: none;
     position: relative;
 }
@@ -42,12 +41,12 @@ button, input, select, option {
 }
 
 input, option {
-    border-width: 1px;
     border-style: inset;
+    border-width: 1px;
 }
 
 input, option {
-    padding: 3px 5px;
+    padding: 1px 5px;
 }
 
 input[type="checkbox"] {
@@ -57,7 +56,7 @@ input[type="checkbox"] {
 }
 
 select {
-    padding: 2px 5px;
+    padding: 0px 5px;
 }
 
 option:checked {

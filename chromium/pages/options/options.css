@@ -92,7 +92,6 @@ input[type="file"], a {
 
 .profile {
     display: flex;
-    gap: 1px;
     flex-wrap: wrap;
 }
 
@@ -103,14 +102,15 @@ input[type="file"], a {
 }
 
 .profile > input {
-    height: 20px;
+    height: 22px;
     margin: auto 0px auto auto;
 }
 
 .profile > button {
-    height: 28px;
+    height: 26px;
     margin: auto 0px;
-    padding: 2px;
+    padding: 1px;
+    width: 26px;
 }
 
 #manager > .profile > button:last-of-type {
