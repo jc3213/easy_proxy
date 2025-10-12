@@ -1,5 +1,6 @@
 class EasyProxy {
-    constructor () {
+    constructor (string) {
+        this.proxy = string;
         EasyProxy.#instances.push(this);
     }
     version = '1.0';

@@ -262,16 +262,13 @@ function easyOptionDispatch() {
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
     easyStorage.proxies.forEach((proxy) => {
-        let match = new EasyProxy();
-        let tempo = new EasyProxy();
+        easyMatch[proxy] = new EasyProxy(proxy);
+        easyTempo[proxy] = new EasyProxy(proxy);
         // hotfix
             let data = easyStorage[proxy].filter(i => !i.endsWith('.*')).map(i => i.replace('*.', ''));
             easyStorage[proxy] = data;
         //
-        match.proxy = tempo.proxy = proxy;
-        match.new(easyStorage[proxy]);
-        easyMatch[proxy] = match;
-        easyTempo[proxy] = tempo;
+        easyMatch[proxy].new(easyStorage[proxy]);
     });
     easyOptionDispatch();
     // hotfix-1
