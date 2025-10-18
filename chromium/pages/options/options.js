@@ -81,15 +81,17 @@ menuPane.addEventListener('keydown', (event) => {
     }
 });
 
-importEntry.addEventListener('change', async (event) => {
-    let result = await event.target.files[0].text();
-    let params = JSON.parse(result);
-    importEntry.value = '';
-    managePane.innerHTML = excludeList.innerHTML = '';
-    saveBtn.disabled = true;
-    actionPane.classList.replace(easyStorage.action, params.action);
-    storageDispatch(params);
-    chrome.runtime.sendMessage({ action: 'storage_update', params });
+importEntry.addEventListener('change', (event) => {
+    let reader = new FileReader();
+    reader.onload = (event) => {
+        let params = JSON.parse(reader.result);
+        managePane.innerHTML = excludeList.innerHTML = importEntry.value = '';
+        saveBtn.disabled = true;
+        actionPane.classList.replace(easyStorage.action, params.action);
+        storageHandler(params);
+        chrome.runtime.sendMessage({ action: 'storage_update', params });
+    };
+    reader.readAsText(event.target.files[0]);
 });
 
 const optionHandlers = {
