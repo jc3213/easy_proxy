@@ -81,18 +81,15 @@ menuPane.addEventListener('keydown', (event) => {
     }
 });
 
-importEntry.addEventListener('change', (event) => {
-    let reader = new FileReader();
-    reader.onload = (event) => {
-        let params = JSON.parse(reader.result);
-        managePane.innerHTML = excludeList.innerHTML = '';
-        saveBtn.disabled = true;
-        actionPane.classList.replace(easyStorage.action, params.action);
-        storageHandler(params);
-        chrome.runtime.sendMessage({ action: 'storage_update', params });
-        importEntry.value = '';
-    };
-    reader.readAsText(event.target.files[0]);
+importEntry.addEventListener('change', async (event) => {
+    let result = await event.target.files[0].text();
+    let params = JSON.parse(result);
+    importEntry.value = '';
+    managePane.innerHTML = excludeList.innerHTML = '';
+    saveBtn.disabled = true;
+    actionPane.classList.replace(easyStorage.action, params.action);
+    storageDispatch(params);
+    chrome.runtime.sendMessage({ action: 'storage_update', params });
 });
 
 const optionHandlers = {
@@ -148,7 +145,7 @@ excludePane.addEventListener('click', (event) => {
     excludeEventMap[menu]?.('exclude', excludeList, excludeEntry, event);
 });
 
-function storageHandler(json) {
+function storageDispatch(json) {
     easyStorage = json;
     easyHandler = new Set(json.handler);
     json.proxies.forEach(createMatchProfile);
@@ -167,7 +164,7 @@ function storageHandler(json) {
 }
 
 chrome.runtime.sendMessage({ action: 'storage_query' }, ({ storage, manifest }) => {
-    storageHandler(storage);
+    storageDispatch(storage);
     actionPane.classList.add(storage.action);
 });
 
