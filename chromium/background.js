@@ -15,6 +15,11 @@ let easyColor = {
 
 let firefox = typeof browser !== 'undefined';
 
+if (chrome.runtime.getManifest().manifest_version === 3) {
+    importScripts('libs/easyproxy.js', 'background.js');
+    setInterval(chrome.runtime.getPlatformInfo, 28000);
+}
+
 let easyStorage = {};
 let easyHandler;
 let easyNetwork;
@@ -129,6 +134,8 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     messageDispatch[action]?.(response, params);
     return true;
 });
+
+chrome.runtime.onStartup.addListener(chrome.runtime.getPlatformInfo);
 
 const modeHandlers = {
     'HTTP': (url) => ({ http: 'http://' + url }),
