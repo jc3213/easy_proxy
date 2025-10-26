@@ -165,7 +165,7 @@ function storageDispatch(json) {
     });
 }
 
-chrome.runtime.sendMessage({ action: 'storage_query' }, ({ storage, manifest }) => {
+chrome.runtime.sendMessage({ action: 'storage_query' }, (storage) => {
     storageDispatch(storage);
     actionPane.classList.add(storage.action);
 });

@@ -13,13 +13,7 @@ let easyColor = {
     global: '#208020'
 };
 
-let manifest = chrome.runtime.getManifest().manifest_version;
 let firefox = typeof browser !== 'undefined';
-
-if (manifest === 3) {
-    importScripts('libs/easyproxy.js');
-    setInterval(chrome.runtime.getPlatformInfo, 28000);
-}
 
 let easyStorage = {};
 let easyHandler;
@@ -122,7 +116,7 @@ function easyModeChanger(response, params) {
 }
 
 const messageDispatch = {
-    'storage_query': (response) => response({ storage: easyStorage, manifest }),
+    'storage_query': (response) => response(easyStorage),
     'storage_update': easyStorageUpdated,
     'pacscript_query': (response, params) => response(easyMatch[params].pacScript),
     'manager_query': easyManageQuery,
