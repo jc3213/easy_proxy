@@ -1,7 +1,7 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "2.4.0",
+    "version": "2.4.1",
     "manifest_version": 3,
     "permissions": [
         "proxy",
@@ -22,7 +22,7 @@
         "128": "icons/128.png"
     },
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "application.js"
     },
     "action": {
         "default_icon": {

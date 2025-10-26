@@ -3,6 +3,7 @@ class EasyProxy {
         this.proxy = string;
         EasyProxy.#instances.push(this);
     }
+    version = '1.0';
     #set = new Set();
     #data = [];
     #test = [];
