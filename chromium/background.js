@@ -16,7 +16,7 @@ let easyColor = {
 let firefox = typeof browser !== 'undefined';
 
 if (chrome.runtime.getManifest().manifest_version === 3) {
-    importScripts('libs/easyproxy.js', 'background.js');
+    importScripts('libs/easyproxy.js');
     setInterval(chrome.runtime.getPlatformInfo, 28000);
 }
 
