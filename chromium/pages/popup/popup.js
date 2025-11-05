@@ -158,20 +158,20 @@ function messageHandler({ tabId, rule, host }, callback) {
 }
 
 const messageDispatch = {
-    'manager_update': (params) => messageHandler(params, (host, rule) => {
+    'network_update': (params) => messageHandler(params, (host, rule) => {
         proxyItemListing(rule, 'wildcard');
         proxyItemListing(host, 'fullhost');
         manager.remove('asleep');
     }),
-    'manager_report': (params) => messageHandler(params, (host, rule) => {
+    'network_error': (params) => messageHandler(params, (host, rule) => {
         easyRules.get(rule)?.classList?.add('error');
         easyRules.get(host)?.classList?.add('error');
     }),
-    'manager_to_match': (params) => messageHandler(params, (host) => {
+    'network_match': (params) => messageHandler(params, (host) => {
         easyMatch.set(host, easyProxy);
         easyRules.get(host)?.classList?.add('match');
     }),
-    'manager_to_tempo': (params) => messageHandler(params, (host) => {
+    'network_tempo': (params) => messageHandler(params, (host) => {
         easyTempo.set(host, easyProxy);
         easyRules.get(host)?.classList?.add('tempo');
     })
@@ -241,3 +241,4 @@ function proxyItemListing(value, stat) {
     easyTypes.add(type);
     outputPane.append(rule);
 }
+

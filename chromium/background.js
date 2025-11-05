@@ -135,8 +135,6 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     return true;
 });
 
-chrome.runtime.onStartup.addListener(chrome.runtime.getPlatformInfo);
-
 const modeHandlers = {
     'HTTP': (url) => ({ http: 'http://' + url }),
     'HTTPS': (url) => ({ ssl: 'https://' + url }),
@@ -192,7 +190,7 @@ function easyMatchInspect(action, tabId, url) {
 const tabHandlers = {
     'loading': (tabId, url) => {
         if (url.startsWith('http') && !easyTabs.has(tabId)) {
-            let { host, rule } = easyMatchInspect('manager_update', tabId, url);
+            let { host, rule } = easyMatchInspect('network_update', tabId, url);
             easyTabs.add(tabId);
             easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), flag: new Set(), index: 0, url };
         }
@@ -206,7 +204,7 @@ chrome.tabs.onUpdated.addListener((tabId, { status }, { url }) => {
 
 chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), flag: new Set(), index: 0 };
-    let { host, rule } = easyMatchInspect('manager_update', tabId, url);
+    let { host, rule } = easyMatchInspect('network_update', tabId, url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyNetwork) {
@@ -228,8 +226,8 @@ const automateMap = {
         flag.add(rule);
         flag.add(host);
     },
-    'match': (tabId, preset, host) => easyMatchAction('manager_to_match', easyMatch[preset], tabId, host),
-    'tempo': (tabId, preset, host) => easyMatchAction('manager_to_tempo', easyTempo[preset], tabId, host)
+    'match': (tabId, preset, host) => easyMatchAction('network_match', easyMatch[preset], tabId, host),
+    'tempo': (tabId, preset, host) => easyMatchAction('network_tempo', easyTempo[preset], tabId, host)
 };
 
 chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
@@ -240,7 +238,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     if (!preset) {
         return;
     }
-    let { host, rule } = easyMatchInspect('manager_report', tabId, url);
+    let { host, rule } = easyMatchInspect('network_error', tabId, url);
     automateMap[easyAction]?.(tabId, preset, host, rule);
 }, { urls: ['http://*/*', 'https://*/*'] });
 
