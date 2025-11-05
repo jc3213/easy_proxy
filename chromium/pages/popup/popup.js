@@ -241,4 +241,3 @@ function proxyItemListing(value, stat) {
     easyTypes.add(type);
     outputPane.append(rule);
 }
-
