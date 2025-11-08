@@ -197,15 +197,15 @@ function profileRemove(id) {
 }
 
 function matchAddNew(id, list, entry) {
-    let storage = easyStorage[id];
     let value = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(?=\/|$)/)?.[1];
+    let storage = easyStorage[id];
+    entry.value = '';
     if (value && !storage.includes(value)) {
         saveBtn.disabled = false;
         createMatchPattern(list, value);
         storage.push(value);
         list.scrollTop = list.scrollHeight;
     }
-    entry.value = '';
 }
 
 function matchRemove(id, rule) {
