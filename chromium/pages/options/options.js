@@ -198,7 +198,7 @@ function profileRemove(id) {
 
 function matchAddNew(id, list, entry) {
     let storage = easyStorage[id];
-    let value = entry.value.match(/^(\*|[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*)$/)?.[0];
+    let value = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(?=\/|$)/)?.[1];
     if (value && !storage.includes(value)) {
         saveBtn.disabled = false;
         createMatchPattern(list, value);
