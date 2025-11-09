@@ -57,7 +57,7 @@ outputPane.addEventListener('wheel', (event) => {
     if (target.localName !== 'select') {
         return;
     }
-    let index = target.selectedIndex + deltaY / 100;
+    let index = target.selectedIndex + Math.sign(deltaY);
     target.selectedIndex = index < 0 ? 3 : index > 3 ? 0 : index;
     proxyStatusChanged(target);
 });
