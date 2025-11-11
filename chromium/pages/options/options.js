@@ -88,7 +88,7 @@ importEntry.addEventListener('change', (event) => {
         managePane.innerHTML = excludeList.innerHTML = importEntry.value = '';
         saveBtn.disabled = true;
         actionPane.classList.replace(easyStorage.action, params.action);
-        storageHandler(params);
+        storageDispatch(params);
         chrome.runtime.sendMessage({ action: 'storage_update', params });
     };
     reader.readAsText(event.target.files[0]);
