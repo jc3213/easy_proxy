@@ -56,7 +56,7 @@ input[type="checkbox"] {
 }
 
 select {
-    padding: 0px 5px;
+    padding: 0px 1px;
 }
 
 option:checked {
