@@ -45,10 +45,8 @@ function easyStorageUpdated(response, json) {
         if (easyStorage.proxies.includes(key)) {
             easyMatch[key].new(json[key]);
         } else {
-            easyMatch[key] = new EasyProxy();
-            easyTempo[key] = new EasyProxy();
-            easyMatch[key].proxy = key;
-            easyTempo[key].proxy = key;
+            easyMatch[key] = new EasyProxy(key);
+            easyTempo[key] = new EasyProxy(key);
         }
     });
     let removed = easyStorage.proxies.filter((proxy) => {
@@ -187,7 +185,7 @@ chrome.tabs.onUpdated.addListener((tabId, { url }) => {
 
 chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), flag: new Set(), index: 0 };
-    let { host, rule } = easyMatchInspect('network_update', tabId, url);
+    let { host, rule } = inspectRequest('network_update', tabId, url);
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyNetwork) {
@@ -195,7 +193,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
-function easyMatchInspect(action, tabId, url) {
+function inspectRequest(action, tabId, url) {
     let data = url.split('/')[2];
     let host = data.includes('@') ? data.slice(data.indexOf('@') + 1) : data;
     let rule = EasyProxy.make(host);
@@ -229,7 +227,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     if (!preset) {
         return;
     }
-    let { host, rule } = easyMatchInspect('network_error', tabId, url);
+    let { host, rule } = inspectRequest('network_error', tabId, url);
     actionMap[easyAction]?.(tabId, preset, host, rule);
 }, { urls: ['http://*/*', 'https://*/*'] });
 
