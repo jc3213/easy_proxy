@@ -179,27 +179,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
-function easyMatchInspect(action, tabId, url) {
-    let data = url.split('/')[2];
-    let host = data.includes('@') ? data.slice(data.indexOf('@') + 1) : data;
-    let rule = EasyProxy.make(host);
-    chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
-    return { host, rule };
-}
-
-const tabHandlers = {
-    'loading': (tabId, url) => {
-        if (url.startsWith('http') && !easyTabs.has(tabId)) {
-            let { host, rule } = easyMatchInspect('network_update', tabId, url);
-            easyTabs.add(tabId);
-            easyInspect[tabId] = { rule: new Set([rule]), host: new Set([host]), flag: new Set(), index: 0, url };
-        }
-    },
-    'complete': (tabId) => easyTabs.delete(tabId)
-};
-
-chrome.tabs.onUpdated.addListener((tabId, { status }, { url }) => {
-    tabHandlers[status]?.(tabId, url);
+chrome.tabs.onUpdated.addListener((tabId, { url }) => {
+    if (url) {
+        delete easyInspect[tabId];
+    }
 });
 
 chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
@@ -212,7 +195,15 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
-function easyMatchAction(action, proxy, tabId, host) {
+function easyMatchInspect(action, tabId, url) {
+    let data = url.split('/')[2];
+    let host = data.includes('@') ? data.slice(data.indexOf('@') + 1) : data;
+    let rule = EasyProxy.make(host);
+    chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
+    return { host, rule };
+}
+
+function actionHandler(action, proxy, tabId, host) {
     if (!easyExclude.test(host)) {
         proxy.add(host);
         easyProxyMode();
@@ -220,14 +211,14 @@ function easyMatchAction(action, proxy, tabId, host) {
     }
 }
 
-const automateMap = {
+const actionMap = {
     'none': () => {
         let { flag } = easyInspect[tabId];
         flag.add(rule);
         flag.add(host);
     },
-    'match': (tabId, preset, host) => easyMatchAction('network_match', easyMatch[preset], tabId, host),
-    'tempo': (tabId, preset, host) => easyMatchAction('network_tempo', easyTempo[preset], tabId, host)
+    'match': (tabId, preset, host) => actionHandler('network_match', easyMatch[preset], tabId, host),
+    'tempo': (tabId, preset, host) => actionHandler('network_tempo', easyTempo[preset], tabId, host)
 };
 
 chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
@@ -239,7 +230,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         return;
     }
     let { host, rule } = easyMatchInspect('network_error', tabId, url);
-    automateMap[easyAction]?.(tabId, preset, host, rule);
+    actionMap[easyAction]?.(tabId, preset, host, rule);
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function easyNetworkCounter(tabId, index, host) {
