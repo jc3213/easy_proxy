@@ -28,7 +28,6 @@ let easyMatch = {};
 let easyTempo = {};
 let easyExclude = new EasyProxy();
 let easyMode;
-let easyTabs = new Set();
 let easyInspect = {};
 
 function easyStorageUpdated(response, json) {
