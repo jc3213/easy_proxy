@@ -1,6 +1,6 @@
-let easyMatch = new Map();
-let easyTempo = new Map();
-let easyExclude = new Map();
+let easyMatch = {};
+let easyTempo = {};
+let easyExclude = {};
 let easyStats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
 let easyRules = new Map();
 let easyTypes = new Set();
@@ -169,11 +169,11 @@ const messageDispatch = {
         easyRules.get(host)?.classList?.add('error');
     }),
     'network_match': (params) => messageHandler(params, (host) => {
-        easyMatch.set(host, easyProxy);
+        easyMatch[host] = easyProxy;
         easyRules.get(host)?.classList?.add('match');
     }),
     'network_tempo': (params) => messageHandler(params, (host) => {
-        easyTempo.set(host, easyProxy);
+        easyTempo[host] = easyProxy;
         easyRules.get(host)?.classList?.add('tempo');
     })
 };
@@ -190,10 +190,16 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         }
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
-        exclude.forEach((rule) => easyExclude.set(rule, 'DIRECT'));
+        exclude.forEach((rule) => {
+            easyExclude[rule] = 'DIRECT';
+        });
         proxies.forEach((proxy) => {
-            match[proxy]?.forEach((e) => easyMatch.set(e, proxy));
-            tempo[proxy]?.forEach((e) => easyTempo.set(e, proxy));
+            match[proxy]?.forEach((e) => {
+                easyMatch[e] = proxy;
+            });
+            tempo[proxy]?.forEach((e) => {
+                easyTempo[e] = proxy;
+            });
             let menu = document.createElement('option');
             menu.textContent = menu.value = proxy;
             proxyMenu.append(menu);
@@ -228,9 +234,9 @@ function proxyItemListing(value, stat) {
     if (easyTypes.has(type)) {
         return;
     }
-    let match = easyMatch.get(value);
-    let tempo = easyTempo.get(value);
-    if (easyExclude.has(value)) {
+    let match = easyMatch[value];
+    let tempo = easyTempo[value];
+    if (easyExclude[value]) {
         proxyItemStatus(rule, type, 'exclude', '');
     } else if (match) {
         proxyItemStatus(rule, type, 'match', match);
