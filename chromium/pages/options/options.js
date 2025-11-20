@@ -17,13 +17,13 @@ document.querySelectorAll('[i18n-tips]').forEach((node) => {
 });
 
 const shortcutMap = {
-    's': saveBtn,
-    'q': optionsBtn
+    'KeyS': saveBtn,
+    'KeyQ': optionsBtn
 };
 
 document.addEventListener('keydown', (event) => {
-    let key = shortcutMap[event.key];
-    if (key && event.ctrlKey) {
+    let key = shortcutMap[event.code];
+    if (event.ctrlKey && key) {
         event.preventDefault();
         key.click();
     }
