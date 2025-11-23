@@ -29,8 +29,8 @@
     "options_title": {
         "message": "Easy Proxy Options"
     },
-    "options_advance": {
-        "message": "Options"
+    "options_advanced": {
+        "message": "Advanced"
     },
     "options_save": {
         "message": "Save"
