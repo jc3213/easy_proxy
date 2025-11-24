@@ -209,7 +209,7 @@ function actionHandler(action, proxy, tabId, host) {
 }
 
 const actionMap = {
-    'none': () => {
+    'none': (tabId, preset, host, rule) => {
         let { flag } = easyInspect[tabId];
         flag.add(rule);
         flag.add(host);
