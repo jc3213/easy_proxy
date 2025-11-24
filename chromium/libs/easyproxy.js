@@ -3,8 +3,8 @@ class EasyProxy {
         this.proxy = string;
         EasyProxy.#instances.push(this);
     }
-    #set = new Set();
     #data = [];
+    #set = new Set();
     #test = [];
     #empty = true;
     #global = false;
@@ -36,8 +36,8 @@ class EasyProxy {
         this.#update();
     }
     clear () {
-        this.#set.clear();
         this.#data = [];
+        this.#set.clear();
         this.#test = [];
         this.#empty = true;
         this.#global = false;
