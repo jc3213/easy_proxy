@@ -44,7 +44,7 @@ class EasyProxy {
         this.#pacScript = '';
     }
     test (string) {
-        return this.#global || this.#set.has(string) || this.#test.some((i) => string.endsWith(i));
+        return !this.#empty && (this.#global || this.#set.has(string) || this.#test.some((i) => string.endsWith(i)));
     }
     #update () {
         this.#data = [...this.#set];
