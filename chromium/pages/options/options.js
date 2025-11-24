@@ -42,7 +42,7 @@ function menuEventSubmit() {
     saveBtn.disabled = false;
 }
 
-function menuEventOptions() {
+function menuEventAdvanced() {
     optionsBtn.classList.toggle('checked');
     optionsPane.classList.toggle('hidden');
 }
@@ -65,7 +65,7 @@ function fileSaver(data, filename, filetype) {
 
 const menuEventMap = {
     'common_submit': menuEventSubmit,
-    'options_advance': menuEventOptions,
+    'options_advanced': menuEventAdvanced,
     'options_save': menuEventSave,
     'options_export': menuEventExport
 };
