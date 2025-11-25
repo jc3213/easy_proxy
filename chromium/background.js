@@ -30,7 +30,7 @@ let easyExclude = new EasyProxy();
 let easyMode;
 let easyInspect = {};
 
-function easyStorageUpdated(response, json) {
+function storageUpdated(response, json) {
     let invalid = [];
     Object.keys(json).forEach((key) => {
         if (key in easyDefault) {
@@ -60,10 +60,10 @@ function easyStorageUpdated(response, json) {
     easyStorage = json;
     easyOptionDispatch();
     chrome.storage.local.remove([...invalid, ...removed]);
-    chrome.storage.local.set(json);
+    chrome.storage.local.set(json, response);
 }
 
-function easyManageQuery(response, tabId) {
+function proxyQuery(response, tabId) {
     let match = {}
     let tempo = {};
     let { proxies, mode, preset, exclude } = easyStorage;
@@ -86,7 +86,7 @@ const manageDispatch = {
     'exclude': () => easyExclude
 };
 
-function easyManagerUpdated(response, { added, removed, tabId }) {
+function proxySubmit(response, { added, removed, tabId }) {
     added.forEach(({ type, proxy, rule }) => {
         let map = manageDispatch[type](proxy);
         map.add(rule);
@@ -100,31 +100,31 @@ function easyManagerUpdated(response, { added, removed, tabId }) {
     });
     easyStorage['exclude'] = easyExclude.data;
     easyProxyMode();
-    chrome.storage.local.set(easyStorage);
+    chrome.storage.local.set(easyStorage, response);
     chrome.tabs.reload(tabId);
 }
 
-function easyTempoPurged(response, tabId) {
+function proxyPurge(response, tabId) {
     easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
     easyProxyMode();
     chrome.tabs.reload(tabId);
 }
 
-function easyModeChanger(response, params) {
-    easyStorage.mode = params;
-    chrome.storage.local.set(easyStorage);
+function modeUpdated(response, { proxy, tabId }) {
+    easyStorage.mode = proxy;
     easyProxyMode();
-    response(true);
+    chrome.storage.local.set(easyStorage, response);
+    chrome.tabs.reload(tabId);
 }
 
 const messageDispatch = {
     'storage_query': (response) => response(easyStorage),
-    'storage_update': easyStorageUpdated,
+    'storage_update': storageUpdated,
     'pacscript_query': (response, params) => response(easyMatch[params].pacScript),
-    'manager_query': easyManageQuery,
-    'manager_update': easyManagerUpdated,
-    'manager_purge': easyTempoPurged,
-    'easyproxy_mode': easyModeChanger
+    'manager_query': proxyQuery,
+    'manager_update': proxySubmit,
+    'manager_purge': proxyPurge,
+    'easyproxy_mode': modeUpdated
 };
 
 chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
