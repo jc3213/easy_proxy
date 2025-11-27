@@ -4,8 +4,8 @@ class EasyProxy {
     #test = [];
     #empty = true;
     #global = false;
-    #pacScript = '';
-    #proxy = 'DIRECT';
+    #proxy;
+    #pacScript;
 
     constructor(string) {
         this.proxy = string;
