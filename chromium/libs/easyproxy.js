@@ -1,8 +1,4 @@
 class EasyProxy {
-    constructor (string) {
-        this.proxy = string;
-        EasyProxy.#instances.push(this);
-    }
     #data = [];
     #set = new Set();
     #test = [];
@@ -10,32 +6,41 @@ class EasyProxy {
     #global = false;
     #pacScript = '';
     #proxy = 'DIRECT';
-    get data () {
+
+    constructor(string) {
+        this.proxy = string;
+        EasyProxy.#instances.push(this);
+    }
+
+    get data() {
         return this.#data;
     }
-    set proxy (string) {
+
+    set proxy(string) {
         this.#proxy = /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+(:\d{2,5})?$/.test(string) ? string : 'DIRECT';
         this.#build();
     }
-    get proxy () {
+    get proxy() {
         return this.#proxy;
     }
-    get pacScript () {
+
+    get pacScript() {
         return `function FindProxyForURL(url, host) {\n${this.#pacScript}\n${this.#global ? '' : '    return "DIRECT";\n'}}`;
     }
-    new (arg) {
+
+    new(arg) {
         this.#set = new Set(Array.isArray(arg) ? arg : [arg]);
         this.#update();
     }
-    add (arg) {
+    add(arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#set.add(i)) : this.#set.add(arg);
         this.#update();
     }
-    delete (arg) {
+    delete(arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#set.delete(i)) : this.#set.delete(arg);
         this.#update();
     }
-    clear () {
+    clear() {
         this.#data = [];
         this.#set.clear();
         this.#test = [];
@@ -43,21 +48,23 @@ class EasyProxy {
         this.#global = false;
         this.#pacScript = '';
     }
-    test (string) {
+    test(string) {
         return !this.#empty && (this.#global || this.#set.has(string) || this.#test.some((i) => string.endsWith(i)));
     }
-    #update () {
+
+    #update() {
         this.#data = [...this.#set];
         this.#test = this.#data.map((i) => `.${i}`);
         this.#empty = this.#data.length === 0;
         this.#global = this.#set.has('*');
         this.#build();
     }
-    #build () {
+    #build() {
         this.#pacScript = this.#empty || this.#proxy === 'DIRECT' ? ''
             : this.#global ? `    return "${this.#proxy};"`
             : `    if (${[...this.#data].map(i => `dnsDomainIs(host, "${i}")`).join(' ||\n        ')}) {\n        return "${this.#proxy}";\n    }`;
     }
+
     static #instances = [];
     static #tlds = new Set([
         'aero', 'app', 'arpa', 'asia',
@@ -79,10 +86,16 @@ class EasyProxy {
         'xxx', 'xyz'
     ]);
     static #caches = new Map();
-    static get caches () {
+
+    static get caches() {
         return EasyProxy.#caches;
     }
-    static make (string) {
+    static get pacScript() {
+        let pac = EasyProxy.#instances.map((that) => that.#pacScript).join('\n');
+        return `function FindProxyForURL(url, host) {${pac}\n    return "DIRECT";\n}`;
+    }
+
+    static make(string) {
         let rule = EasyProxy.#caches.get(string);
         if (rule) {
             return rule;
@@ -92,15 +105,11 @@ class EasyProxy {
         EasyProxy.#caches.set(string, rule);
         return rule;
     }
-    static test (string) {
+    static test(string) {
         return EasyProxy.#instances.some((that) => that.#proxy !== 'DIRECT' && that.test(string));
     }
-    static delete (arg) {
-        let remove = new Set(Array.isArray(arg) ? arg : [arg]);
-        EasyProxy.#instances = EasyProxy.#instances.filter((that) => !remove.has(that.proxy));
-    }
-    static get pacScript () {
-        let pac = EasyProxy.#instances.map((that) => that.#pacScript).join('\n');
-        return `function FindProxyForURL(url, host) {${pac}\n    return "DIRECT";\n}`;
+    static delete(arg) {
+        let remove = Array.isArray(arg) ? arg : [arg];
+        EasyProxy.#instances = EasyProxy.#instances.filter((that) => !remove.includes(that.proxy));
     }
 }
