@@ -92,8 +92,8 @@ class EasyProxy {
     }
 
     static get pacScript() {
-        let pac = EasyProxy.#instances.map((that) => that.#pacScript).join('\n');
-        return `function FindProxyForURL(url, host) {${pac}\n    return "DIRECT";\n}`;
+        let pacScript = EasyProxy.#instances.map((i) => i.#pacScript).join('\n');
+        return `function FindProxyForURL(url, host) {${pacScript}\n    return "DIRECT";\n}`;
     }
 
     static make(string) {
@@ -107,10 +107,10 @@ class EasyProxy {
         return rule;
     }
     static test(string) {
-        return EasyProxy.#instances.some((that) => that.#proxy !== 'DIRECT' && that.test(string));
+        return EasyProxy.#instances.some((i) => i.#proxy !== 'DIRECT' && i.test(string));
     }
     static delete(arg) {
         let remove = Array.isArray(arg) ? arg : [arg];
-        EasyProxy.#instances = EasyProxy.#instances.filter((that) => !remove.includes(that.proxy));
+        EasyProxy.#instances = EasyProxy.#instances.filter((i) => !remove.includes(i.proxy));
     }
 }
