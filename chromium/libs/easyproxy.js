@@ -1,6 +1,6 @@
 class EasyProxy {
-    #data = [];
     #set = new Set();
+    #data = [];
     #test = [];
     #empty = true;
     #global = false;
@@ -38,7 +38,7 @@ class EasyProxy {
     #build() {
         this.#pacScript = this.#empty || this.#proxy === 'DIRECT' ? ''
             : this.#global ? `    return "${this.#proxy};"`
-            : `    if (${[...this.#data].map(i => `dnsDomainIs(host, "${i}")`).join(' ||\n        ')}) {\n        return "${this.#proxy}";\n    }`;
+            : `    if (${[...this.#data].map((i) => `dnsDomainIs(host, "${i}")`).join(' ||\n        ')}) {\n        return "${this.#proxy}";\n    }`;
     }
 
     new(arg) {
@@ -54,8 +54,8 @@ class EasyProxy {
         this.#update();
     }
     clear() {
+        this.#set = new Set();
         this.#data = [];
-        this.#set.clear();
         this.#test = [];
         this.#empty = true;
         this.#global = false;
