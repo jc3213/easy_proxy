@@ -38,6 +38,7 @@ class EasyProxy {
         this.#global = this.#set.has('*');
         this.#build();
     }
+
     #build() {
         this.#pacScript = this.#empty ? ''
             : this.#global ? `    return "${this.#proxy};"`
@@ -48,14 +49,17 @@ class EasyProxy {
         this.#set = new Set(Array.isArray(arg) ? arg : [arg]);
         this.#update();
     }
+
     add(arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#set.add(i)) : this.#set.add(arg);
         this.#update();
     }
+
     delete(arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#set.delete(i)) : this.#set.delete(arg);
         this.#update();
     }
+
     clear() {
         this.#set = new Set();
         this.#data = [];
@@ -64,11 +68,13 @@ class EasyProxy {
         this.#global = false;
         this.#pacScript = '';
     }
+
     test(string) {
         return !this.#empty && (this.#global || this.#set.has(string) || this.#test.some((i) => string.endsWith(i)));
     }
 
     static #instances = [];
+    static #caches = new Map();
     static #tlds = new Set([
         'aero', 'app', 'arpa', 'asia',
         'biz',
@@ -88,7 +94,6 @@ class EasyProxy {
         'web',
         'xxx', 'xyz'
     ]);
-    static #caches = new Map();
 
     static get caches() {
         return EasyProxy.#caches;
@@ -109,9 +114,11 @@ class EasyProxy {
         EasyProxy.#caches.set(string, rule);
         return rule;
     }
+
     static test(string) {
         return EasyProxy.#instances.some((i) => i.#proxy !== 'DIRECT' && i.test(string));
     }
+
     static delete(arg) {
         let remove = Array.isArray(arg) ? arg : [arg];
         EasyProxy.#instances = EasyProxy.#instances.filter((i) => !remove.includes(i.#proxy));
