@@ -8,7 +8,7 @@ class EasyProxy {
     #pacScript;
 
     constructor(string) {
-        this.proxy = string;
+        this.proxy = string ?? 'DIRECT';
         EasyProxy.#instances.push(this);
     }
 
@@ -17,7 +17,10 @@ class EasyProxy {
     }
 
     set proxy(string) {
-        this.#proxy = /^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+(:\d{2,5})?$/.test(string) ? string : 'DIRECT';
+        if (string !== 'DIRECT' && !/^(SOCKS5?|HTTPS?) ([^.]+\.)+[^.:]+(:\d{2,5})?$/.test(string)) {
+            throw new TypeError('Invalid proxy: expected "DIRECT" or a valid proxy (e.g., "HTTP 123.0.1.1:8080").');
+        }
+        this.#proxy = string;
         this.#build();
     }
     get proxy() {
@@ -36,7 +39,7 @@ class EasyProxy {
         this.#build();
     }
     #build() {
-        this.#pacScript = this.#empty || this.#proxy === 'DIRECT' ? ''
+        this.#pacScript = this.#empty ? ''
             : this.#global ? `    return "${this.#proxy};"`
             : `    if (${[...this.#data].map((i) => `dnsDomainIs(host, "${i}")`).join(' ||\n        ')}) {\n        return "${this.#proxy}";\n    }`;
     }
@@ -111,6 +114,6 @@ class EasyProxy {
     }
     static delete(arg) {
         let remove = Array.isArray(arg) ? arg : [arg];
-        EasyProxy.#instances = EasyProxy.#instances.filter((i) => !remove.includes(i.proxy));
+        EasyProxy.#instances = EasyProxy.#instances.filter((i) => !remove.includes(i.#proxy));
     }
 }
