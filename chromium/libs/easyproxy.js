@@ -72,18 +72,25 @@ function FindProxyForURL(url, host) {
     }
 
     static make(host) {
-        let rule = EasyProxy.#caches[string];
+        let rule = EasyProxy.#caches[host];
         if (rule) {
             return rule;
         }
-        let [, sbd, sld, tld] = string.match(/(?:([^.]+)\.)?([^.]+)\.([^.]+)$/);
-        rule = sbd && EasyProxy.#etld.has(sld) ? `${sbd}.${sld}.${tld}` : `${sld}.${tld}`;
-        EasyProxy.#caches[string] = rule;
+        let temp = host.split('.');
+        if (temp.length < 2) {
+            rule = host;
+        } else {
+            let sbd = temp.at(-3);
+            let sld = temp.at(-2);
+            let tld = temp.at(-1);
+            rule = sbd && EasyProxy.#etld.has(sld) ? `${sbd}.${sld}.${tld}` : `${sld}.${tld}`;
+        }
+        EasyProxy.#caches[host] = rule;
         return rule;
     }
 
-    static test(string) {
-        return EasyProxy.#instances.some((i) => i.#proxy !== 'DIRECT' && i.test(string));
+    static test(host) {
+        return EasyProxy.#instances.some((i) => i.#proxy !== 'DIRECT' && i.test(host));
     }
 
     static delete(arg) {
