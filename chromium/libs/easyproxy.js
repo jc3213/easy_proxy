@@ -4,11 +4,11 @@ class EasyProxy {
     static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
     static #pacBody = `
 function FindProxyForURL(url, host) {
-    var origin = host;
+    var src = host;
     while (true) {
         var hit = RULES[host];
         if (hit) {
-            RULES[origin] = hit;
+            RULES[src] = hit;
             return hit;
         }
         var dot = host.indexOf(".");
