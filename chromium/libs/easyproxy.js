@@ -1,7 +1,7 @@
 class EasyProxy {
     static #instances = [];
     static #caches = {};
-    static #etld = new Set([ 'co', 'com', 'net', 'org', 'gov', 'edu', 'ac', 'sch', 'ne', 'or', 'go' ]);
+    static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
     static #pacBody = `
 function FindProxyForURL(url, host) {
     var origin = host;
@@ -68,7 +68,7 @@ function FindProxyForURL(url, host) {
         }
         return rules.length === 0
             ? 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'
-            : `var RULES = {\n${rules.join(",\n")}\n};\n${EasyProxy.#pacBody}`;
+            : `var RULES = {\n${rules.join(',\n')}\n};\n${EasyProxy.#pacBody}`;
     }
 
     static make(host) {
@@ -143,7 +143,7 @@ function FindProxyForURL(url, host) {
             if (this.#data.has(host)) {
                 return true;
             }
-            let dot = host.indexOf(".");
+            let dot = host.indexOf('.');
             if (dot < 0) {
                 break;
             }
