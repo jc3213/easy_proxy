@@ -69,15 +69,15 @@ function proxyQuery(response, tabId) {
     let { proxies, mode, preset, exclude } = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
-        response({ match, tempo, exclude, rule: [], host: [], flag: [], proxies, mode, preset });
+        response({ match, tempo, exclude, rules: [], hosts: [], error: [], proxies, mode, preset });
         return;
     }
     proxies.forEach((proxy) => {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
     });
-    let { rule, host, flag } = inspect;
-    response({ match, tempo, exclude, rule: [...rule], host: [...host], flag: [...flag], proxies, mode, preset });
+    let { rules, hosts, error } = inspect;
+    response({ match, tempo, exclude, rules: [...rules], hosts: [...host], error: [...error], proxies, mode, preset });
 }
 
 const manageDispatch = {
@@ -164,7 +164,7 @@ const modeMap = {
 function modeChanger() {
     let { mode } = easyStorage;
     let color = easyColor[mode];
-    let value = firefox ? modeMap['firefox'][mode]() : modeMap['chromium'][mode]();
+    let value = modeMap[firefox ? 'firefox' : 'chromium'][mode]();
     easyMode = mode;
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
@@ -176,21 +176,14 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
-chrome.tabs.onUpdated.addListener((tabId, { url }) => {
-    if (url) {
+chrome.tabs.onUpdated.addListener((tabId, { status }) => {
+    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 }
+    if (status == 'loading' && inspect.ok) {
         delete easyInspect[tabId];
+    } else if (status === 'complete') {
+        inspect.ok = true;
     }
 });
-
-chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
-    let inspect = easyInspect[tabId] ??= { rule: new Set(), host: new Set(), flag: new Set(), index: 0 };
-    let { host, rule } = inspectRequest('network_update', tabId, url);
-    inspect.rule.add(rule);
-    inspect.host.add(host);
-    if (easyNetwork) {
-        inspect.index = networkCounter(tabId, inspect.index, host);
-    }
-}, { urls: ['http://*/*', 'https://*/*'] });
 
 function inspectRequest(action, tabId, url) {
     let data = url.split('/')[2];
@@ -199,6 +192,30 @@ function inspectRequest(action, tabId, url) {
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
     return { host, rule };
 }
+
+function networkCounter(tabId, index, host) {
+    if (easyMode === 'direct') {
+        return 0;
+    }
+    let result = easyTempo[host] ??= EasyProxy.test(host);
+    if (result) {
+        chrome.action.setBadgeText({ tabId, text: String(++index) });
+    }
+    return index;
+}
+
+chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
+    if (tabId === -1) {
+        return;
+    }
+    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
+    let { host, rule } = inspectRequest('network_update', tabId, url);
+    inspect.rules.add(rule);
+    inspect.hosts.add(host);
+    if (easyNetwork) {
+        inspect.index = networkCounter(tabId, inspect.index, host);
+    }
+}, { urls: ['http://*/*', 'https://*/*'] });
 
 function actionHandler(action, proxy, tabId, host) {
     let result = easyExclude[host] ??= !easyExclude.test(host);
@@ -211,9 +228,9 @@ function actionHandler(action, proxy, tabId, host) {
 
 const actionMap = {
     'none': (tabId, preset, host, rule) => {
-        let { flag } = easyInspect[tabId];
-        flag.add(rule);
-        flag.add(host);
+        let { error } = easyInspect[tabId];
+        error.add(rule);
+        error.add(host);
     },
     'match': (tabId, preset, host) => actionHandler('network_match', easyMatch[preset], tabId, host),
     'tempo': (tabId, preset, host) => actionHandler('network_tempo', easyTempo[preset], tabId, host)
@@ -230,17 +247,6 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     let { host, rule } = inspectRequest('network_error', tabId, url);
     actionMap[easyAction]?.(tabId, preset, host, rule);
 }, { urls: ['http://*/*', 'https://*/*'] });
-
-function networkCounter(tabId, index, host) {
-    if (easyMode === 'direct') {
-        return 0;
-    }
-    let result = easyTempo[host] ??= EasyProxy.test(host);
-    if (result) {
-        chrome.action.setBadgeText({ tabId, text: String(++index) });
-    }
-    return index;
-}
 
 function storageDispatch() {
     easyNetwork = easyStorage.network;
