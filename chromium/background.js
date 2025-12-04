@@ -8,8 +8,6 @@ let easyDefault = {
     exclude: []
 };
 
-let firefox = typeof browser !== 'undefined';
-
 if (chrome.runtime.getManifest().manifest_version === 3) {
     importScripts('libs/easyproxy.js');
     setInterval(chrome.runtime.getPlatformInfo, 28000);
@@ -127,38 +125,39 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     return true;
 });
 
-const modeMap = {
+const proxyMap = {
     'HTTP': (url) => ({ http: 'http://' + url }),
     'HTTPS': (url) => ({ ssl: 'https://' + url }),
     'SOCKS': (url) => ({ socks: 'socks://' + url, socksVersion: 4 }),
-    'SOCKS5': (url) => ({ socks: 'socks://' + url, socksVersion: 5 }),
-    'firefox': {
-        'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript }),
-        'direct': () => ({ proxyType: 'none' }),
-        'global': () => {
-            let proxy = easyStorage.preset ?? easyStorage.proxies[0];
-            let [scheme, url] = proxy.split(' ');
-            let config = modeMap[scheme](url);
-            config.proxyType = 'manual';
-            config.passthrough = 'localhost, 127.0.0.1';
-            return config;
-        }
-    },
-    'chromium': {
-        'autopac': () => ({ mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } }),
-        'direct': () => ({ mode: 'direct' }),
-        'global': () => {
-            let proxy = easyStorage.preset ?? easyStorage.proxies[0];
-            let [scheme, host, port] = proxy.split(/[\s:]/);
-            let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-            return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
-        }
+    'SOCKS5': (url) => ({ socks: 'socks://' + url, socksVersion: 5 })
+};
+const modeFirefox = {
+    'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript }),
+    'direct': () => ({ proxyType: 'none' }),
+    'global': () => {
+        let proxy = easyStorage.preset ?? easyStorage.proxies[0];
+        let [scheme, url] = proxy.split(' ');
+        let config = proxyMap[scheme](url);
+        config.proxyType = 'manual';
+        config.passthrough = 'localhost, 127.0.0.1';
+        return config;
     }
 };
+const modeChromium = {
+    'autopac': () => ({ mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } }),
+    'direct': () => ({ mode: 'direct' }),
+    'global': () => {
+        let proxy = easyStorage.preset ?? easyStorage.proxies[0];
+        let [scheme, host, port] = proxy.split(/[\s:]/);
+        let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
+        return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
+    }
+}
+const modeMap = typeof browser !== 'undefined' ? modeFirefox : modeChromium;
 
 function modeChanger() {
     let { mode } = easyStorage;
-    let value = modeMap[firefox ? 'firefox' : 'chromium'][mode]();
+    let value = modeMap[mode]();
     easyMode = mode;
     chrome.proxy.settings.set({ value });
 }
