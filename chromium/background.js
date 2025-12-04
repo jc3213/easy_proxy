@@ -235,11 +235,10 @@ function networkCounter(tabId, index, host) {
     if (easyMode === 'direct') {
         return 0;
     }
-    let result = easyTempo[host] ??= !EasyProxy.test(host);
+    let result = easyTempo[host] ??= EasyProxy.test(host);
     if (result) {
-        return 0;
+        chrome.action.setBadgeText({ tabId, text: String(++index) });
     }
-    chrome.action.setBadgeText({ tabId, text: String(++index) });
     return index;
 }
 
