@@ -77,7 +77,7 @@ function proxyQuery(response, tabId) {
         tempo[proxy] = easyTempo[proxy].data;
     });
     let { rules, hosts, error } = inspect;
-    response({ match, tempo, exclude, rules: [...rules], hosts: [...host], error: [...error], proxies, mode, preset });
+    response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
 }
 
 const manageDispatch = {
