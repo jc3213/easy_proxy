@@ -58,7 +58,7 @@ function storageUpdated(response, json) {
     json.preset = json.proxies.length === 0 ? null : json.preset ?? json.proxies[0];
     EasyProxy.delete(removed);
     easyStorage = json;
-    easyOptionDispatch();
+    storageDispatch();
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json, response);
 }
@@ -99,20 +99,20 @@ function proxySubmit(response, { added, removed, tabId }) {
         easyStorage[proxy] = easyMatch[proxy].data;
     });
     easyStorage['exclude'] = easyExclude.data;
-    easyProxyMode();
+    modeChanger();
     chrome.storage.local.set(easyStorage, response);
     chrome.tabs.reload(tabId);
 }
 
 function proxyPurge(response, tabId) {
     easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
-    easyProxyMode();
+    modeChanger();
     chrome.tabs.reload(tabId);
 }
 
 function modeUpdated(response, { proxy, tabId }) {
     easyStorage.mode = proxy;
-    easyProxyMode();
+    modeChanger();
     chrome.storage.local.set(easyStorage, response);
     chrome.tabs.reload(tabId);
 }
@@ -132,7 +132,7 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     return true;
 });
 
-const modeHandlers = {
+const modeMap = {
     'HTTP': (url) => ({ http: 'http://' + url }),
     'HTTPS': (url) => ({ ssl: 'https://' + url }),
     'SOCKS': (url) => ({ socks: 'socks://' + url, socksVersion: 4 }),
@@ -143,7 +143,7 @@ const modeHandlers = {
         'global': () => {
             let proxy = easyStorage.preset ?? easyStorage.proxies[0];
             let [scheme, url] = proxy.split(' ');
-            let config = modeHandlers[scheme](url);
+            let config = modeMap[scheme](url);
             config.proxyType = 'manual';
             config.passthrough = 'localhost, 127.0.0.1';
             return config;
@@ -161,10 +161,10 @@ const modeHandlers = {
     }
 };
 
-function easyProxyMode() {
+function modeChanger() {
     let { mode } = easyStorage;
     let color = easyColor[mode];
-    let value = firefox ? modeHandlers['firefox'][mode]() : modeHandlers['chromium'][mode]();
+    let value = firefox ? modeMap['firefox'][mode]() : modeMap['chromium'][mode]();
     easyMode = mode;
     chrome.proxy.settings.set({ value });
     chrome.action.setBadgeBackgroundColor({ color });
@@ -188,22 +188,23 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     inspect.rule.add(rule);
     inspect.host.add(host);
     if (easyNetwork) {
-        inspect.index = easyNetworkCounter(tabId, inspect.index, host);
+        inspect.index = networkCounter(tabId, inspect.index, host);
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function inspectRequest(action, tabId, url) {
     let data = url.split('/')[2];
     let host = data.includes('@') ? data.slice(data.indexOf('@') + 1) : data;
-    let rule = EasyProxy.make(host);
+    let rule = easyMatch[host] ??= EasyProxy.make(host);
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
     return { host, rule };
 }
 
 function actionHandler(action, proxy, tabId, host) {
-    if (!easyExclude.test(host)) {
+    let result = easyExclude[host] ??= !easyExclude.test(host);
+    if (result) {
         proxy.add(host);
-        easyProxyMode();
+        modeChanger();
         chrome.runtime.sendMessage({ action, params: { tabId, host } });
     }
 }
@@ -230,20 +231,24 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     actionMap[easyAction]?.(tabId, preset, host, rule);
 }, { urls: ['http://*/*', 'https://*/*'] });
 
-function easyNetworkCounter(tabId, index, host) {
-    if (easyMode === 'direct' || !EasyProxy.test(host)) {
+function networkCounter(tabId, index, host) {
+    if (easyMode === 'direct') {
+        return 0;
+    }
+    let result = easyTempo[host] ??= !EasyProxy.test(host);
+    if (result) {
         return 0;
     }
     chrome.action.setBadgeText({ tabId, text: String(++index) });
     return index;
 }
 
-function easyOptionDispatch() {
+function storageDispatch() {
     easyNetwork = easyStorage.network;
     easyHandler = new Set(easyStorage.handler);
     easyAction = easyStorage.action;
     easyExclude.new(easyStorage.exclude);
-    easyProxyMode();
+    modeChanger();
 }
 
 chrome.storage.local.get(null, async (json) => {
@@ -253,5 +258,5 @@ chrome.storage.local.get(null, async (json) => {
         easyTempo[proxy] = new EasyProxy(proxy);
         easyMatch[proxy].new(easyStorage[proxy]);
     });
-    easyOptionDispatch();
+    storageDispatch();
 });

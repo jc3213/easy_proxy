@@ -1,6 +1,5 @@
 class EasyProxy {
     static #instances = [];
-    static #caches = {};
     static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
     static #pacBody = `
 function FindProxyForURL(url, host) {
@@ -51,10 +50,6 @@ function FindProxyForURL(url, host) {
             : `var RULES = {\n${this.#pacScript}\n};\n${EasyProxy.#pacBody}`;
     }
 
-    static get caches() {
-        return EasyProxy.#caches;
-    }
-
     static get pacScript() {
         let rules = [];
         for (let i of EasyProxy.#instances) {
@@ -72,21 +67,14 @@ function FindProxyForURL(url, host) {
     }
 
     static make(host) {
-        let rule = EasyProxy.#caches[host];
-        if (rule) {
-            return rule;
-        }
         let temp = host.split('.');
         if (temp.length < 2) {
-            rule = host;
-        } else {
-            let sbd = temp.at(-3);
-            let sld = temp.at(-2);
-            let tld = temp.at(-1);
-            rule = sbd && EasyProxy.#etld.has(sld) ? `${sbd}.${sld}.${tld}` : `${sld}.${tld}`;
+            return host;
         }
-        EasyProxy.#caches[host] = rule;
-        return rule;
+        let sbd = temp.at(-3);
+        let sld = temp.at(-2);
+        let tld = temp.at(-1);
+        return sbd && EasyProxy.#etld.has(sld) ? `${sbd}.${sld}.${tld}` : `${sld}.${tld}`;
     }
 
     static test(host) {
