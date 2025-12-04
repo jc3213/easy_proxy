@@ -7,11 +7,6 @@ let easyDefault = {
     proxies: [],
     exclude: []
 };
-let easyColor = {
-    direct: '#2940D9',
-    autopac: '#C1272D',
-    global: '#208020'
-};
 
 let firefox = typeof browser !== 'undefined';
 
@@ -163,14 +158,13 @@ const modeMap = {
 
 function modeChanger() {
     let { mode } = easyStorage;
-    let color = easyColor[mode];
     let value = modeMap[firefox ? 'firefox' : 'chromium'][mode]();
     easyMode = mode;
     chrome.proxy.settings.set({ value });
-    chrome.action.setBadgeBackgroundColor({ color });
 }
 
 chrome.action ??= chrome.browserAction;
+chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
