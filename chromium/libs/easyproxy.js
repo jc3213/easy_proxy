@@ -129,4 +129,11 @@ function FindProxyForURL(url, host) {
         Array.isArray(arg) ? arg.forEach((i) => this.#data.delete(i)) : this.#data.delete(arg);
         this.#sync();
     }
+
+    clear() {
+        this.#data = new Set();
+        this.#empty = true;
+        this.#global = false;
+        this.test = () => false;
+    }
 }
