@@ -23,6 +23,10 @@ let easyExclude = new EasyProxy();
 let easyMode;
 let easyInspect = {};
 
+let cacheRules = {};
+let cacheCounts = {};
+let cacheExclude = {};
+
 function storageUpdated(response, json) {
     let invalid = [];
     Object.keys(json).forEach((key) => {
@@ -52,6 +56,8 @@ function storageUpdated(response, json) {
     EasyProxy.delete(removed);
     easyStorage = json;
     storageDispatch();
+    cacheCounts = {};
+    cacheExclude = {};
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json, response);
 }
@@ -93,6 +99,8 @@ function proxySubmit(response, { added, removed, tabId }) {
     });
     easyStorage['exclude'] = easyExclude.data;
     modeChanger();
+    cacheCounts = {};
+    cacheExclude = {};
     chrome.storage.local.set(easyStorage, response);
     chrome.tabs.reload(tabId);
 }
@@ -100,6 +108,7 @@ function proxySubmit(response, { added, removed, tabId }) {
 function proxyPurge(response, tabId) {
     easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
     modeChanger();
+    cacheCounts = {};
     chrome.tabs.reload(tabId);
 }
 
@@ -181,7 +190,7 @@ chrome.tabs.onUpdated.addListener((tabId, { status }) => {
 function inspectRequest(action, tabId, url) {
     let data = url.split('/')[2];
     let host = data.includes('@') ? data.slice(data.indexOf('@') + 1) : data;
-    let rule = easyMatch[host] ??= EasyProxy.make(host);
+    let rule = cacheRules[host] ??= EasyProxy.make(host);
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
     return { host, rule };
 }
@@ -190,7 +199,7 @@ function networkCounter(tabId, index, host) {
     if (easyMode === 'direct') {
         return 0;
     }
-    let result = easyTempo[host] ??= EasyProxy.test(host);
+    let result = cacheCounts[host] ??= EasyProxy.test(host);
     if (result) {
         chrome.action.setBadgeText({ tabId, text: String(++index) });
     }
@@ -211,7 +220,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function actionHandler(action, proxy, tabId, host) {
-    let result = easyExclude[host] ??= !easyExclude.test(host);
+    let result = cacheRules[host] ??= !easyExclude.test(host);
     if (result) {
         proxy.add(host);
         modeChanger();
