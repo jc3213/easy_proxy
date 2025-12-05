@@ -36,7 +36,7 @@ function FindProxyForURL(url, host) {
 
     set proxy(string) {
         this.#proxy = string;
-        this.test = this.#init();
+        this.#make();
     }
     get proxy() {
         return this.#proxy;
@@ -89,29 +89,12 @@ function FindProxyForURL(url, host) {
     #sync() {
         this.#empty = this.#data.size === 0;
         this.#global = this.#data.has('*');
-        this.test = this.#init();
+        this.#make();
     }
 
-    #init() {
-        if (this.#empty) {
-            return () => false;
-        }
-        this.#pacScript = this.data.map((i) => `    "${i}": "${this.#proxy}"`).join(',\n');
-        if (this.#global) {
-            return () => true;
-        }
-        return (host) => {
-            while (true) {
-                if (this.#data.has(host)) {
-                    return true;
-                }
-                let dot = host.indexOf('.');
-                if (dot < 0) {
-                    break;
-                }
-                host = host.substring(dot + 1);
-            }
-            return false;
+    #make() {
+        if (!this.#empty) {
+            this.#pacScript = this.data.map((i) => `    "${i}": "${this.#proxy}"`).join(',\n');
         }
     }
 
@@ -134,6 +117,26 @@ function FindProxyForURL(url, host) {
         this.#data = new Set();
         this.#empty = true;
         this.#global = false;
-        this.test = () => false;
+        this.#pacScript = '';
+    }
+
+    test(host) {
+        if (this.#empty) {
+            return false;
+        }
+        if (this.#global) {
+            return true;
+        }
+        while (true) {
+            if (this.#data.has(host)) {
+                return true;
+            }
+            let dot = host.indexOf('.');
+            if (dot < 0) {
+                break;
+            }
+            host = host.substring(dot + 1);
+        }
+        return false;
     }
 }
