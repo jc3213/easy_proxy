@@ -36,7 +36,7 @@ function FindProxyForURL(url, host) {
 
     set proxy(string) {
         this.#proxy = string;
-        this.#build();
+        this.test = this.#init();
     }
     get proxy() {
         return this.#proxy;
@@ -86,57 +86,47 @@ function FindProxyForURL(url, host) {
         EasyProxy.#instances = EasyProxy.#instances.filter((i) => !remove.includes(i.#proxy));
     }
 
-    #update() {
+    #sync() {
         this.#empty = this.#data.size === 0;
         this.#global = this.#data.has('*');
-        this.#build();
+        this.test = this.#init();
     }
 
-    #build() {
-        if (!this.#empty) {
-            this.#pacScript = this.data.map((i) => `    "${i}": "${this.#proxy}"`).join(',\n');
+    #init() {
+        if (this.#empty) {
+            return () => false;
+        }
+        this.#pacScript = this.data.map((i) => `    "${i}": "${this.#proxy}"`).join(',\n');
+        if (this.#global) {
+            return () => true;
+        }
+        return (host) => {
+            while (true) {
+                if (this.#data.has(host)) {
+                    return true;
+                }
+                let dot = host.indexOf('.');
+                if (dot < 0) {
+                    break;
+                }
+                host = host.substring(dot + 1);
+            }
+            return false;
         }
     }
 
     new(arg) {
         this.#data = new Set(Array.isArray(arg) ? arg : [arg]);
-        this.#update();
+        this.#sync();
     }
 
     add(arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#data.add(i)) : this.#data.add(arg);
-        this.#update();
+        this.#sync();
     }
 
     delete(arg) {
         Array.isArray(arg) ? arg.forEach((i) => this.#data.delete(i)) : this.#data.delete(arg);
-        this.#update();
-    }
-
-    clear() {
-        this.#data = new Set();
-        this.#empty = true;
-        this.#global = false;
-        this.#pacScript = '';
-    }
-
-    test(host) {
-        if (this.#empty) {
-            return false;
-        }
-        if (this.#global) {
-            return true;
-        }
-        while (true) {
-            if (this.#data.has(host)) {
-                return true;
-            }
-            let dot = host.indexOf('.');
-            if (dot < 0) {
-                break;
-            }
-            host = host.substring(dot + 1);
-        }
-        return false;
+        this.#sync();
     }
 }
