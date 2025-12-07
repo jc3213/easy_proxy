@@ -195,17 +195,6 @@ function inspectRequest(action, tabId, url) {
     return { host, rule };
 }
 
-function networkCounter(tabId, index, host) {
-    if (easyMode === 'direct') {
-        return 0;
-    }
-    let result = cacheCounts[host] ??= EasyProxy.test(host);
-    if (result) {
-        chrome.action.setBadgeText({ tabId, text: String(++index) });
-    }
-    return index;
-}
-
 chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (tabId === -1) {
         return;
@@ -214,8 +203,12 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     let { host, rule } = inspectRequest('network_update', tabId, url);
     inspect.rules.add(rule);
     inspect.hosts.add(host);
-    if (easyNetwork) {
-        inspect.index = networkCounter(tabId, inspect.index, host);
+    if (!easyNetwork || easyMode === 'direct') {
+        return;
+    }
+    let result = cacheCounts[host] ??= EasyProxy.test(host);
+    if (result) {
+        chrome.action.setBadgeText({ tabId, text: String(++inspect.index) });
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
