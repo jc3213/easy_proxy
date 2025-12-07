@@ -94,7 +94,7 @@ function FindProxyForURL(url, host) {
 
     #make() {
         if (!this.#empty) {
-            this.#pacScript = this.data.map((i) => `    "${i}": "${this.#proxy}"`).join(',\n');
+            this.#pacScript = [...this.#data].map((i) => `    "${i}": "${this.#proxy}"`).join(',\n');
         }
     }
 
