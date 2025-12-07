@@ -17,6 +17,7 @@ let easyStorage = {};
 let easyHandler;
 let easyNetwork;
 let easyAction;
+let easyPreset;
 let easyMatch = {};
 let easyTempo = {};
 let easyExclude = new EasyProxy();
@@ -235,8 +236,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     if (!easyHandler.has(error)) {
         return;
     }
-    let { preset } = easyStorage;
-    if (!preset) {
+    if (!easyPreset) {
         return;
     }
     let { host, rule } = inspectRequest('network_error', tabId, url);
@@ -247,6 +247,7 @@ function storageDispatch() {
     easyNetwork = easyStorage.network;
     easyHandler = new Set(easyStorage.handler);
     easyAction = easyStorage.action;
+    easyPreset = easyStorage.preset;
     easyExclude.new(easyStorage.exclude);
     modeChanger();
 }
