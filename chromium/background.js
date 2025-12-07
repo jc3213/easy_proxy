@@ -223,13 +223,13 @@ function actionHandler(action, proxy, tabId, host) {
 }
 
 const actionMap = {
-    'none': (tabId, preset, host, rule) => {
+    'none': (tabId, host, rule) => {
         let { error } = easyInspect[tabId];
         error.add(rule);
         error.add(host);
     },
-    'match': (tabId, preset, host) => actionHandler('network_match', easyMatch[preset], tabId, host),
-    'tempo': (tabId, preset, host) => actionHandler('network_tempo', easyTempo[preset], tabId, host)
+    'match': (tabId, host) => actionHandler('network_match', easyMatch[easyPreset], tabId, host),
+    'tempo': (tabId, host) => actionHandler('network_tempo', easyTempo[easyPreset], tabId, host)
 };
 
 chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
@@ -240,7 +240,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         return;
     }
     let { host, rule } = inspectRequest('network_error', tabId, url);
-    actionMap[easyAction]?.(tabId, preset, host, rule);
+    actionMap[easyAction]?.(tabId, host, rule);
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function storageDispatch() {
