@@ -5,16 +5,16 @@ class EasyProxy {
 function FindProxyForURL(url, host) {
     var src = host;
     while (true) {
-        var hit = RULES[host];
+        var hit = RULES[src];
         if (hit) {
-            RULES[src] = hit;
+            RULES[host] = hit;
             return hit;
         }
         var dot = host.indexOf(".");
         if (dot < 0) {
             break;
         }
-        host = host.substring(dot + 1);
+        src = src.substring(dot + 1);
     }
     return "DIRECT";
 }
