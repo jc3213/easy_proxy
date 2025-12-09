@@ -78,12 +78,23 @@ function FindProxyForURL(url, host) {
     }
 
     static test(host) {
-        return EasyProxy.#instances.some((i) => i.#proxy !== 'DIRECT' && i.test(host));
+        for (let i of EasyProxy.#instances) {
+            if (i.#proxy !== 'DIRECT' && i.test(host)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static delete(arg) {
-        let remove = Array.isArray(arg) ? arg : [arg];
-        EasyProxy.#instances = EasyProxy.#instances.filter((i) => !remove.includes(i.#proxy));
+        let remove = new Set(Array.isArray(arg) ? arg : [arg]);
+        let result = [];
+        for (let i of EasyProxy.#instances) {
+            if (!remove.has(i.#proxy)) {
+                result.push(i);
+            }
+        }
+        EasyProxy.#instances = result;
     }
 
     #sync() {
@@ -93,23 +104,40 @@ function FindProxyForURL(url, host) {
     }
 
     #make() {
-        if (!this.#empty) {
-            this.#pacScript = [...this.#data].map((i) => `    "${i}": "${this.#proxy}"`).join(',\n');
+        if (this.#empty) {
+            return;
         }
+        let result = [];
+        for (let i of this.#data) {
+            result.push(`    "${i}": "${this.#proxy}"`);
+        }
+        this.#pacScript = result.join(',\n');
     }
 
     new(arg) {
-        this.#data = new Set(Array.isArray(arg) ? arg : [arg]);
-        this.#sync();
+        this.#data = new Set();
+        this.add(arg);
     }
 
     add(arg) {
-        Array.isArray(arg) ? arg.forEach((i) => this.#data.add(i)) : this.#data.add(arg);
+        if (Array.isArray(arg)) {
+            for (let i of arg) {
+                this.#data.add(i);
+            }
+        } else {
+            this.#data.add(arg);
+        }
         this.#sync();
     }
 
     delete(arg) {
-        Array.isArray(arg) ? arg.forEach((i) => this.#data.delete(i)) : this.#data.delete(arg);
+        if (Array.isArray(arg)) {
+            for (let i of arg) {
+                this.#data.delete(i);
+            }
+        } else {
+            this.#data.delete(arg);
+        }
         this.#sync();
     }
 
@@ -117,7 +145,6 @@ function FindProxyForURL(url, host) {
         this.#data = new Set();
         this.#empty = true;
         this.#global = false;
-        this.#pacScript = '';
     }
 
     test(host) {

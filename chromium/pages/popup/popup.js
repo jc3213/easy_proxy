@@ -15,13 +15,13 @@ let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
 let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
-document.querySelectorAll('[i18n]').forEach((node) => {
-    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
-});
+for (let i18n of document.querySelectorAll('[i18n]')) {
+    i18n.textContent = chrome.i18n.getMessage(i18n.getAttribute('i18n'));
+}
 
-document.querySelectorAll('[i18n-tips]').forEach((node) => {
-    node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
-});
+for (let i18n of document.querySelectorAll('[i18n-tips]')) {
+    i18n.title = chrome.i18n.getMessage(i18n.getAttribute('i18n-tips'));
+}
 
 function shortcutHandler(event, button) {
     event.preventDefault();
@@ -86,7 +86,7 @@ modeMenu.addEventListener('change', (event) => {
 function menuEventSubmit() {
     let added = [];
     let removed = [];
-    easyChanges.forEach((type) => {
+    for (let type of easyChanges) {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
             easyStats[props].delete(name);
@@ -100,7 +100,7 @@ function menuEventSubmit() {
         parentNode.classList.remove(props, 'error');
         parentNode.classList.add(value);
         type.props = value;
-    });
+    }
     easyChanges.clear();
     easyTypes.clear();
     submitBtn.disabled = defaultBtn.disabled = true;
@@ -112,20 +112,20 @@ function menuEventSubmit() {
 function menuEventPurge() {
     easyTempo.clear();
     easyTypes.clear();
-    easyRules.forEach((rule) => {
+    for (let rule of easyRules) {
         if (rule.classList.contains('tempo')) {
             rule.classList.replace('tempo', 'direct');
             rule.type.value = rule.type.props = 'direct';
         }
-    });
+    }
     chrome.runtime.sendMessage({ action:'manager_purge', params: easyTab });
     purgeBtn.disabled = true;
 }
 
 function extraEventDefault() {
-    easyChanges.forEach(type => {
+    for (let type of easyChanges) {
         type.value = type.props;
-    });
+    }
     easyChanges.clear();
     submitBtn.disabled = defaultBtn.disabled = true;
 }
@@ -191,19 +191,35 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         }
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
-        exclude.forEach((rule) => easyExclude.set(rule, 'DIRECT'));
-        proxies.forEach((proxy) => {
-            match[proxy]?.forEach((e) => easyMatch.set(e, proxy));
-            tempo[proxy]?.forEach((e) => easyTempo.set(e, proxy));
+        for (let rule of exclude) {
+            easyExclude.set(rule, 'DIRECT');
+        }
+        for (let proxy of proxies) {
+            if (match[proxy]) {
+                for (let e of match[proxy]) {
+                    easyMatch.set(e, proxy);
+                }
+            }
+            if (tempo[proxy]) {
+                for (let e of tempo[proxy]) {
+                    easyTempo.set(e, proxy);
+                }
+            }
             let menu = document.createElement('option');
             menu.textContent = menu.value = proxy;
             proxyMenu.append(menu);
-        });
+        }
         purgeBtn.disabled = easyTempo.size === 0;
         manager.add(mode);
-        rules.forEach((rule) => proxyItemListing(rule, 'wildcard'));
-        hosts.forEach((host) => proxyItemListing(host, 'fullhost'));
-        error.forEach((e) => easyRules.get(e).classList.add('error'));
+        for (let rule of rules) {
+            proxyItemListing(rule, 'wildcard')
+        }
+        for (let host of hosts) {
+            proxyItemListing(host, 'fullhost');
+        }
+        for (let err of error) {
+            easyRules.get(e).classList.add('error');
+        }
     });
 });
 

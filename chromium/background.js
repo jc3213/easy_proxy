@@ -30,7 +30,8 @@ let cacheExclude = {};
 
 function storageUpdated(response, json) {
     let invalid = [];
-    Object.keys(json).forEach((key) => {
+    let removed = []
+    for (let key of Object.keys(json)) {
         if (key in easyDefault) {
             return;
         }
@@ -45,14 +46,14 @@ function storageUpdated(response, json) {
             easyMatch[key] = new EasyProxy(key);
             easyTempo[key] = new EasyProxy(key);
         }
-    });
-    let removed = easyStorage.proxies.filter((proxy) => {
+    }
+    for (ley proxy of easyStorage.proxies) {
         if (!json[proxy]) {
             delete easyMatch[proxy];
             delete easyTempo[proxy];
-            return true;
+            removed.push(proxy);
         }
-    });
+    }
     json.preset = json.proxies.length === 0 ? null : json.preset ?? json.proxies[0];
     EasyProxy.delete(removed);
     easyStorage = json;
@@ -72,10 +73,10 @@ function proxyQuery(response, tabId) {
         response({ match, tempo, exclude, rules: [], hosts: [], error: [], proxies, mode, preset });
         return;
     }
-    proxies.forEach((proxy) => {
+    for (let proxy of proxies) {
         match[proxy] = easyMatch[proxy].data;
         tempo[proxy] = easyTempo[proxy].data;
-    });
+    }
     let { rules, hosts, error } = inspect;
     response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
 }
@@ -87,17 +88,17 @@ const manageDispatch = {
 };
 
 function proxySubmit(response, { added, removed, tabId }) {
-    added.forEach(({ type, proxy, rule }) => {
+    for (let { type, proxy, rule } of added) {
         let map = manageDispatch[type](proxy);
         map.add(rule);
-    });
-    removed.forEach(({ type, proxy, rule }) => {
+    }
+    for (let { type, proxy, rule } of removed) {
         let map = manageDispatch[type](proxy);
         map.delete(rule);
-    });
-    easyStorage.proxies.forEach((proxy) => {
+    }
+    for (let proxy) of easyStorage.proxies) {
         easyStorage[proxy] = easyMatch[proxy].data;
-    });
+    }
     easyStorage['exclude'] = easyExclude.data;
     modeChanger();
     cacheCounts = {};
@@ -107,7 +108,9 @@ function proxySubmit(response, { added, removed, tabId }) {
 }
 
 function proxyPurge(response, tabId) {
-    easyStorage.proxies.forEach((proxy) => easyTempo[proxy].clear());
+    for (let proxy of easyStorage.proxies) {
+        easyTempo[proxy].clear();
+    }
     modeChanger();
     cacheCounts = {};
     chrome.tabs.reload(tabId);
@@ -254,10 +257,10 @@ function storageDispatch() {
 
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...easyDefault, ...json};
-    easyStorage.proxies.forEach((proxy) => {
+    for (let proxy of easyStorage.proxies) {
         easyMatch[proxy] = new EasyProxy(proxy);
         easyTempo[proxy] = new EasyProxy(proxy);
         easyMatch[proxy].new(easyStorage[proxy]);
-    });
+    }
     storageDispatch();
 });

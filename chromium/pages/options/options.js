@@ -8,13 +8,13 @@ let [, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.child
 let [proxyMenu, modeMenu, actionMenu, actionPane, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
-document.querySelectorAll('[i18n]').forEach((node) => {
-    node.textContent = chrome.i18n.getMessage(node.getAttribute('i18n'));
-});
+for (let i18n of document.querySelectorAll('[i18n]')) {
+    i18n.textContent = chrome.i18n.getMessage(i18n.getAttribute('i18n'));
+}
 
-document.querySelectorAll('[i18n-tips]').forEach((node) => {
-    node.title = chrome.i18n.getMessage(node.getAttribute('i18n-tips'));
-});
+for (let i18n of document.querySelectorAll('[i18n-tips]')) {
+    i18n.title = chrome.i18n.getMessage(i18n.getAttribute('i18n-tips'));
+}
 
 const shortcutMap = {
     'KeyS': saveBtn,
@@ -150,19 +150,23 @@ excludePane.addEventListener('click', (event) => {
 function storageDispatch(json) {
     easyStorage = json;
     easyHandler = new Set(json.handler);
-    json.proxies.forEach(createMatchProfile);
-    json.exclude.forEach((value) => createMatchPattern(excludeList, value));
+    for (let proxy of json.proxies) {
+        createMatchProfile(proxy);
+    }
+    for (let value of json.exclude) {
+        createMatchPattern(excludeList, value);
+    }
     modeMenu.value = json.mode;
     extension.add(json.mode);
     proxyMenu.value = json.preset ?? json.proxies[0];
     actionMenu.value = json.action;
     networkMenu.checked = json.network;
-    [...actionPane.children].forEach((item) => {
+    for (let item of actionPane.children) {
         let value = item.classList[0];
         if (easyHandler.has(value)) {
             item.classList.add('checked');
         }
-    });
+    }
 }
 
 chrome.runtime.sendMessage({ action: 'storage_query' }, (storage) => {
@@ -238,7 +242,9 @@ function createMatchProfile(id) {
             matchAddNew(id, list, entry);
         }
     });
-    easyStorage[id].forEach((value) => createMatchPattern(list, value));
+    for (let value of easyStorage[id]) {
+        createMatchPattern(list, value);
+    }
     easyProfile[id] = { profile, server };
     proxyMenu.appendChild(server);
     managePane.appendChild(profile);
