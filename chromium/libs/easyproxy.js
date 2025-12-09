@@ -160,10 +160,9 @@ function FindProxyForURL(url, host) {
             }
             let dot = host.indexOf('.');
             if (dot < 0) {
-                break;
+                return false;
             }
             host = host.substring(dot + 1);
         }
-        return false;
     }
 }
