@@ -190,13 +190,15 @@ function profileResort(id, list) {
 function profileRemove(id) {
     saveBtn.disabled = false;
     let { profile, server } = easyProfile[id];
-    let { proxies } = easyStorage;
+    let { proxies, preset } = easyStorage;
     proxies.splice(proxies.indexOf(id), 1);
     delete easyStorage[id];
     profile.remove();
     server.remove();
-    if (!proxies.includes(easyStorage.preset)) {
+    if (proxies.length === 0) {
         proxyMenu.value = easyStorage.preset = null;
+    } else if (id === prest) {
+        proxyMenu.value = easyStorage.preset = proxies[0];
     }
 }
 
