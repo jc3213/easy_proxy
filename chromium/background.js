@@ -33,12 +33,12 @@ function storageUpdated(response, json) {
     let removed = []
     for (let key of Object.keys(json)) {
         if (key in easyDefault) {
-            return;
+            continue;
         }
         if (!json.proxies.includes(key)) {
             delete json[key];
             invalid.push(key);
-            return;
+            continue;
         }
         if (easyStorage.proxies.includes(key)) {
             easyMatch[key].new(json[key]);
@@ -47,7 +47,7 @@ function storageUpdated(response, json) {
             easyTempo[key] = new EasyProxy(key);
         }
     }
-    for (ley proxy of easyStorage.proxies) {
+    for (let proxy of easyStorage.proxies) {
         if (!json[proxy]) {
             delete easyMatch[proxy];
             delete easyTempo[proxy];
@@ -96,7 +96,7 @@ function proxySubmit(response, { added, removed, tabId }) {
         let map = manageDispatch[type](proxy);
         map.delete(rule);
     }
-    for (let proxy) of easyStorage.proxies) {
+    for (let proxy of easyStorage.proxies) {
         easyStorage[proxy] = easyMatch[proxy].data;
     }
     easyStorage['exclude'] = easyExclude.data;
@@ -157,7 +157,7 @@ const modeFirefox = {
     }
 };
 const modeChromium = {
-    'autopac': () => ({ mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } }),
+    'autopac': () => ({ mode: 'pac_script', pacScript: { data: console.log( EasyProxy.pacScript) ||EasyProxy.pacScript } }),
     'direct': () => ({ mode: 'direct' }),
     'global': () => {
         let proxy = easyStorage.preset ?? easyStorage.proxies[0];

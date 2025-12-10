@@ -10,20 +10,19 @@ function FindProxyForURL(url, host) {
             RULES[host] = hit;
             return hit;
         }
-        var dot = host.indexOf(".");
+        var dot = src.indexOf(".");
         if (dot < 0) {
-            break;
+            return "DIRECT";
         }
         src = src.substring(dot + 1);
     }
-    return "DIRECT";
 }
 `;
     #data = new Set();
     #empty = true;
     #global = false;
     #proxy;
-    #pacScript;
+    #rules;
 
     constructor(string) {
         this.proxy = string ?? 'DIRECT';
@@ -47,11 +46,11 @@ function FindProxyForURL(url, host) {
             ? 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'
             : this.#global
             ? `function FindProxyForURL(url, host) {\n    return "${this.#proxy}";\n}`
-            : `var RULES = {\n${this.#pacScript}\n};\n${EasyProxy.#pacBody}`;
+            : `var RULES = ${JSON.stringify(this.#rules, null, 4)};\n${EasyProxy.#pacBody}`;
     }
 
     static get pacScript() {
-        let rules = [];
+        let rules = {};
         for (let i of EasyProxy.#instances) {
             if (i.#empty) {
                 continue;
@@ -59,11 +58,11 @@ function FindProxyForURL(url, host) {
             if (i.#global) {
                 return `function FindProxyForURL(url, host) {\n    return "${i.#proxy}";\n}`;
             }
-            rules.unshift(i.#pacScript);
+            Object.assign(rules, i.#rules);
         }
         return rules.length === 0
             ? 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'
-            : `var RULES = {\n${rules.join(',\n')}\n};\n${EasyProxy.#pacBody}`;
+            : `var RULES = ${JSON.stringify(rules, null, 4)};\n${EasyProxy.#pacBody}`;
     }
 
     static make(host) {
@@ -107,11 +106,11 @@ function FindProxyForURL(url, host) {
         if (this.#empty) {
             return;
         }
-        let result = [];
+        let rules = {};
         for (let i of this.#data) {
-            result.push(`    "${i}": "${this.#proxy}"`);
+            rules[i] = this.#proxy;
         }
-        this.#pacScript = result.join(',\n');
+        this.#rules = rules;
     }
 
     new(arg) {
