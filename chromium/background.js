@@ -54,7 +54,6 @@ function storageUpdated(response, json) {
             removed.push(proxy);
         }
     }
-    json.preset = json.proxies.length === 0 ? null : json.preset ?? json.proxies[0];
     EasyProxy.delete(removed);
     easyStorage = json;
     storageDispatch();
@@ -148,7 +147,7 @@ const modeFirefox = {
     'autopac': () => ({ proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript }),
     'direct': () => ({ proxyType: 'none' }),
     'global': () => {
-        let proxy = easyStorage.preset ?? easyStorage.proxies[0];
+        let proxy = easyPreset ?? easyStorage.proxies[0];
         let [scheme, url] = proxy.split(' ');
         let config = proxyMap[scheme](url);
         config.proxyType = 'manual';
@@ -160,7 +159,7 @@ const modeChromium = {
     'autopac': () => ({ mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } }),
     'direct': () => ({ mode: 'direct' }),
     'global': () => {
-        let proxy = easyStorage.preset ?? easyStorage.proxies[0];
+        let proxy = easyPreset ?? easyStorage.proxies[0];
         let [scheme, host, port] = proxy.split(/[\s:]/);
         let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
         return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
@@ -210,15 +209,18 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let result = cacheCounts[host] ??= EasyProxy.test(host);
-    if (result) {
+    let match = cacheCounts[host] ??= EasyProxy.test(host);
+    if (match) {
         chrome.action.setBadgeText({ tabId, text: String(++inspect.index) });
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function actionHandler(action, proxy, tabId, host) {
-    let result = cacheRules[host] ??= !easyExclude.test(host);
-    if (result) {
+    if (!proxy) {
+        return;
+    }
+    let match = cacheRules[host] ??= !easyExclude.test(host);
+    if (match) {
         proxy.add(host);
         modeChanger();
         chrome.runtime.sendMessage({ action, params: { tabId, host } });
