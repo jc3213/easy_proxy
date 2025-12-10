@@ -1,7 +1,11 @@
 let easyMatch = new Map();
 let easyTempo = new Map();
 let easyExclude = new Map();
-let easyStats = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
+let easyStats = {
+    match: easyMatch,
+    tempo: easyTempo,
+    exclude: easyExclude
+};
 let easyRules = new Map();
 let easyTypes = new Set();
 let easyChanges = new Set();
@@ -84,17 +88,16 @@ modeMenu.addEventListener('change', (event) => {
 });
 
 function menuEventSubmit() {
-    let added = [];
-    let removed = [];
+    let changes = [];
     for (let type of easyChanges) {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
             easyStats[props].delete(name);
-            removed.push({ type: props, proxy: title, rule: name });
+            changes.push({ type: props, proxy: title, rule: name, action: 'remove' });
         }
         if (value !== 'direct') {
             easyStats[value].set(name, easyProxy);
-            added.push({ type: value, proxy: easyProxy, rule: name });
+            changes.push({ type: value, proxy: easyProxy, rule: name, action: 'add' });
             type.title = value === 'exclude' ? '' : easyProxy;
         }
         parentNode.classList.remove(props, 'error');
@@ -106,7 +109,7 @@ function menuEventSubmit() {
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = easyTempo.size === 0;
     outputPane.innerHTML = '';
-    chrome.runtime.sendMessage({ action: 'manager_update', params: { added, removed, tabId: easyTab } });
+    chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, tabId: easyTab } });
 }
 
 function menuEventPurge() {
