@@ -80,20 +80,10 @@ function proxyQuery(response, tabId) {
     response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
 }
 
-const manageDispatch = {
-    'match': (proxy) => easyMatch[proxy],
-    'tempo': (proxy) => easyTempo[proxy],
-    'exclude': () => easyExclude
-};
-
-function proxySubmit(response, { added, removed, tabId }) {
-    for (let { type, proxy, rule } of added) {
-        let map = manageDispatch[type](proxy);
-        map.add(rule);
-    }
-    for (let { type, proxy, rule } of removed) {
-        let map = manageDispatch[type](proxy);
-        map.delete(rule);
+function proxySubmit(response, { changes, tabId }) {
+    for (let { type, proxy, rule, action } of changes) {
+        let rules = type === 'match' ? easyMatch[proxy] : type === 'tempo' ? easyTempo[proxy] : easyExclude;
+        action === 'add' ? rules.add(rule) : rules.delete(rule);
     }
     for (let proxy of easyStorage.proxies) {
         easyStorage[proxy] = easyMatch[proxy].data;
