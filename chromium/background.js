@@ -157,7 +157,7 @@ const modeFirefox = {
     }
 };
 const modeChromium = {
-    'autopac': () => ({ mode: 'pac_script', pacScript: { data: console.log( EasyProxy.pacScript) ||EasyProxy.pacScript } }),
+    'autopac': () => ({ mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } }),
     'direct': () => ({ mode: 'direct' }),
     'global': () => {
         let proxy = easyStorage.preset ?? easyStorage.proxies[0];
