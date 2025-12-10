@@ -197,7 +197,7 @@ function profileRemove(id) {
     server.remove();
     if (proxies.length === 0) {
         proxyMenu.value = easyStorage.preset = null;
-    } else if (id === prest) {
+    } else if (id === preset) {
         proxyMenu.value = easyStorage.preset = proxies[0];
     }
 }
