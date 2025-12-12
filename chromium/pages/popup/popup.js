@@ -115,7 +115,7 @@ function menuEventSubmit() {
 function menuEventPurge() {
     easyTempo.clear();
     easyTypes.clear();
-    for (let rule of easyRules) {
+    for (let rule of easyRules.values()) {
         if (rule.classList.contains('tempo')) {
             rule.classList.replace('tempo', 'direct');
             rule.type.value = rule.type.props = 'direct';
