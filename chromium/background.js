@@ -98,7 +98,7 @@ function proxySubmit(response, { changes, tabId }) {
 
 function proxyPurge(response, tabId) {
     for (let proxy of easyStorage.proxies) {
-        easyTempo[proxy].clear();
+        easyTempo[proxy].new();
     }
     proxySwitch();
     cacheCounts = {};
