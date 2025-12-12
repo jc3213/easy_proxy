@@ -86,14 +86,14 @@ function FindProxyForURL(url, host) {
     }
 
     static delete(arg) {
-        let remove = new Set(Array.isArray(arg) ? arg : [arg]);
-        let result = [];
+        let del = new Set(Array.isArray(arg) ? arg : [arg]);
+        let arr = [];
         for (let i of EasyProxy.#instances) {
-            if (!remove.has(i.#proxy)) {
-                result.push(i);
+            if (!del.has(i.#proxy)) {
+                arr.push(i);
             }
         }
-        EasyProxy.#instances = result;
+        EasyProxy.#instances = arr;
     }
 
     #sync() {
@@ -114,36 +114,25 @@ function FindProxyForURL(url, host) {
     }
 
     new(arg) {
-        this.#data = new Set();
-        this.add(arg);
+        let neo = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
+        this.#data = new Set(neo);
+        this.#sync();
     }
 
     add(arg) {
-        if (Array.isArray(arg)) {
-            for (let i of arg) {
-                this.#data.add(i);
-            }
-        } else {
-            this.#data.add(arg);
+        let add = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
+        for (let i of add) {
+            this.#data.add(i);
         }
         this.#sync();
     }
 
     delete(arg) {
-        if (Array.isArray(arg)) {
-            for (let i of arg) {
-                this.#data.delete(i);
-            }
-        } else {
-            this.#data.delete(arg);
+        let del = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
+        for (let i of del) {
+            this.#data.delete(i);
         }
         this.#sync();
-    }
-
-    clear() {
-        this.#data = new Set();
-        this.#empty = true;
-        this.#global = false;
     }
 
     test(host) {
