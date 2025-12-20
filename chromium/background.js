@@ -209,11 +209,12 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
-function actionHandler(action, proxy, tabId, host) {
+function actionHandler(tabId, host, action, rules) {
+    let proxy = rules[easyPreset];
     if (!proxy) {
         return;
     }
-    let match = cacheRules[host] ??= !easyExclude.test(host);
+    let match = cacheExclude[host] ??= !easyExclude.test(host);
     if (match) {
         proxy.add(host);
         proxySwitch();
@@ -227,15 +228,12 @@ const actionMap = {
         error.add(rule);
         error.add(host);
     },
-    'match': (tabId, host) => actionHandler('network_match', easyMatch[easyPreset], tabId, host),
-    'tempo': (tabId, host) => actionHandler('network_tempo', easyTempo[easyPreset], tabId, host)
+    'match': (tabId, host) => actionHandler(tabId, host, 'network_match', easyMatch),
+    'tempo': (tabId, host) => actionHandler(tabId, host, 'network_tempo', easyTempo)
 };
 
 chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
-    if (!easyHandler.has(error)) {
-        return;
-    }
-    if (!easyPreset) {
+    if (!easyHandler.has(error) || !easyPreset) {
         return;
     }
     let { host, rule } = inspectRequest('network_error', tabId, url);
