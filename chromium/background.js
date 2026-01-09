@@ -89,27 +89,27 @@ function proxySubmit(response, { changes, tabId }) {
         easyStorage[proxy] = easyMatch[proxy].data;
     }
     easyStorage['exclude'] = easyExclude.data;
-    proxySwitch();
     cacheCounts = {};
     cacheExclude = {};
+    proxyUpdated();
     chrome.storage.local.set(easyStorage, response);
-    chrome.tabs.reload(tabId);
+    chrome.tabs.update(tabId, { url: easyInspect[tabId].url });
 }
 
 function proxyPurge(response, tabId) {
     for (let proxy of easyStorage.proxies) {
         easyTempo[proxy].new();
     }
-    proxySwitch();
     cacheCounts = {};
-    chrome.tabs.reload(tabId);
+    proxyUpdated();
+    chrome.tabs.update(tabId, { url: easyInspect[tabId].url });
 }
 
-function modeUpdated(response, { proxy, tabId }) {
-    easyStorage.mode = proxy;
-    proxySwitch();
+function modeUpdated(response, { tabId, mode }) {
+    easyMode = easyStorage.mode = mode;
+    proxyUpdated();
     chrome.storage.local.set(easyStorage, response);
-    chrome.tabs.reload(tabId);
+    chrome.tabs.update(tabId, { url: easyInspect[tabId].url });
 }
 
 const messageDispatch = {
@@ -127,11 +127,11 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     return true;
 });
 
-function proxyFirefox(mode) {
-    if (mode === 'autopac') {
+function proxyFirefox() {
+    if (easyMode === 'autopac') {
         return { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript };
     }
-    if (mode === 'direct') {
+    if (easyMode === 'direct') {
         return { proxyType: 'none' };
     }
     let proxy = easyPreset ?? easyStorage.proxies[0];
@@ -147,11 +147,11 @@ function proxyFirefox(mode) {
     }
     return config;
 }
-function proxyChromium(mode) {
-    if (mode === 'autopac') {
+function proxyChromium() {
+    if (easyMode === 'autopac') {
         return { mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } };
     }
-    if (mode === 'direct') {
+    if (easyMode === 'direct') {
         return { mode: 'direct' };
     }
     let proxy = easyPreset ?? easyStorage.proxies[0];
@@ -159,13 +159,11 @@ function proxyChromium(mode) {
     let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
     return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
 }
-const proxyMode = typeof browser !== 'undefined' ? proxyFirefox : proxyChromium;
+const proxyDispatch = typeof browser !== 'undefined' ? proxyFirefox : proxyChromium;
 
-function proxySwitch() {
-    let { mode } = easyStorage;
-    let value = proxyMode(mode);
+function proxyUpdated() {
+    let value = proxyDispatch();
     chrome.proxy.settings.set({ value });
-    easyMode = mode;
 }
 
 chrome.action ??= chrome.browserAction;
@@ -175,10 +173,14 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
-chrome.tabs.onUpdated.addListener((tabId, { status }) => {
-    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 }
-    if (status == 'loading' && inspect.ok) {
-        delete easyInspect[tabId];
+chrome.tabs.onUpdated.addListener((tabId, { status }, { url }) => {
+    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
+    if (status == 'loading') {
+        if (inspect.ok) {
+            easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
+        } else {
+            inspect.url = url;
+        }
     } else if (status === 'complete') {
         inspect.ok = true;
     }
@@ -217,7 +219,7 @@ function actionHandler(tabId, host, action, rules) {
     let match = cacheExclude[host] ??= !easyExclude.test(host);
     if (match) {
         proxy.add(host);
-        proxySwitch();
+        proxyUpdated();
         chrome.runtime.sendMessage({ action, params: { tabId, host } });
     }
 }
@@ -245,8 +247,9 @@ function storageDispatch() {
     easyHandler = new Set(easyStorage.handler);
     easyAction = easyStorage.action;
     easyPreset = easyStorage.preset;
+    easyMode = easyStorage.mode;
     easyExclude.new(easyStorage.exclude);
-    proxySwitch();
+    proxyUpdated();
 }
 
 chrome.storage.local.get(null, async (json) => {
