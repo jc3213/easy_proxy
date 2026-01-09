@@ -79,11 +79,11 @@ proxyMenu.addEventListener('change', (event) => {
 });
 
 modeMenu.addEventListener('change', (event) => {
-    let proxy = event.target.value;
-    let tabId = easyTab;
-    chrome.runtime.sendMessage({ action: 'easyproxy_mode', params: { proxy, tabId } }, () => {
-        manager.replace(easyMode, proxy);
-        easyMode = proxy;
+    let mode = event.target.value;
+    let params = { mode, tabId: easyTab };
+    chrome.runtime.sendMessage({ action: 'easyproxy_mode', params }, () => {
+        manager.replace(easyMode, mode);
+        easyMode = mode;
     });
 });
 
