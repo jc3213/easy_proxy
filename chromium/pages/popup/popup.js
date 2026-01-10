@@ -13,8 +13,8 @@ let easyMode;
 let easyProxy;
 let easyTab;
 
-let manager = document.body.classList;
-let [outputPane, extraPane,, menuPane, template] = document.body.children;
+let manager = document.body;
+let [outputPane, extraPane,, menuPane, template] = manager.children;
 let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
 let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
@@ -82,8 +82,7 @@ modeMenu.addEventListener('change', (event) => {
     let mode = event.target.value;
     let params = { mode, tabId: easyTab };
     chrome.runtime.sendMessage({ action: 'easyproxy_mode', params }, () => {
-        manager.replace(easyMode, mode);
-        easyMode = mode;
+        manager.className = easyMode = mode;
     });
 });
 
@@ -166,7 +165,7 @@ const messageDispatch = {
     'network_update': (params) => messageHandler(params, (host, rule) => {
         proxyItemListing(rule, 'wildcard');
         proxyItemListing(host, 'fullhost');
-        manager.remove('asleep');
+        manager.className = easyMode;
     }),
     'network_error': (params) => messageHandler(params, (host, rule) => {
         easyRules.get(rule)?.classList?.add('error');
@@ -189,9 +188,7 @@ chrome.runtime.onMessage.addListener(({ action, params }) => {
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     easyTab = tabs[0].id;
     chrome.runtime.sendMessage({ action: 'manager_query', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
-        if (proxies.length === 0 || rules.length === 0 && hosts.length === 0) {
-            manager.add('asleep');
-        }
+        manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
         for (let rule of exclude) {
@@ -213,7 +210,6 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             proxyMenu.append(menu);
         }
         purgeBtn.disabled = easyTempo.size === 0;
-        manager.add(mode);
         for (let rule of rules) {
             proxyItemListing(rule, 'wildcard')
         }
