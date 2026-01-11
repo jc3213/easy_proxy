@@ -1,11 +1,7 @@
-let easyMatch = new Map();
-let easyTempo = new Map();
-let easyExclude = new Map();
-let easyStats = {
-    match: easyMatch,
-    tempo: easyTempo,
-    exclude: easyExclude
-};
+let easyMatch;
+let easyTempo;
+let easyExclude;
+let easyStats;
 let easyRules = new Map();
 let easyTypes = new Set();
 let easyChanges = new Set();
@@ -191,20 +187,11 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
-        for (let rule of exclude) {
-            easyExclude.set(rule, 'DIRECT');
-        }
+        easyMatch = match = new Map(match);
+        easyTempo = tempo = new Map(tempo);
+        easyExclude = exclude = new Map(exclude);
+        easyStats = { match, tempo, exclude };
         for (let proxy of proxies) {
-            if (match[proxy]) {
-                for (let e of match[proxy]) {
-                    easyMatch.set(e, proxy);
-                }
-            }
-            if (tempo[proxy]) {
-                for (let e of tempo[proxy]) {
-                    easyTempo.set(e, proxy);
-                }
-            }
             let menu = document.createElement('option');
             menu.textContent = menu.value = proxy;
             proxyMenu.append(menu);
