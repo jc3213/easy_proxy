@@ -87,11 +87,11 @@ function menuEventSubmit() {
     for (let type of easyChanges) {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
-            easyStats[props].delete(name);
+            delete easyStats[props][name];
             changes.push({ type: props, proxy: title, rule: name, action: 'remove' });
         }
         if (value !== 'direct') {
-            easyStats[value].set(name, easyProxy);
+            easyStats[value][name] = easyProxy;
             changes.push({ type: value, proxy: easyProxy, rule: name, action: 'add' });
             type.title = value === 'exclude' ? '' : easyProxy;
         }
