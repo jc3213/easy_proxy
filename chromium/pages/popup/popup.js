@@ -1,10 +1,10 @@
+let easyRules = new Map();
+let easyTypes = new Set();
+let easyChanges = new Set();
 let easyMatch;
 let easyTempo;
 let easyExclude;
 let easyStats;
-let easyRules = new Map();
-let easyTypes = new Set();
-let easyChanges = new Set();
 let easyMode;
 let easyProxy;
 let easyTab;
