@@ -64,17 +64,25 @@ function storageUpdated(response, json) {
 }
 
 function proxyQuery(response, tabId) {
-    let match = {}
-    let tempo = {};
-    let { proxies, mode, preset, exclude } = easyStorage;
+    let match = [];
+    let tempo = [];
+    let exclude = [];
+    let { proxies, mode, preset } = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
         response({ match, tempo, exclude, rules: [], hosts: [], error: [], proxies, mode, preset });
         return;
     }
+    for (let e of easyExclude.data) {
+        exclude.push([e, 'DIRECT']);
+    }
     for (let proxy of proxies) {
-        match[proxy] = easyMatch[proxy].data;
-        tempo[proxy] = easyTempo[proxy].data;
+        for (let m of easyMatch[proxy].data) {
+            match.push([m, proxy]);
+        }
+        for (let t of easyTempo[proxy].data) {
+            tempo.push([t, proxy]);
+        }
     }
     let { rules, hosts, error } = inspect;
     response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
