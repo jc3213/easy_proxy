@@ -16,24 +16,24 @@ body.global > #menu > button:first-of-type {
     pointer-events: none;
 }
 
-body.asleep > #output,
-body.direct > #output,
-body.global > #output,
+body.asleep > #rules,
+body.direct > #rules,
+body.global > #rules,
 body.asleep > #extra > button,
 body.direct > #extra > button,
 body.global > #extra > button,
-#output:not(.switch) > .fullhost:not(.match):not(.tempo):not(.exclude),
-#output.switch > .wildcard:not(.match):not(.tempo):not(.exclude) {
+#rules:not(.switch) > .fullhost:not(.match):not(.tempo):not(.exclude),
+#rules.switch > .wildcard:not(.match):not(.tempo):not(.exclude) {
     display: none;
 }
 
-#output, #extra, #menu {
+#rules, #extra, #menu {
     display: flex;
     gap: 5px;
     margin: 5px 0px;
 }
 
-#output {
+#rules {
     flex-direction: column;
     max-height: 320px;
     overflow-y: auto;
