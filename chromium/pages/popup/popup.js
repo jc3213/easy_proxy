@@ -10,7 +10,7 @@ let easyProxy;
 let easyTab;
 
 let manager = document.body;
-let [rulesPane, extraPane,, menuPane, template] = manager.children;
+let [outputPane, extraPane,, menuPane, template] = manager.children;
 let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
 let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
@@ -48,11 +48,11 @@ function proxyStatusChanged(type) {
     submitBtn.disabled = defaultBtn.disabled = easyChanges.size === 0;
 }
 
-rulesPane.addEventListener('change', (event) => {
+outputPane.addEventListener('change', (event) => {
     proxyStatusChanged(event.target);
 });
 
-rulesPane.addEventListener('wheel', (event) => {
+outputPane.addEventListener('wheel', (event) => {
     let { target, deltaY } = event;
     if (target.localName !== 'select') {
         return;
@@ -63,7 +63,7 @@ rulesPane.addEventListener('wheel', (event) => {
     proxyStatusChanged(target);
 });
 
-rulesPane.addEventListener('mousedown', (event) => {
+outputPane.addEventListener('mousedown', (event) => {
     if (event.button === 1) {
         event.preventDefault();
         submitBtn.click();
@@ -87,11 +87,11 @@ function menuEventSubmit() {
     for (let type of easyChanges) {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
-            delete easyStats[props][name];
+            easyStats[props].delete(name);
             changes.push({ type: props, proxy: title, rule: name, action: 'remove' });
         }
         if (value !== 'direct') {
-            easyStats[value][name] = easyProxy;
+            easyStats[value].set(name, easyProxy);
             changes.push({ type: value, proxy: easyProxy, rule: name, action: 'add' });
             type.title = value === 'exclude' ? '' : easyProxy;
         }
@@ -103,7 +103,7 @@ function menuEventSubmit() {
     easyTypes.clear();
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = easyTempo.size === 0;
-    rulesPane.innerHTML = '';
+    outputPane.innerHTML = '';
     chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, tabId: easyTab } });
 }
 
@@ -129,7 +129,7 @@ function extraEventDefault() {
 }
 
 function extraEventSwitch() {
-    rulesPane.classList.toggle('switch'); 
+    outputPane.classList.toggle('switch'); 
     switchBtn.classList.toggle('checked');
 }
 
@@ -168,11 +168,11 @@ const messageDispatch = {
         easyRules.get(host)?.classList?.add('error');
     }),
     'network_match': (params) => messageHandler(params, (host) => {
-        easyMatch[host] = easyProxy;
+        easyMatch.set(host, easyProxy);
         easyRules.get(host)?.classList?.add('match');
     }),
     'network_tempo': (params) => messageHandler(params, (host) => {
-        easyTempo[host] = easyProxy;
+        easyTempo.set(host, easyProxy);
         easyRules.get(host)?.classList?.add('tempo');
     })
 };
@@ -187,9 +187,9 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
-        easyMatch = match;
-        easyTempo = tempo;
-        easyExclude = exclude;
+        easyMatch = match = new Map(match);
+        easyTempo = tempo = new Map(tempo);
+        easyExclude = exclude = new Map(exclude);
         easyStats = { match, tempo, exclude };
         for (let proxy of proxies) {
             let menu = document.createElement('option');
@@ -231,9 +231,9 @@ function proxyItemListing(value, stat) {
     if (easyTypes.has(type)) {
         return;
     }
-    let match = easyMatch[value];
-    let tempo = easyTempo[value];
-    if (easyExclude[value]) {
+    let match = easyMatch.get(value);
+    let tempo = easyTempo.get(value);
+    if (easyExclude.has(value)) {
         proxyItemStatus(rule, type, 'exclude', '');
     } else if (match) {
         proxyItemStatus(rule, type, 'match', match);
@@ -243,5 +243,5 @@ function proxyItemListing(value, stat) {
         proxyItemStatus(rule, type, 'direct', '');
     }
     easyTypes.add(type);
-    rulesPane.append(rule);
+    outputPane.append(rule);
 }
