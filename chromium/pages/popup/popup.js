@@ -4,13 +4,13 @@ let easyChanges = new Set();
 let easyMatch;
 let easyTempo;
 let easyExclude;
-let easyStats;
+let easyRoute;
 let easyMode;
 let easyProxy;
 let easyTab;
 
 let manager = document.body;
-let [outputPane, extraPane,, menuPane, template] = manager.children;
+let [rulesPane, extraPane,, menuPane, template] = manager.children;
 let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
 let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
@@ -48,11 +48,11 @@ function proxyStatusChanged(type) {
     submitBtn.disabled = defaultBtn.disabled = easyChanges.size === 0;
 }
 
-outputPane.addEventListener('change', (event) => {
+rulesPane.addEventListener('change', (event) => {
     proxyStatusChanged(event.target);
 });
 
-outputPane.addEventListener('wheel', (event) => {
+rulesPane.addEventListener('wheel', (event) => {
     let { target, deltaY } = event;
     if (target.localName !== 'select') {
         return;
@@ -63,7 +63,7 @@ outputPane.addEventListener('wheel', (event) => {
     proxyStatusChanged(target);
 });
 
-outputPane.addEventListener('mousedown', (event) => {
+rulesPane.addEventListener('mousedown', (event) => {
     if (event.button === 1) {
         event.preventDefault();
         submitBtn.click();
@@ -87,11 +87,11 @@ function menuEventSubmit() {
     for (let type of easyChanges) {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
-            easyStats[props].delete(name);
+            easyRoute[props].delete(name);
             changes.push({ type: props, proxy: title, rule: name, action: 'remove' });
         }
         if (value !== 'direct') {
-            easyStats[value].set(name, easyProxy);
+            easyRoute[value].set(name, easyProxy);
             changes.push({ type: value, proxy: easyProxy, rule: name, action: 'add' });
             type.title = value === 'exclude' ? '' : easyProxy;
         }
@@ -103,7 +103,7 @@ function menuEventSubmit() {
     easyTypes.clear();
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = easyTempo.size === 0;
-    outputPane.innerHTML = '';
+    rulesPane.innerHTML = '';
     chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, tabId: easyTab } });
 }
 
@@ -129,7 +129,7 @@ function extraEventDefault() {
 }
 
 function extraEventSwitch() {
-    outputPane.classList.toggle('switch'); 
+    rulesPane.classList.toggle('switch'); 
     switchBtn.classList.toggle('checked');
 }
 
@@ -190,7 +190,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         easyMatch = match = new Map(match);
         easyTempo = tempo = new Map(tempo);
         easyExclude = exclude = new Map(exclude);
-        easyStats = { match, tempo, exclude };
+        easyRoute = { match, tempo, exclude };
         for (let proxy of proxies) {
             let menu = document.createElement('option');
             menu.textContent = menu.value = proxy;
@@ -243,5 +243,5 @@ function proxyItemListing(value, stat) {
         proxyItemStatus(rule, type, 'direct', '');
     }
     easyTypes.add(type);
-    outputPane.append(rule);
+    rulesPane.append(rule);
 }
