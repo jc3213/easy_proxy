@@ -95,7 +95,6 @@ function proxySubmit(response, { changes, tabId }) {
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
     chrome.tabs.reload(tabId);
-;
 }
 
 function proxyPurge(response, tabId) {
@@ -105,7 +104,6 @@ function proxyPurge(response, tabId) {
     cacheCounts = {};
     proxyDispatch();
     chrome.tabs.reload(tabId);
-;
 }
 
 function modeUpdated(response, { tabId, mode }) {
@@ -113,7 +111,6 @@ function modeUpdated(response, { tabId, mode }) {
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
     chrome.tabs.reload(tabId);
-;
 }
 
 const messageDispatch = {
