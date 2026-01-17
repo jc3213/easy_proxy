@@ -87,11 +87,11 @@ function menuEventSubmit() {
     for (let type of easyChanges) {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
-            easyRoute[props].delete(name);
+            delete easyRoute[props][name];
             changes.push({ type: props, proxy: title, rule: name, action: 'remove' });
         }
         if (value !== 'direct') {
-            easyRoute[value].set(name, easyProxy);
+            easyRoute[value][name] = easyProxy;
             changes.push({ type: value, proxy: easyProxy, rule: name, action: 'add' });
             type.title = value === 'exclude' ? '' : easyProxy;
         }
@@ -102,7 +102,7 @@ function menuEventSubmit() {
     easyChanges.clear();
     easyTypes.clear();
     submitBtn.disabled = defaultBtn.disabled = true;
-    purgeBtn.disabled = easyTempo.size === 0;
+    purgeBtn.disabled = Object.keys(easyTempo).length === 0;
     rulesPane.innerHTML = '';
     chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, tabId: easyTab } });
 }
@@ -168,11 +168,11 @@ const messageDispatch = {
         easyRules.get(host)?.classList?.add('error');
     }),
     'network_match': (params) => messageHandler(params, (host) => {
-        easyMatch.set(host, easyProxy);
+        easyMatch[host] = easyProxy;
         easyRules.get(host)?.classList?.add('match');
     }),
     'network_tempo': (params) => messageHandler(params, (host) => {
-        easyTempo.set(host, easyProxy);
+        easyTempo[host] = easyProxy;
         easyRules.get(host)?.classList?.add('tempo');
     })
 };
@@ -187,16 +187,16 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
-        easyMatch = match = new Map(match);
-        easyTempo = tempo = new Map(tempo);
-        easyExclude = exclude = new Map(exclude);
+        easyMatch = match;
+        easyTempo = tempo;
+        easyExclude = exclude;
         easyRoute = { match, tempo, exclude };
         for (let proxy of proxies) {
             let menu = document.createElement('option');
             menu.textContent = menu.value = proxy;
             proxyMenu.append(menu);
         }
-        purgeBtn.disabled = easyTempo.size === 0;
+        purgeBtn.disabled = Object.keys(tempo).length === 0;
         for (let rule of rules) {
             proxyItemListing(rule, 'wildcard')
         }
@@ -231,9 +231,9 @@ function proxyItemListing(value, stat) {
     if (easyTypes.has(type)) {
         return;
     }
-    let match = easyMatch.get(value);
-    let tempo = easyTempo.get(value);
-    if (easyExclude.has(value)) {
+    let match = easyMatch[value];
+    let tempo = easyTempo[value];
+    if (easyExclude[value]) {
         proxyItemStatus(rule, type, 'exclude', '');
     } else if (match) {
         proxyItemStatus(rule, type, 'match', match);
