@@ -20,7 +20,7 @@ let easyAction;
 let easyPreset;
 let easyMatch = {};
 let easyTempo = {};
-let easyExclude = new EasyProxy();
+let easyExclude = new EasyProxy('DIRECT');
 let easyMode;
 let easyInspect = {};
 
@@ -66,23 +66,16 @@ function storageUpdated(response, json) {
 function proxyQuery(response, tabId) {
     let match = {};
     let tempo = {};
-    let exclude = {};
+    let exclude = easyExclude.rules;
     let { proxies, mode, preset } = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
         response({ match, tempo, exclude, rules: [], hosts: [], error: [], proxies, mode, preset });
         return;
     }
-    for (let e of easyExclude.data) {
-        exclude[e] = 'DIRECT';
-    }
     for (let proxy of proxies) {
-        for (let m of easyMatch[proxy].data) {
-            match[m] = proxy;
-        }
-        for (let t of easyTempo[proxy].data) {
-            tempo[t] = proxy;
-        }
+        match = { ...match, ...easyMatch[proxy].rules };
+        tempo = { ...tempo, ...easyTempo[proxy].rules };
     }
     let { rules, hosts, error } = inspect;
     response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
