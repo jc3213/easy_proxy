@@ -92,9 +92,10 @@ function proxySubmit(response, { changes, tabId }) {
     easyStorage['exclude'] = easyExclude.data;
     cacheCounts = {};
     cacheExclude = {};
-    proxyUpdated();
+    proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
-    chrome.tabs.update(tabId, { url: easyInspect[tabId].url });
+    chrome.tabs.reload(tabId);
+;
 }
 
 function proxyPurge(response, tabId) {
@@ -102,15 +103,17 @@ function proxyPurge(response, tabId) {
         easyTempo[proxy].new();
     }
     cacheCounts = {};
-    proxyUpdated();
-    chrome.tabs.update(tabId, { url: easyInspect[tabId].url });
+    proxyDispatch();
+    chrome.tabs.reload(tabId);
+;
 }
 
 function modeUpdated(response, { tabId, mode }) {
     easyMode = easyStorage.mode = mode;
-    proxyUpdated();
+    proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
-    chrome.tabs.update(tabId, { url: easyInspect[tabId].url });
+    chrome.tabs.reload(tabId);
+;
 }
 
 const messageDispatch = {
@@ -129,43 +132,41 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
 });
 
 function proxyFirefox() {
+    let value;
     if (easyMode === 'autopac') {
-        return { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript };
-    }
-    if (easyMode === 'direct') {
-        return { proxyType: 'none' };
-    }
-    let proxy = easyPreset ?? easyStorage.proxies[0];
-    let config = { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1' };
-    let [scheme, url] = proxy.split(' ');
-    if (scheme === 'HTTP') {
-        config.http = 'http://' + url;
-    } else if (scheme === 'HTTPS') {
-        config.ssl = 'https://' + url;
+        value = { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript };
+    } else if (easyMode === 'direct') {
+        value = { proxyType: 'none' };
     } else {
-        config.socks = 'socks://' + url;
-        config.socksVersion = scheme === 'SOCKS' ? 4 : 5;
+        let proxy = easyPreset ?? easyStorage.proxies[0];
+        let [scheme, url] = proxy.split(' ');
+        value = { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1' };
+        if (scheme === 'HTTP') {
+            value.http = 'http://' + url;
+        } else if (scheme === 'HTTPS') {
+            value.ssl = 'https://' + url;
+        } else {
+            value.socks = 'socks://' + url;
+            value.socksVersion = scheme === 'SOCKS' ? 4 : 5;
+        }
     }
-    return config;
+    browser.proxy.settings.set({ value });
 }
 function proxyChromium() {
+    let value;
     if (easyMode === 'autopac') {
-        return { mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } };
+        value = { mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } };
+    } else if (easyMode === 'direct') {
+        value = { mode: 'direct' };
+    } else {
+        let proxy = easyPreset ?? easyStorage.proxies[0];
+        let [scheme, host, port] = proxy.split(/[\s:]/);
+        let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
+        value = { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
     }
-    if (easyMode === 'direct') {
-        return { mode: 'direct' };
-    }
-    let proxy = easyPreset ?? easyStorage.proxies[0];
-    let [scheme, host, port] = proxy.split(/[\s:]/);
-    let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-    return { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
-}
-const proxyDispatch = typeof browser !== 'undefined' ? proxyFirefox : proxyChromium;
-
-function proxyUpdated() {
-    let value = proxyDispatch();
     chrome.proxy.settings.set({ value });
 }
+const proxyDispatch = typeof browser !== 'undefined' ? proxyFirefox : proxyChromium;
 
 chrome.action ??= chrome.browserAction;
 chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
@@ -174,14 +175,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
 
-chrome.tabs.onUpdated.addListener((tabId, { status }, { url }) => {
+chrome.tabs.onUpdated.addListener((tabId, { status }) => {
     let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
-    if (status == 'loading') {
-        if (inspect.ok) {
-            easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
-        } else {
-            inspect.url = url;
-        }
+    if (status == 'loading' && inspect.ok) {
+        delete easyInspect[tabId];
     } else if (status === 'complete') {
         inspect.ok = true;
     }
@@ -225,7 +222,7 @@ function actionHandler(tabId, host, action, rules) {
     let match = cacheExclude[host] ??= !easyExclude.test(host);
     if (match) {
         proxy.add(host);
-        proxyUpdated();
+        proxyDispatch();
         chrome.runtime.sendMessage({ action, params: { tabId, host } });
     }
 }
@@ -255,7 +252,7 @@ function storageDispatch() {
     easyPreset = easyStorage.preset;
     easyMode = easyStorage.mode;
     easyExclude.new(easyStorage.exclude);
-    proxyUpdated();
+    proxyDispatch();
 }
 
 chrome.storage.local.get(null, async (json) => {
