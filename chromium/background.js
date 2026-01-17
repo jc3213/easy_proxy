@@ -195,8 +195,13 @@ chrome.tabs.onUpdated.addListener((tabId, { status }, { url }) => {
 });
 
 function inspectRequest(action, tabId, url) {
-    let data = url.split('/')[2];
-    let host = data.includes('@') ? data.slice(data.indexOf('@') + 1) : data;
+    let host = url.split('/')[2];
+    if (host.includes('@')) {
+        host = host.substring(host.indexOf('@') + 1);
+    }
+    if (host.includes(':')) {
+        host = host.substring(0, host.indexOf(':'));
+    }
     let rule = cacheRules[host] ??= EasyProxy.make(host);
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
     return { host, rule };
