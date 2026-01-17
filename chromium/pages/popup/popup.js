@@ -108,8 +108,6 @@ function menuEventSubmit() {
 }
 
 function menuEventPurge() {
-    easyTempo.clear();
-    easyTypes.clear();
     for (let rule of easyRules.values()) {
         if (rule.classList.contains('tempo')) {
             rule.classList.replace('tempo', 'direct');
@@ -117,6 +115,8 @@ function menuEventPurge() {
         }
     }
     chrome.runtime.sendMessage({ action:'manager_purge', params: easyTab });
+    easyTempo = {};
+    easyTypes.clear();
     purgeBtn.disabled = true;
 }
 
