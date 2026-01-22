@@ -83,8 +83,8 @@ function proxyQuery(response, tabId) {
 
 function proxySubmit(response, { changes, tabId }) {
     for (let { type, proxy, rule, action } of changes) {
-        let rules = type === 'match' ? easyMatch[proxy] : type === 'tempo' ? easyTempo[proxy] : easyExclude;
-        action === 'add' ? rules.add(rule) : rules.delete(rule);
+        let route = type === 'match' ? easyMatch[proxy] : type === 'tempo' ? easyTempo[proxy] : easyExclude;
+        action === 'add' ? route.add(rule) : route.delete(rule);
     }
     for (let proxy of easyStorage.proxies) {
         easyStorage[proxy] = easyMatch[proxy].data;
