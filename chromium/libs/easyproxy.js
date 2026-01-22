@@ -21,7 +21,7 @@ function FindProxyForURL(url, host) {
     #proxy;
     #script;
     #data = new Set();
-    #rule = {};
+    #route = {};
     #empty = true;
     #global = false;
 
@@ -39,8 +39,8 @@ function FindProxyForURL(url, host) {
         return [...this.#data];
     }
 
-    get rules() {
-        return this.#rule;
+    get route() {
+        return this.#route;
     }
 
     get proxy() {
@@ -113,12 +113,12 @@ function FindProxyForURL(url, host) {
     }
 
     #make() {
-        this.#script = JSON.stringify(this.#rule, null, 4).slice(2, -2).replaceAll(`"${this.#proxy}"`, this.#id);
+        this.#script = JSON.stringify(this.#route, null, 4).slice(2, -2).replaceAll(`"${this.#proxy}"`, this.#id);
     }
 
     new(arg) {
         this.#data = new Set();
-        this.#rule = {};
+        this.#route = {};
         this.add(arg);
     }
 
@@ -126,7 +126,7 @@ function FindProxyForURL(url, host) {
         let add = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
         for (let a of add) {
             this.#data.add(a);
-            this.#rule[a] = this.#proxy;
+            this.#route[a] = this.#proxy;
         }
         this.#sync();
     }
@@ -135,7 +135,7 @@ function FindProxyForURL(url, host) {
         let remove = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
         for (let r of remove) {
             this.#data.delete(r);
-            delete this.#rule[r];
+            delete this.#route[r];
         }
         this.#sync();
     }
@@ -148,7 +148,7 @@ function FindProxyForURL(url, host) {
             return true;
         }
         while (true) {
-            if (this.#rule[host]) {
+            if (this.#route[host]) {
                 return true;
             }
             let dot = host.indexOf('.');
