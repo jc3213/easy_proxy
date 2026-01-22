@@ -20,7 +20,8 @@ function FindProxyForURL(url, host) {
     #id;
     #proxy;
     #script;
-    #rules = {};
+    #data = new Set();
+    #rule = {};
     #empty = true;
     #global = false;
 
@@ -34,8 +35,12 @@ function FindProxyForURL(url, host) {
         i.push(this);
     }
 
+    get data() {
+        return [...this.#data];
+    }
+
     get rules() {
-        return this.#rules;
+        return this.#rule;
     }
 
     get proxy() {
@@ -69,13 +74,13 @@ function FindProxyForURL(url, host) {
     }
 
     static make(host) {
-        let temp = host.split('.');
-        if (temp.length < 2) {
+        let array = host.split('.');
+        if (array.length < 2) {
             return host;
         }
-        let sbd = temp.at(-3);
-        let sld = temp.at(-2);
-        let tld = temp.at(-1);
+        let sbd = array.at(-3);
+        let sld = array.at(-2);
+        let tld = array.at(-1);
         return sbd && EasyProxy.#etld.has(sld)
             ? `${sbd}.${sld}.${tld}`
             : `${sld}.${tld}`;
@@ -91,43 +96,46 @@ function FindProxyForURL(url, host) {
     }
 
     static delete(arg) {
-        let del = new Set(Array.isArray(arg) ? arg : [arg]);
-        let arr = [];
+        let remove = new Set(Array.isArray(arg) ? arg : [arg]);
+        let array = [];
         for (let i of EasyProxy.#instances) {
-            if (!del.has(i.#proxy)) {
-                arr.push(i);
+            if (!remove.has(i.#proxy)) {
+                array.push(i);
             }
         }
-        EasyProxy.#instances = arr;
+        EasyProxy.#instances = array;
     }
 
     #sync() {
-        this.#empty = Object.keys(this.#rules).length === 0;
-        this.#global = '*' in this.#rules;
+        this.#empty = this.#data.size === 0;
+        this.#global = this.#data.has('*');
         this.#make();
     }
 
     #make() {
-        this.#script = JSON.stringify(this.#rules, null, 4).slice(2, -2).replaceAll(`"${this.#proxy}"`, this.#id);
+        this.#script = JSON.stringify(this.#rule, null, 4).slice(2, -2).replaceAll(`"${this.#proxy}"`, this.#id);
     }
 
     new(arg) {
-        this.#rules = {};
+        this.#data = new Set();
+        this.#rule = {};
         this.add(arg);
     }
 
     add(arg) {
         let add = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
-        for (let i of add) {
-            this.#rules[i] = this.#proxy;
+        for (let a of add) {
+            this.#data.add(a);
+            this.#rule[a] = this.#proxy;
         }
         this.#sync();
     }
 
     delete(arg) {
-        let del = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
-        for (let i of del) {
-            delete this.#rules[i];
+        let remove = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
+        for (let r of remove) {
+            this.#data.delete(r);
+            delete this.#rule[r];
         }
         this.#sync();
     }
@@ -140,7 +148,7 @@ function FindProxyForURL(url, host) {
             return true;
         }
         while (true) {
-            if (this.#rules[host]) {
+            if (this.#rule[host]) {
                 return true;
             }
             let dot = host.indexOf('.');

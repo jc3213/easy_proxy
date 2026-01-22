@@ -87,9 +87,9 @@ function proxySubmit(response, { changes, tabId }) {
         action === 'add' ? rules.add(rule) : rules.delete(rule);
     }
     for (let proxy of easyStorage.proxies) {
-        easyStorage[proxy] = Object.keys(easyMatch[proxy].rules);
+        easyStorage[proxy] = easyMatch[proxy].data;
     }
-    easyStorage['exclude'] = Object.keys(easyExclude.rules);
+    easyStorage['exclude'] = easyExclude.data;
     cacheCounts = {};
     cacheExclude = {};
     proxyDispatch();
@@ -211,35 +211,31 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
-function actionHandler(tabId, host, action, rules) {
-    let proxy = rules[easyPreset];
-    if (!proxy) {
-        return;
-    }
-    let match = cacheExclude[host] ??= !easyExclude.test(host);
-    if (match) {
-        proxy.add(host);
-        proxyDispatch();
-        chrome.runtime.sendMessage({ action, params: { tabId, host } });
-    }
-}
-
-const actionMap = {
-    'none': (tabId, host, rule) => {
-        let { error } = easyInspect[tabId];
-        error.add(rule);
-        error.add(host);
-    },
-    'match': (tabId, host) => actionHandler(tabId, host, 'network_match', easyMatch),
-    'tempo': (tabId, host) => actionHandler(tabId, host, 'network_tempo', easyTempo)
-};
-
 chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     if (!easyHandler.has(error) || !easyPreset) {
         return;
     }
     let { host, rule } = inspectRequest('network_error', tabId, url);
-    actionMap[easyAction]?.(tabId, host, rule);
+    if (easyAction === 'none') {
+        let { error } = easyInspect[tabId];
+        error.add(rule);
+        error.add(host);
+        return;
+    }
+    let exclude = cacheExclude[host] ??= easyExclude.test(host);
+    if (exclude) {
+        return;
+    }
+    if (easyAction === 'match') {
+        let proxy = easyMatch[easyPreset];
+        proxy.add(host);
+        chrome.storage.local.set({ [easyPreset]: proxy.data });
+    } else {
+        let proxy = easyTempo[easyPreset];
+        proxy.add(host);
+    }
+    proxyDispatch();
+    chrome.runtime.sendMessage({ action: 'network_' + easyAction, params: { tabId, host } });
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function storageDispatch() {
