@@ -87,9 +87,9 @@ function proxySubmit(response, { changes, tabId }) {
         action === 'add' ? rules.add(rule) : rules.delete(rule);
     }
     for (let proxy of easyStorage.proxies) {
-        easyStorage[proxy] = easyMatch[proxy].data;
+        easyStorage[proxy] = Object.keys(easyMatch[proxy].rules);
     }
-    easyStorage['exclude'] = easyExclude.data;
+    easyStorage['exclude'] = Object.keys(easyExclude.rules);
     cacheCounts = {};
     cacheExclude = {};
     proxyDispatch();
