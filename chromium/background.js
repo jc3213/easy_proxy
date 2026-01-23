@@ -1,3 +1,4 @@
+let easyManifest = chrome.runtime.getManifest();
 let easyDefault = {
     mode: 'autopac',
     preset: null,
@@ -8,7 +9,7 @@ let easyDefault = {
     exclude: []
 };
 
-if (chrome.runtime.getManifest().manifest_version === 3) {
+if (easyManifest.manifest_version === 3) {
     importScripts('libs/easyproxy.js');
     setInterval(chrome.runtime.getPlatformInfo, 28000);
 }
@@ -163,7 +164,7 @@ function proxyChromium() {
     }
     chrome.proxy.settings.set({ value });
 }
-const proxyDispatch = typeof browser !== 'undefined' ? proxyFirefox : proxyChromium;
+const proxyDispatch = easyManifest.browser_specific_settings ? proxyFirefox : proxyChromium;
 
 chrome.action ??= chrome.browserAction;
 chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
