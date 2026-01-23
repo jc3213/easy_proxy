@@ -26,7 +26,7 @@ let easyMode;
 let easyInspect = {};
 
 let cacheRules = {};
-let cacheCounts = {};
+let cacheRoute = {};
 let cacheExclude = {};
 
 function storageUpdated(response, json) {
@@ -58,7 +58,7 @@ function storageUpdated(response, json) {
     EasyProxy.delete(removed);
     easyStorage = json;
     storageDispatch();
-    cacheCounts = {};
+    cacheRoute = {};
     cacheExclude = {};
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json, response);
@@ -84,14 +84,14 @@ function proxyQuery(response, tabId) {
 
 function proxySubmit(response, { changes, tabId }) {
     for (let { type, proxy, rule, action } of changes) {
-        let route = type === 'match' ? easyMatch[proxy] : type === 'tempo' ? easyTempo[proxy] : easyExclude;
-        action === 'add' ? route.add(rule) : route.delete(rule);
+        let profile = type === 'match' ? easyMatch[proxy] : type === 'tempo' ? easyTempo[proxy] : easyExclude;
+        action === 'add' ? profile.add(rule) : profile.delete(rule);
     }
     for (let proxy of easyStorage.proxies) {
         easyStorage[proxy] = easyMatch[proxy].data;
     }
     easyStorage['exclude'] = easyExclude.data;
-    cacheCounts = {};
+    cacheRoute = {};
     cacheExclude = {};
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
@@ -102,7 +102,7 @@ function proxyPurge(response, tabId) {
     for (let proxy of easyStorage.proxies) {
         easyTempo[proxy].new();
     }
-    cacheCounts = {};
+    cacheRoute = {};
     proxyDispatch();
     chrome.tabs.reload(tabId);
 }
@@ -206,7 +206,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let match = cacheCounts[host] ??= EasyProxy.test(host);
+    let match = cacheRoute[host] ??= EasyProxy.test(host);
     if (match) {
         chrome.action.setBadgeText({ tabId, text: String(++inspect.index) });
     }
