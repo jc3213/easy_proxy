@@ -15,10 +15,10 @@
                 <option value="SOCKS5">SOCKS5</option>
             </select>
             <input name="proxy" type="text" placeholder="localhost:8080">
-            <button i18n="common_submit">Submit</button>
-            <button id="set-options" i18n="options_advanced">Advanced</button>
+            <button i18n="common_submit" hotkey="ctrl+s">Submit</button>
+            <button i18n="options_advanced" hotkey="ctrl+q">Advanced</button>
             <button i18n="options_save" disabled>Save</button>
-            <button><label for="import-options" i18n="options_import">Import</label></button>
+            <button i18n="options_import">Import</button>
             <button i18n="options_export">Export</button>
             <input id="import-options" type="file" accept=".json">
             <a></a>
@@ -76,6 +76,7 @@
                 <button i18n-tips="match_remove">❌</button>
             </div>
         </div>
+        <script src="../common.js"></script>
         <script src="options.js"></script>
     </body>
 </html>

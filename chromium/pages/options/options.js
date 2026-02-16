@@ -8,27 +8,6 @@ let [, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.child
 let [proxyMenu, modeMenu, actionMenu, actionPane, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
-for (let i18n of document.querySelectorAll('[i18n]')) {
-    i18n.textContent = chrome.i18n.getMessage(i18n.getAttribute('i18n'));
-}
-
-for (let i18n of document.querySelectorAll('[i18n-tips]')) {
-    i18n.title = chrome.i18n.getMessage(i18n.getAttribute('i18n-tips'));
-}
-
-const shortcutMap = {
-    'KeyS': saveBtn,
-    'KeyQ': optionsBtn
-};
-
-document.addEventListener('keydown', (event) => {
-    let key = shortcutMap[event.code];
-    if (event.ctrlKey && key) {
-        event.preventDefault();
-        key.click();
-    }
-});
-
 function menuEventSubmit() {
     let id = schemeEntry.value + ' ' + proxyEntry.value ;
     if (easyStorage[id] || !/^(HTTPS?|SOCKS5?) ([^.]+\.)+[^.:]*:\d+$/.test(id)) {
@@ -52,10 +31,6 @@ function menuEventSave() {
     chrome.runtime.sendMessage({ action: 'storage_update', params: easyStorage });
 }
 
-function menuEventExport() {
-    fileSaver(JSON.stringify(easyStorage, null, 4), 'easy_proxy', '.json');
-}
-
 function fileSaver(data, filename, filetype) {
     let blob = new Blob([data]);
     exporter.href = URL.createObjectURL(blob);
@@ -67,7 +42,8 @@ const menuEventMap = {
     'common_submit': menuEventSubmit,
     'options_advanced': menuEventAdvanced,
     'options_save': menuEventSave,
-    'options_export': menuEventExport
+    'options_import': () => importEntry.click(),
+    'options_export': () => fileSaver(JSON.stringify(easyStorage, null, 4), 'easy_proxy', '.json')
 };
 
 menuPane.addEventListener('click', (event) => {

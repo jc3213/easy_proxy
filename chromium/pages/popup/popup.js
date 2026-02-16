@@ -23,22 +23,6 @@ for (let i18n of document.querySelectorAll('[i18n-tips]')) {
     i18n.title = chrome.i18n.getMessage(i18n.getAttribute('i18n-tips'));
 }
 
-function shortcutHandler(event, button) {
-    event.preventDefault();
-    button.click();
-}
-
-const shortcutMap = {
-    'Tab': () => switchBtn.click(),
-    'Enter': () => submitBtn.click(),
-    'Escape': (event) => shortcutHandler(event, defaultBtn),
-    'Backspace': () => purgeBtn.click()
-};
-
-document.addEventListener('keydown', (event) => {
-    shortcutMap[event.key]?.(event);
-});
-
 function proxyStatusChanged(type) {
     if (type.props !== type.value) {
         easyChanges.add(type);
