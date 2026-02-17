@@ -50,12 +50,13 @@ function storageUpdated(response, json) {
     }
     for (let proxy of easyStorage.proxies) {
         if (!json[proxy]) {
+            easyMatch[proxy].destroy();
+            easyTempo[proxy].destroy();
             delete easyMatch[proxy];
             delete easyTempo[proxy];
             removed.push(proxy);
         }
     }
-    EasyProxy.delete(removed);
     easyStorage = json;
     storageDispatch();
     cacheRoute = {};
@@ -183,12 +184,16 @@ chrome.tabs.onUpdated.addListener((tabId, { status }) => {
 });
 
 function inspectRequest(action, tabId, url) {
-    let host = url.split('/')[2];
-    if (host.includes('@')) {
-        host = host.substring(host.indexOf('@') + 1);
+    let start = url.indexOf('//') + 2;
+    let end = url.indexOf('/', start);
+    let host = url.substring(start, end);
+    let at = host.indexOf('@');
+    if (at !== -1) {
+        host = host.substring(at + 1);
     }
-    if (host.includes(':')) {
-        host = host.substring(0, host.indexOf(':'));
+    let colon = host.indexOf(':');
+    if (colon !== -1) {
+        host = host.substring(0, colon);
     }
     let rule = cacheRules[host] ??= EasyProxy.make(host);
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
