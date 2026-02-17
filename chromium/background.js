@@ -50,13 +50,12 @@ function storageUpdated(response, json) {
     }
     for (let proxy of easyStorage.proxies) {
         if (!json[proxy]) {
-            easyMatch[proxy].destroy();
-            easyTempo[proxy].destroy();
             delete easyMatch[proxy];
             delete easyTempo[proxy];
             removed.push(proxy);
         }
     }
+    EasyProxy.delete(removed);
     easyStorage = json;
     storageDispatch();
     cacheRoute = {};
