@@ -98,10 +98,6 @@ function FindProxyForURL(url, host) {
     #sync() {
         this.#empty = this.#data.size === 0;
         this.#global = this.#data.has('*');
-        this.#make();
-    }
-
-    #make() {
         this.#script = JSON.stringify(this.#route, null, 4).slice(2, -2).replaceAll(`"${this.#proxy}"`, this.#id);
     }
 
