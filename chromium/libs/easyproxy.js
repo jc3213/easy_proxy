@@ -17,44 +17,6 @@ function FindProxyForURL(url, host) {
 }
 `;
 
-    #id;
-    #proxy;
-    #script;
-    #data = new Set();
-    #route = {};
-    #empty = true;
-    #global = false;
-
-    constructor(string) {
-        if (!/^(DIRECT|BLOCK|(HTTPS?|SOCKS5?) [A-Za-z0-9.-]+:\d{1,5})$/.test(string)) {
-            throw new TypeError('Invalid proxy handler: excpeted "PROXY_TYPE HOST:PORT"');
-        }
-        let i = EasyProxy.#instances;
-        this.#id = `PROXY${i.length}`;
-        this.#proxy = string;
-        i.push(this);
-    }
-
-    get data() {
-        return [...this.#data];
-    }
-
-    get route() {
-        return this.#route;
-    }
-
-    get proxy() {
-        return this.#proxy;
-    }
-
-    get pacScript() {
-        return this.#empty
-            ? 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'
-            : this.#global
-            ? `function FindProxyForURL(url, host) {\n    return "${this.#proxy}";\n}`
-            : `var ${this.#id} = "${this.#proxy}";\n\nvar RULES = {\n${this.#script}\n};\n${EasyProxy.#pasScript}`;
-    }
-
     static get pacScript() {
         let ids = [];
         let rules = [];
@@ -95,15 +57,42 @@ function FindProxyForURL(url, host) {
         return false;
     }
 
-    static delete(arg) {
-        let remove = new Set(Array.isArray(arg) ? arg : [arg]);
-        let array = [];
-        for (let i of EasyProxy.#instances) {
-            if (!remove.has(i.#proxy)) {
-                array.push(i);
-            }
+    #id;
+    #proxy;
+    #script;
+    #data = new Set();
+    #route = {};
+    #empty = true;
+    #global = false;
+
+    constructor(string) {
+        if (!/^(DIRECT|BLOCK|(HTTPS?|SOCKS5?) [A-Za-z0-9.-]+:\d{1,5})$/.test(string)) {
+            throw new TypeError('Invalid proxy handler: excpeted "PROXY_TYPE HOST:PORT"');
         }
-        EasyProxy.#instances = array;
+        let i = EasyProxy.#instances;
+        this.#id = `PROXY${i.length}`;
+        this.#proxy = string;
+        i.push(this);
+    }
+
+    get data() {
+        return [...this.#data];
+    }
+
+    get route() {
+        return this.#route;
+    }
+
+    get proxy() {
+        return this.#proxy;
+    }
+
+    get pacScript() {
+        return this.#empty
+            ? 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'
+            : this.#global
+            ? `function FindProxyForURL(url, host) {\n    return "${this.#proxy}";\n}`
+            : `var ${this.#id} = "${this.#proxy}";\n\nvar RULES = {\n${this.#script}\n};\n${EasyProxy.#pasScript}`;
     }
 
     #sync() {
@@ -138,6 +127,10 @@ function FindProxyForURL(url, host) {
             delete this.#route[r];
         }
         this.#sync();
+    }
+
+    destroy() {
+        EasyProxy.#instances.delete(this);
     }
 
     test(host) {
