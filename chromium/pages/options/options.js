@@ -178,7 +178,7 @@ function profileRemove(id) {
 }
 
 function matchAddNew(id, list, entry) {
-    let value = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(?=\/|$)/)?.[1];
+    let value = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9]+)(?=\/|$)/)?.[1];
     let storage = easyStorage[id];
     entry.value = '';
     if (value && !storage.includes(value)) {
