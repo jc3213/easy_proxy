@@ -1,7 +1,7 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "2.6.4",
+    "version": "2.6.5",
     "manifest_version": 2,
     "permissions": [
         "proxy",
@@ -38,7 +38,7 @@
     "commands": {
         "_execute_browser_action": {
             "suggested_key": {
-                "default": "Alt+Shift+P"
+                "default": "Ctrl+Shift+Q"
             }
         }
     },
