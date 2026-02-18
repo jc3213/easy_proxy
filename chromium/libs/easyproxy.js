@@ -1,5 +1,5 @@
 class EasyProxy {
-    static #instances = [];
+    static #instances = new Set();
     static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
     static #pasScript = `
 function FindProxyForURL(url, host) {
@@ -72,7 +72,7 @@ function FindProxyForURL(url, host) {
         let i = EasyProxy.#instances;
         this.#id = `PROXY${i.length}`;
         this.#proxy = string;
-        i.push(this);
+        i.add(this);
     }
 
     get data() {
