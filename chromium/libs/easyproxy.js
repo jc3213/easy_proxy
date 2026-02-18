@@ -1,5 +1,6 @@
 class EasyProxy {
     static #instances = new Set();
+    static #ids = 0;
     static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
     static #pasScript = `
 function FindProxyForURL(url, host) {
@@ -69,10 +70,9 @@ function FindProxyForURL(url, host) {
         if (!/^(DIRECT|BLOCK|(HTTPS?|SOCKS5?) [A-Za-z0-9.-]+:\d{1,5})$/.test(string)) {
             throw new TypeError('Invalid proxy handler: excpeted "PROXY_TYPE HOST:PORT"');
         }
-        let i = EasyProxy.#instances;
-        this.#id = `PROXY${i.length}`;
+        this.#id = `PROXY${EasyProxy.#ids++}`;
         this.#proxy = string;
-        i.add(this);
+        EasyProxy.#instances.add(this);
     }
 
     get data() {
