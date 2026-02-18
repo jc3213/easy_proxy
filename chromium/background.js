@@ -1,5 +1,6 @@
-let easyManifest = chrome.runtime.getManifest();
-let easyDefault = {
+const systemManifest = chrome.runtime.getManifest();
+const systemFirefox = systemManifest.browser_specific_settings;
+const systemStorage = {
     mode: 'autopac',
     preset: null,
     network: false,
@@ -9,7 +10,7 @@ let easyDefault = {
     exclude: []
 };
 
-if (easyManifest.manifest_version === 3) {
+if (systemManifest.manifest_version === 3) {
     importScripts('libs/easyproxy.js');
     setInterval(chrome.runtime.getPlatformInfo, 28000);
 }
@@ -33,7 +34,7 @@ function storageUpdated(response, json) {
     let invalid = [];
     let removed = []
     for (let key of Object.keys(json)) {
-        if (key in easyDefault) {
+        if (key in systemStorage) {
             continue;
         }
         if (!json.proxies.includes(key)) {
@@ -130,42 +131,38 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     return true;
 });
 
-function proxyFirefox() {
+function proxyDispatch() {
     let value;
     if (easyMode === 'autopac') {
-        value = { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript };
+        value = systemFirefox
+            ? { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript }
+            : { mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } };
     } else if (easyMode === 'direct') {
-        value = { proxyType: 'none' };
+        value = systemFirefox
+            ? { proxyType: 'none' }
+            : { mode: 'direct' };
     } else {
-        let proxy = easyPreset ?? easyStorage.proxies[0];
-        let [scheme, url] = proxy.split(' ');
-        value = { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1' };
-        if (scheme === 'HTTP') {
-            value.http = 'http://' + url;
-        } else if (scheme === 'HTTPS') {
-            value.ssl = 'https://' + url;
+        if (systemFirefox) {
+            let proxy = easyPreset ?? easyStorage.proxies[0];
+            let [scheme, url] = proxy.split(' ');
+            value = { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1' };
+            if (scheme === 'HTTP') {
+                value.http = 'http://' + url;
+            } else if (scheme === 'HTTPS') {
+                value.ssl = 'https://' + url;
+            } else {
+                value.socks = 'socks://' + url;
+                value.socksVersion = scheme === 'SOCKS' ? 4 : 5;
+            }
         } else {
-            value.socks = 'socks://' + url;
-            value.socksVersion = scheme === 'SOCKS' ? 4 : 5;
+            let proxy = easyPreset ?? easyStorage.proxies[0];
+            let [scheme, host, port] = proxy.split(/[\s:]/);
+            let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
+            value = { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
         }
-    }
-    browser.proxy.settings.set({ value });
-}
-function proxyChromium() {
-    let value;
-    if (easyMode === 'autopac') {
-        value = { mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } };
-    } else if (easyMode === 'direct') {
-        value = { mode: 'direct' };
-    } else {
-        let proxy = easyPreset ?? easyStorage.proxies[0];
-        let [scheme, host, port] = proxy.split(/[\s:]/);
-        let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
-        value = { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
     }
     chrome.proxy.settings.set({ value });
 }
-const proxyDispatch = easyManifest.browser_specific_settings ? proxyFirefox : proxyChromium;
 
 chrome.action ??= chrome.browserAction;
 chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
@@ -255,7 +252,7 @@ function storageDispatch() {
 }
 
 chrome.storage.local.get(null, async (json) => {
-    easyStorage = {...easyDefault, ...json};
+    easyStorage = {...systemStorage, ...json};
     for (let proxy of easyStorage.proxies) {
         easyMatch[proxy] = new EasyProxy(proxy);
         easyTempo[proxy] = new EasyProxy(proxy);
