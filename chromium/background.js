@@ -7,7 +7,7 @@ const systemStorage = {
     action: 'none',
     handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
     proxies: [],
-    exclude: []
+    exclude: ['localhost', '127.0.0.1']
 };
 
 if (systemManifest.manifest_version === 3) {
@@ -208,7 +208,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let match = cacheRoute[host] ??= EasyProxy.test(host);
+    let match = cacheRoute[host] ??= EasyProxy.match(host);
     if (match) {
         chrome.action.setBadgeText({ tabId, text: String(++inspect.index) });
     }
@@ -225,7 +225,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         error.add(host);
         return;
     }
-    let exclude = cacheExclude[host] ??= easyExclude.test(host);
+    let exclude = cacheExclude[host] ??= easyExclude.match(host);
     if (exclude) {
         return;
     }

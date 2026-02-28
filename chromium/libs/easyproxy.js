@@ -49,7 +49,7 @@ function FindProxyForURL(url, host) {
             : `${sld}.${tld}`;
     }
 
-    static test(host) {
+    static match(host) {
         for (let i of EasyProxy.#instances) {
             if (i.#proxy !== 'DIRECT' && i.test(host)) {
                 return true;
@@ -129,7 +129,7 @@ function FindProxyForURL(url, host) {
         EasyProxy.#instances.delete(this);
     }
 
-    test(host) {
+    match(host) {
         if (this.#empty) {
             return false;
         }
