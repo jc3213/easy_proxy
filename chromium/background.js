@@ -2,10 +2,10 @@ const systemManifest = chrome.runtime.getManifest();
 const systemFirefox = systemManifest.browser_specific_settings;
 const systemStorage = {
     mode: 'autopac',
-    preset: null,
-    network: false,
     action: 'none',
     handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
+    network: false,
+    preset: null,
     proxies: [],
     exclude: ['localhost', '127.0.0.1']
 };
@@ -208,9 +208,9 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let routing = cacheRoute[host] ??= EasyProxy.match(host);
-    if (routing) {
-        chrome.action.setBadgeText({ tabId, text: String(++inspect.index) });
+    let route = cacheRoute[host] ??= EasyProxy.match(host);
+    if (route) {
+        chrome.action.setBadgeText({ tabId, text: `${++inspect.index}` });
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
@@ -225,9 +225,9 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         error.add(host);
         return;
     }
-    let routing = cacheRoute[host] ??= EasyProxy.match(host);
+    let route = cacheRoute[host] ??= EasyProxy.match(host);
     let exclude = cacheExclude[host] ??= easyExclude.match(host);
-    if (routing || exclude) {
+    if (route || exclude) {
         return;
     }
     if (easyAction === 'match') {

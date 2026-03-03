@@ -51,7 +51,7 @@ function FindProxyForURL(url, host) {
 
     static match(host) {
         for (let i of EasyProxy.#instances) {
-            if (i.#proxy !== 'DIRECT' && i.test(host)) {
+            if (i.#proxy !== 'DIRECT' && i.match(host)) {
                 return true;
             }
         }
