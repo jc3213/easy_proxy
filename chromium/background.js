@@ -208,8 +208,8 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let match = cacheRoute[host] ??= EasyProxy.match(host);
-    if (match) {
+    let routing = cacheRoute[host] ??= EasyProxy.match(host);
+    if (routing) {
         chrome.action.setBadgeText({ tabId, text: String(++inspect.index) });
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
@@ -225,8 +225,9 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         error.add(host);
         return;
     }
+    let routing = cacheRoute[host] ??= EasyProxy.match(host);
     let exclude = cacheExclude[host] ??= easyExclude.match(host);
-    if (exclude) {
+    if (routing || exclude) {
         return;
     }
     if (easyAction === 'match') {
