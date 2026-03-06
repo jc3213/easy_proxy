@@ -8,6 +8,7 @@ let easyRoute;
 let easyMode;
 let easyProxy;
 let easyTab;
+let easyUrl
 
 let manager = document.body;
 let [rulesPane, extraPane,, menuPane, template] = manager.children;
@@ -52,8 +53,7 @@ proxyMenu.addEventListener('change', (event) => {
 
 modeMenu.addEventListener('change', (event) => {
     let mode = modeMenu.value;
-    let params = { mode, tabId: easyTab };
-    chrome.runtime.sendMessage({ action: 'easyproxy_mode', params }, () => {
+    chrome.runtime.sendMessage({ action: 'easyproxy_mode', params: { mode, referer: easyUrl } }, () => {
         manager.className = easyMode = mode;
     });
 });
@@ -80,7 +80,7 @@ function menuEventSubmit() {
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
     rulesPane.innerHTML = '';
-    chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, tabId: easyTab } });
+    chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, referer: easyUrl } });
 }
 
 function menuEventPurge() {
@@ -90,7 +90,7 @@ function menuEventPurge() {
             rule.type.value = rule.type.props = 'direct';
         }
     }
-    chrome.runtime.sendMessage({ action:'manager_purge', params: easyTab });
+    chrome.runtime.sendMessage({ action: 'manager_purge', params: easyUrl });
     easyTempo = {};
     easyTypes.clear();
     purgeBtn.disabled = true;
@@ -127,39 +127,38 @@ extraPane.addEventListener('click', (event) => {
     menuEventMap[menu]?.();
 });
 
-function messageHandler({ tabId, rule, host }, callback) {
-    if (easyProxy && tabId === easyTab) {
-        callback(host, rule);
-    }
-}
-
 const messageDispatch = {
-    'network_update': (params) => messageHandler(params, (host, rule) => {
+    'network_update': (host, rule) => {
         proxyItemListing(rule, 'wildcard');
         proxyItemListing(host, 'fullhost');
         manager.className = easyMode;
-    }),
-    'network_error': (params) => messageHandler(params, (host, rule) => {
+    },
+    'network_error': (host, rule) => {
         easyRules.get(rule)?.classList?.add('error');
         easyRules.get(host)?.classList?.add('error');
-    }),
-    'network_match': (params) => messageHandler(params, (host) => {
+    },
+    'network_match': (host) => {
         easyMatch[host] = easyProxy;
         easyRules.get(host)?.classList?.add('match');
-    }),
-    'network_tempo': (params) => messageHandler(params, (host) => {
+    },
+    'network_tempo': (host) => {
         easyTempo[host] = easyProxy;
         easyRules.get(host)?.classList?.add('tempo');
-    })
+    }
 };
 
 chrome.runtime.onMessage.addListener(({ action, params }) => {
-    messageDispatch[action]?.(params);
+    let { tabId, host, rule } = params;
+    if (tabId && tabId === easyTab) {
+        return;
+    }
+    messageDispatch[action]?.(host, rule);
 });
 
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    easyTab = tabs[0].id;
-    chrome.runtime.sendMessage({ action: 'manager_query', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
+chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    easyTab = tab.id;
+    easyUrl = tab.url
+    chrome.runtime.sendMessage({ action: 'manager_fetch', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];

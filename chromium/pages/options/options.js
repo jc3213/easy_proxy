@@ -144,13 +144,13 @@ function storageDispatch(json) {
     }
 }
 
-chrome.runtime.sendMessage({ action: 'storage_query' }, (storage) => {
+chrome.runtime.sendMessage({ action: 'storage_fetch' }, (storage) => {
     storageDispatch(storage);
     actionPane.classList.add(storage.action);
 });
 
 function profileExport(id) {
-    chrome.runtime.sendMessage({ action: 'pacscript_query', params: id }, (pac_script) => {
+    chrome.runtime.sendMessage({ action: 'profile_fetch', params: id }, (pac_script) => {
         fileSaver(pac_script, id.replace(/[: ]/g, '_'), '.pac');
     });
 }

@@ -66,7 +66,7 @@ function storageUpdated(response, json) {
     chrome.storage.local.set(json, response);
 }
 
-function proxyQuery(response, tabId) {
+function managerFetch(response, tabId) {
     let match = {};
     let tempo = {};
     let exclude = easyExclude.route;
@@ -84,7 +84,7 @@ function proxyQuery(response, tabId) {
     response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
 }
 
-function proxySubmit(response, { changes, tabId }) {
+function proxySubmit(response, { changes, referer }) {
     for (let { type, proxy, rule, action } of changes) {
         let profile = type === 'match' ? easyMatch[proxy] : type === 'tempo' ? easyTempo[proxy] : easyExclude;
         action === 'add' ? profile.add(rule) : profile.delete(rule);
@@ -97,30 +97,39 @@ function proxySubmit(response, { changes, tabId }) {
     cacheExclude = {};
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
-    chrome.tabs.reload(tabId);
+    reloadProxyState(referer);
 }
 
-function proxyPurge(response, tabId) {
+function proxyPurge(response, referer) {
     for (let proxy of easyStorage.proxies) {
         easyTempo[proxy].new();
     }
     cacheRoute = {};
     proxyDispatch();
-    chrome.tabs.reload(tabId);
+    reloadProxyState(referer);
 }
 
-function modeUpdated(response, { tabId, mode }) {
+function modeUpdated(response, { mode, referer }) {
     easyMode = easyStorage.mode = mode;
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
-    chrome.tabs.reload(tabId);
+    reloadProxyState(referer);
+}
+
+function reloadProxyState(url) {
+    let host = getHostname(url);
+    chrome.tabs.query({ url: '*://' + host + '/*', currentWindow: true }, (tabs) => {
+        for (let { id } of tabs) {
+            chrome.tabs.reload(id);
+        }
+    });
 }
 
 const messageDispatch = {
-    'storage_query': (response) => response(easyStorage),
+    'storage_fetch': (response) => response(easyStorage),
     'storage_update': storageUpdated,
-    'pacscript_query': (response, params) => response(easyMatch[params].pacScript),
-    'manager_query': proxyQuery,
+    'profile_fetch': (response, params) => response(easyMatch[params].pacScript),
+    'manager_fetch': managerFetch,
     'manager_update': proxySubmit,
     'manager_purge': proxyPurge,
     'easyproxy_mode': modeUpdated
@@ -180,7 +189,7 @@ chrome.tabs.onUpdated.addListener((tabId, { status }) => {
     }
 });
 
-function inspectRequest(action, tabId, url) {
+function getHostname(url) {
     let start = url.indexOf('//') + 2;
     let end = url.indexOf('/', start);
     let host = url.substring(start, end);
@@ -192,6 +201,11 @@ function inspectRequest(action, tabId, url) {
     if (colon !== -1) {
         host = host.substring(0, colon);
     }
+    return host;
+}
+
+function inspectRequest(action, tabId, url) {
+    let host = getHostname(url);
     let rule = cacheRules[host] ??= EasyProxy.make(host);
     chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
     return { host, rule };
