@@ -97,7 +97,7 @@ function proxySubmit(response, { changes, referer }) {
     cacheExclude = {};
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
-    reloadProxyState(referer);
+    updateProxyState(referer);
 }
 
 function proxyPurge(response, referer) {
@@ -106,17 +106,17 @@ function proxyPurge(response, referer) {
     }
     cacheRoute = {};
     proxyDispatch();
-    reloadProxyState(referer);
+    updateProxyState(referer);
 }
 
 function modeUpdated(response, { mode, referer }) {
     easyMode = easyStorage.mode = mode;
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
-    reloadProxyState(referer);
+    updateProxyState(referer);
 }
 
-function reloadProxyState(url) {
+function updateProxyState(url) {
     let host = getHostname(url);
     chrome.tabs.query({ url: '*://' + host + '/*', currentWindow: true }, (tabs) => {
         for (let { id } of tabs) {
@@ -176,17 +176,17 @@ function proxyDispatch() {
 chrome.action ??= chrome.browserAction;
 chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-    delete easyInspect[tabId];
-});
-
 chrome.tabs.onUpdated.addListener((tabId, { status }) => {
-    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
+    let inspect = easyInspect[tabId];
     if (status == 'loading' && inspect.ok) {
-        delete easyInspect[tabId];
+        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
     } else if (status === 'complete') {
         inspect.ok = true;
     }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+    delete easyInspect[tabId];
 });
 
 function getHostname(url) {
