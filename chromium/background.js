@@ -135,8 +135,8 @@ const messageDispatch = {
     'easyproxy_mode': modeUpdated
 };
 
-chrome.runtime.onMessage.addListener(({ system, params }, sender, response) => {
-    messageDispatch[system]?.(response, params);
+chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
+    messageDispatch[action]?.(response, params);
     return true;
 });
 

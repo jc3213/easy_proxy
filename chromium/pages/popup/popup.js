@@ -53,7 +53,7 @@ proxyMenu.addEventListener('change', (event) => {
 
 modeMenu.addEventListener('change', (event) => {
     let mode = modeMenu.value;
-    chrome.runtime.sendMessage({ system: 'easyproxy_mode', params: { mode, referer: easyUrl } }, () => {
+    chrome.runtime.sendMessage({ action: 'easyproxy_mode', params: { mode, referer: easyUrl } }, () => {
         manager.className = easyMode = mode;
     });
 });
@@ -80,7 +80,7 @@ function menuEventSubmit() {
     submitBtn.disabled = defaultBtn.disabled = true;
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
     rulesPane.innerHTML = '';
-    chrome.runtime.sendMessage({ system: 'manager_update', params: { changes, referer: easyUrl } });
+    chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, referer: easyUrl } });
 }
 
 function menuEventPurge() {
@@ -90,7 +90,7 @@ function menuEventPurge() {
             rule.type.value = rule.type.props = 'direct';
         }
     }
-    chrome.runtime.sendMessage({ system: 'manager_purge', params: easyUrl });
+    chrome.runtime.sendMessage({ action: 'manager_purge', params: easyUrl });
     easyTempo = {};
     easyTypes.clear();
     purgeBtn.disabled = true;
@@ -152,7 +152,7 @@ chrome.runtime.onMessage.addListener(({ popup, params }) => {
         return;
     }
     let { tabId, host, rule } = params;
-    if (tabId === easyTab) {
+    if (tabId !== easyTab) {
         return;
     }
     messageDispatch[popup]?.(host, rule);
@@ -161,7 +161,7 @@ chrome.runtime.onMessage.addListener(({ popup, params }) => {
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     easyTab = tab.id;
     easyUrl = tab.url
-    chrome.runtime.sendMessage({ system: 'manager_fetch', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
+    chrome.runtime.sendMessage({ action: 'manager_fetch', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
