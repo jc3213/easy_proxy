@@ -250,6 +250,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         proxy.add(host);
     }
     proxyDispatch();
+    updateProxyState(url);
     chrome.runtime.sendMessage({ action: 'network_' + easyAction, params: { tabId, host } });
 }, { urls: ['http://*/*', 'https://*/*'] });
 
