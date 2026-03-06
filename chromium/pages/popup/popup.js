@@ -160,7 +160,7 @@ chrome.runtime.onMessage.addListener(({ popup, params }) => {
 
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     easyTab = tab.id;
-    easyUrl = tab.url
+    easyUrl = tab.url;
     chrome.runtime.sendMessage({ action: 'manager_fetch', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
