@@ -123,7 +123,7 @@ input[type="file"], a {
     display: grid;
     flex-basis: 100%;
     grid-column-gap: 3px;
-    grid-template-columns: repeat(3, 33.33%);
+    grid-template-columns: repeat(3, 1fr);
     margin-bottom: 30px;
     max-height: 182px;
     min-height: 26px;
@@ -145,4 +145,17 @@ input[type="file"], a {
     font-size: 12px;
     height: 24px;
     padding: 3px;
+}
+
+.rule[title="localhost"] {
+    order: -2;
+}
+
+.rule[title="127.0.0.1"] {
+    order: -1;
+}
+
+.rule[title="127.0.0.1"] > button , .rule[title="localhost"] > button {
+    display: none;
+    pointer-events: none;
 }

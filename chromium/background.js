@@ -275,4 +275,7 @@ chrome.storage.local.get(null, async (json) => {
         easyMatch[proxy].new(easyStorage[proxy]);
     }
     storageDispatch();
+    easyExclude.add(systemStorage.exclude);
+    easyStorage.exclude = easyExclude.data.sort();
+    chrome.storage.local.set(easyStorage);
 });
