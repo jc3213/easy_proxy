@@ -173,13 +173,10 @@ function proxyDispatch() {
     chrome.proxy.settings.set({ value });
 }
 
-chrome.action ??= chrome.browserAction;
-chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
-
 chrome.tabs.onUpdated.addListener((tabId, { status }) => {
-    let inspect = easyInspect[tabId];
+    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
     if (status == 'loading' && inspect.ok) {
-        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
+        delete easyInspect[tabId];
     } else if (status === 'complete') {
         inspect.ok = true;
     }
@@ -265,6 +262,9 @@ function storageDispatch() {
     easyExclude.new(easyStorage.exclude);
     proxyDispatch();
 }
+
+chrome.action ??= chrome.browserAction;
+chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
 
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...systemStorage, ...json};
