@@ -135,8 +135,8 @@ const messageDispatch = {
     'easyproxy_mode': modeUpdated
 };
 
-chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
-    messageDispatch[action]?.(response, params);
+chrome.runtime.onMessage.addListener(({ system, params }, sender, response) => {
+    messageDispatch[system]?.(response, params);
     return true;
 });
 
@@ -201,10 +201,10 @@ function getHostname(url) {
     return host;
 }
 
-function inspectRequest(action, tabId, url) {
+function inspectRequest(popup, tabId, url) {
     let host = getHostname(url);
     let rule = cacheRules[host] ??= EasyProxy.make(host);
-    chrome.runtime.sendMessage({ action, params: { tabId, rule, host } });
+    chrome.runtime.sendMessage({ popup, params: { tabId, rule, host } });
     return { host, rule };
 }
 
@@ -251,7 +251,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     proxyDispatch();
     updateProxyState(url);
-    chrome.runtime.sendMessage({ action: 'network_' + easyAction, params: { tabId, host } });
+    chrome.runtime.sendMessage({ popup: 'network_' + easyAction, params: { tabId, host } });
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function storageDispatch() {
