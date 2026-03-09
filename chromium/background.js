@@ -7,7 +7,7 @@ const systemStorage = {
     network: false,
     preset: null,
     proxies: [],
-    exclude: ['localhost', '127.0.0.1']
+    exclude: []
 };
 
 if (systemManifest.manifest_version === 3) {
@@ -261,6 +261,8 @@ function storageDispatch() {
     easyPreset = easyStorage.preset;
     easyMode = easyStorage.mode;
     easyExclude.new(easyStorage.exclude);
+    easyExclude.add(['localhost', '127.0.0.1']);
+    easyStorage.exclude = easyExclude.data.sort();
     proxyDispatch();
 }
 
@@ -275,7 +277,4 @@ chrome.storage.local.get(null, async (json) => {
         easyMatch[proxy].new(easyStorage[proxy]);
     }
     storageDispatch();
-    easyExclude.add(systemStorage.exclude);
-    easyStorage.exclude = easyExclude.data.sort();
-    chrome.storage.local.set(easyStorage);
 });
