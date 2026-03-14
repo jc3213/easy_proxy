@@ -21,11 +21,6 @@ input[type="file"], a {
     display: none;
 }
 
-#menu {
-    display: flex;
-    gap: 3px;
-}
-
 #menu > button:nth-last-of-type(3) {
     margin-left: auto;
 }
@@ -33,7 +28,6 @@ input[type="file"], a {
 #options {
     border-style: inset;
     border-width: 2px;
-    display: flex;
     flex-wrap: wrap;
     gap: 10px 5px;
 }
@@ -90,7 +84,7 @@ input[type="file"], a {
     padding: 5px;
 }
 
-.profile {
+.flexmenu {
     display: flex;
     flex-wrap: wrap;
 }
@@ -101,31 +95,29 @@ input[type="file"], a {
     font-weight: bold;
 }
 
-.profile > input {
-    height: 22px;
-    margin: auto 0px auto auto;
+.flexmenu > input {
+    height: 21px;
+    margin: auto 0px 0px auto;
 }
 
-.profile > button {
-    height: 26px;
-    margin: auto 0px;
-    padding: 1px;
-    width: 26px;
+.flexmenu > button {
+    margin: auto 0px 0px 0px;
 }
 
-#manager > .profile > button:last-of-type {
+#manager > .flexmenu > button:last-of-type {
     margin-left: auto;
 }
 
 .matches {
-    border-style: inset;
+    border-style: outset;
     border-width: 1px;
     display: grid;
     flex-basis: 100%;
+    grid-auto-rows: 25px;
     grid-template-columns: repeat(3, 33.33%);
-    margin-bottom: 30px;
-    max-height: 182px;
-    min-height: 26px;
+    margin: 3px 0px 25px;
+    max-height: 200px;
+    min-height: 50px;
     overflow-y: auto;
 }
 
@@ -136,14 +128,13 @@ input[type="file"], a {
     white-space: nowrap;
 }
 
-.rule > :first-child {
+.rule > div {
     flex: 1;
+    overflow: hidden;
 }
 
 .rule > button {
-    font-size: 12px;
-    height: 24px;
-    padding: 3px;
+    padding: 0px;
 }
 
 .rule[title="localhost"] {

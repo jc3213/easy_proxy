@@ -3,6 +3,10 @@ body {
     width: max-content;
 }
 
+body > * {
+    margin: 5px 0px;
+}
+
 select {
     width: 100%;
 }
@@ -22,15 +26,9 @@ body.global > #rules,
 body.asleep > #extra > button,
 body.direct > #extra > button,
 body.global > #extra > button,
-#rules:not(.switch) > .fullhost:not(.match):not(.tempo):not(.exclude),
-#rules.switch > .wildcard:not(.match):not(.tempo):not(.exclude) {
+#rules:not(.switch) > .fullhost:not(:is(.match, .tempo, .exclude)),
+#rules.switch > .wildcard:not(:is(.match, .tempo, .exclude)) {
     display: none;
-}
-
-#rules, #extra, #menu {
-    display: flex;
-    gap: 5px;
-    margin: 5px 0px;
 }
 
 #rules {

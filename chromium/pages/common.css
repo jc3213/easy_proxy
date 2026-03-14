@@ -94,6 +94,28 @@ button.checked {
     display: none !important;
 }
 
+.flex, .flexmenu {
+    display: flex;
+}
+
+.flex {
+    gap: 3px;
+}
+
+.flexmenu > h4 {
+    padding: 2px 0px;
+}
+
+.flexmenu > h4 + input {
+    margin-left: auto;
+    width: 50%;
+}
+
+.flexmenu > button {
+    padding: 1px;
+    width: 25px;
+}
+
 #proxy-mode {
     background-color: #2940D9;
     color: #FFFFFF;
