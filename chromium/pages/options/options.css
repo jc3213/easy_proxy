@@ -124,12 +124,13 @@ input[type="file"], a {
     border-style: outset;
     border-width: 1px;
     display: flex;
-    white-space: nowrap;
 }
 
 .rule > div {
     flex: 1;
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .rule > button {
