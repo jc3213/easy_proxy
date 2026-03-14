@@ -85,7 +85,6 @@ input[type="file"], a {
 }
 
 .flexmenu {
-    display: flex;
     flex-wrap: wrap;
 }
 
