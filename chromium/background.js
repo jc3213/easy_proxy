@@ -20,15 +20,15 @@ let easyHandler;
 let easyNetwork;
 let easyAction;
 let easyPreset;
-let easyMatch = {};
-let easyTempo = {};
-let easyExclude = new EasyProxy('DIRECT');
+let easyMatch = new EasyProxy();
+let easyTempo = new EasyProxy();
+let easySpecial = new EasyProxy();
 let easyMode;
 let easyInspect = {};
 
 let cacheRules = {};
-let cacheRoute = {};
-let cacheExclude = {};
+let cacheRouting = {};
+let cacheSpecial = {};
 
 function storageUpdated(response, json) {
     let invalid = [];
@@ -43,58 +43,63 @@ function storageUpdated(response, json) {
             continue;
         }
         if (easyStorage.proxies.includes(key)) {
-            easyMatch[key].new(json[key]);
+            easyMatch.new(key, json[key]);
         } else {
-            easyMatch[key] = new EasyProxy(key);
-            easyTempo[key] = new EasyProxy(key);
+            easyMatch.new(key);
+            easyTempo.new(key);
         }
     }
     for (let proxy of easyStorage.proxies) {
         if (!json[proxy]) {
-            easyMatch[proxy].destroy();
-            easyTempo[proxy].destroy();
-            delete easyMatch[proxy];
-            delete easyTempo[proxy];
+            easyMatch.remove(proxy);
+            easyTempo.remove(proxy);
             removed.push(proxy);
         }
     }
     easyStorage = json;
     storageDispatch();
-    cacheRoute = {};
-    cacheExclude = {};
+    cacheRouting = {};
+    cacheSpecial = {};
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json, response);
 }
 
 function managerFetch(response, tabId) {
-    let match = {};
-    let tempo = {};
-    let exclude = easyExclude.route;
+    let match = easyMatch.routing;
+    let tempo = easyTempo.routing;
+    let exclude = easySpecial.routing;
     let { proxies, mode, preset } = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
         response({ match, tempo, exclude, rules: [], hosts: [], error: [], proxies, mode, preset });
         return;
     }
-    for (let proxy of proxies) {
-        match = { ...match, ...easyMatch[proxy].route };
-        tempo = { ...tempo, ...easyTempo[proxy].route };
-    }
     let { rules, hosts, error } = inspect;
     response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
 }
 
 function proxySubmit(response, { changes, referer }) {
+    let updated = new Set();
     for (let { type, proxy, rule, action } of changes) {
-        let profile = type === 'match' ? easyMatch[proxy] : type === 'tempo' ? easyTempo[proxy] : easyExclude;
-        action === 'add' ? profile.add(rule) : profile.delete(rule);
+        let profile;
+        if (type === 'match') {
+            updated.add(proxy);
+            profile = easyMatch;
+        } else {
+            profile = type === 'tempo' ? easyTempo : easySpecial;
+        }
+        if (action === 'add') {
+            profile.add(proxy, rule);
+        } else {
+            profile.delete(proxy, rule);
+        }
     }
-    for (let proxy of easyStorage.proxies) {
-        easyStorage[proxy] = easyMatch[proxy].data;
+    for (let u of updated) {
+        easyStorage[u] = [...easyMatch.rules.get(u)];
     }
-    easyStorage['exclude'] = easyExclude.data;
-    cacheRoute = {};
-    cacheExclude = {};
+    easyStorage['exclude'] = [...easySpecial.rules.get('DIRECT')];
+    cacheRouting = {};
+    cacheSpecial = {};
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
     updateProxyState(referer);
@@ -104,7 +109,7 @@ function proxyPurge(response, referer) {
     for (let proxy of easyStorage.proxies) {
         easyTempo[proxy].new();
     }
-    cacheRoute = {};
+    cacheRouting = {};
     proxyDispatch();
     updateProxyState(referer);
 }
@@ -128,7 +133,7 @@ function updateProxyState(url) {
 const messageDispatch = {
     'storage_fetch': (response) => response(easyStorage),
     'storage_update': storageUpdated,
-    'profile_fetch': (response, params) => response(easyMatch[params].pacScript),
+    'profile_fetch': (response, params) => response(easyMatch.getScript(params)),
     'manager_fetch': managerFetch,
     'manager_update': proxySubmit,
     'manager_purge': proxyPurge,
@@ -219,7 +224,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let route = cacheRoute[host] ??= EasyProxy.match(host);
+    let route = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
     if (route) {
         chrome.action.setBadgeText({ tabId, text: `${++inspect.index}` });
     }
@@ -236,17 +241,17 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         error.add(host);
         return;
     }
-    let route = cacheRoute[host] ??= EasyProxy.match(host);
-    let exclude = cacheExclude[host] ??= easyExclude.match(host);
+    let route = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
+    let exclude = cacheSpecial[host] ??= easySpecial.match(host);
     if (route || exclude) {
         return;
     }
     if (easyAction === 'match') {
-        let proxy = easyMatch[easyPreset];
+        let proxy = easyMatch.rules.get(easyPreset);
         proxy.add(host);
         chrome.storage.local.set({ [easyPreset]: proxy.data });
     } else {
-        let proxy = easyTempo[easyPreset];
+        let proxy = easyTempo.rules.get(easyPreset);
         proxy.add(host);
     }
     proxyDispatch();
@@ -260,9 +265,7 @@ function storageDispatch() {
     easyAction = easyStorage.action;
     easyPreset = easyStorage.preset;
     easyMode = easyStorage.mode;
-    easyExclude.new(easyStorage.exclude);
-    easyExclude.add(['localhost', '127.0.0.1']);
-    easyStorage.exclude = easyExclude.data.sort();
+    easySpecial.new('DIRECT', ['localhost', '127.0.0.1', ...easyStorage.exclude]);
     proxyDispatch();
 }
 
@@ -272,9 +275,8 @@ chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...systemStorage, ...json};
     for (let proxy of easyStorage.proxies) {
-        easyMatch[proxy] = new EasyProxy(proxy);
-        easyTempo[proxy] = new EasyProxy(proxy);
-        easyMatch[proxy].new(easyStorage[proxy]);
+        easyMatch.new(proxy, easyStorage[proxy]);
+        easyTempo.new(proxy);
     }
     storageDispatch();
 });

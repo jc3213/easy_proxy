@@ -1,6 +1,5 @@
 class EasyProxy {
     static #instances = new Set();
-    static #ids = 0;
     static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
     static #pasScript = `
 function FindProxyForURL(url, host) {
@@ -19,21 +18,11 @@ function FindProxyForURL(url, host) {
 `;
 
     static get pacScript() {
-        let ids = [];
         let rules = [];
         for (let i of EasyProxy.#instances) {
-            if (i.#empty) {
-                continue;
-            }
-            if (i.#global) {
-                return `function FindProxyForURL(url, host) {\n    return "${i.#proxy}";\n}`;
-            }
-            ids.push(`var ${i.#id} = "${i.#proxy}";`);
-            rules.unshift(i.#script);
+            rules.push(JSON.stringify(i.#routing, null, 4).slice(2, -2));
         }
-        return rules.length === 0
-            ? 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'
-            : `${ids.join('\n')}\n\nvar RULES = {\n${rules.join(',\n')}\n};\n${EasyProxy.#pasScript}`;
+        return `var RULES = {\n${rules.join(',\n')}\n};\n${EasyProxy.#pasScript}`;
     }
 
     static make(host) {
@@ -49,95 +38,97 @@ function FindProxyForURL(url, host) {
             : `${sld}.${tld}`;
     }
 
-    static match(host) {
-        for (let i of EasyProxy.#instances) {
-            if (i.#proxy !== 'DIRECT' && i.match(host)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    #rules = new Map();
+    #routing = {};
 
-    #id;
-    #proxy;
-    #script;
-    #data = new Set();
-    #route = {};
-    #empty = true;
-    #global = false;
-
-    constructor(string) {
-        if (!/^(DIRECT|BLOCK|(HTTPS?|SOCKS5?) [A-Za-z0-9.-]+:\d{1,5})$/.test(string)) {
-            throw new TypeError('Invalid proxy handler: excpeted "PROXY_TYPE HOST:PORT"');
-        }
-        this.#id = `PROXY${EasyProxy.#ids++}`;
-        this.#proxy = string;
+    constructor() {
         EasyProxy.#instances.add(this);
     }
 
-    get data() {
-        return [...this.#data];
+    get rules() {
+        return this.#rules;
     }
 
-    get route() {
-        return this.#route;
-    }
-
-    get proxy() {
-        return this.#proxy;
+    get routing() {
+        return this.#routing;
     }
 
     get pacScript() {
-        return this.#empty
-            ? 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}'
-            : this.#global
-            ? `function FindProxyForURL(url, host) {\n    return "${this.#proxy}";\n}`
-            : `var ${this.#id} = "${this.#proxy}";\n\nvar RULES = {\n${this.#script}\n};\n${EasyProxy.#pasScript}`;
+        let script = JSON.stringify(this.#routing, null, 4).slice(2, -2);
+        return `var RULES = {\n${script}\n};\n${EasyProxy.#pasScript}`;
     }
 
-    #sync() {
-        this.#empty = this.#data.size === 0;
-        this.#global = this.#data.has('*');
-        this.#script = JSON.stringify(this.#route, null, 4).slice(2, -2).replaceAll(`"${this.#proxy}"`, this.#id);
-    }
-
-    new(arg) {
-        this.#data = new Set();
-        this.#route = {};
-        this.add(arg);
-    }
-
-    add(arg) {
-        let add = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
-        for (let a of add) {
-            this.#data.add(a);
-            this.#route[a] = this.#proxy;
+    getScript(proxy) {
+        let rules = this.#rules.get(proxy);
+        if (!rules) {
+            return 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}\n';
         }
-        this.#sync();
+        let script = [];
+        for (let r of rules) {
+            script.push(`    "${r}": "${proxy}"`);
+        }
+        return `var RULES = {\n${script.join('\n')}\n};\n${EasyProxy.#pasScript}`;;
     }
 
-    delete(arg) {
-        let remove = Array.isArray(arg) ? arg : typeof arg === 'string' ? [arg] : [];
-        for (let r of remove) {
-            this.#data.delete(r);
-            delete this.#route[r];
+    new(proxy, rules = []) {
+        let legacy = this.#rules.get(proxy);
+        if (legacy) {
+            for (let i of legacy) {
+                delete this.#routing[i];
+            }
         }
-        this.#sync();
+        this.#rules.set(proxy, new Set(rules));
+        for (let r of rules) {
+            this.#routing[r] = proxy;
+        }
+        return proxy;
+    }
+
+    add(proxy, rule) {
+        let find = this.#routing[rule];
+        if (find) {
+            return find;
+        }
+        let rules = this.#rules.get(proxy);
+        if (rules) {
+            rules.add(rule);
+        } else {
+            this.#rules.set(proxy, new Set([rule]));
+        }
+        this.#routing[rule] = proxy;
+        return proxy;
+    }
+
+    delete(proxy, rule) {
+        let find = this.#routing[rule];
+        if (!find) {
+            return false;
+        }
+        this.#rules.get(proxy).delete(rule);
+        return true;
+    }
+
+    remove(proxy) {
+        let rules = this.#rules.get(proxy);
+        if (!rules) {
+            return false;
+        }
+        for (let r of rules) {
+            delete this.#routing[r];
+        }
+        this.#rules.delete(proxy);
+        return true;
     }
 
     destroy() {
+        this.#rules = new Map();
+        this.#routing = {};
         EasyProxy.#instances.delete(this);
     }
 
     match(host) {
-        if (this.#empty) {
-            return false;
-        }
-        if (this.#global) {
-            return true;
-        }
         while (true) {
-            if (this.#route[host]) {
+            if (this.#routing[host]) {
                 return true;
             }
             let dot = host.indexOf('.');
