@@ -25,7 +25,9 @@ function FindProxyForURL(url, host) {
                 rules.push(rule);
             }
         }
-        return `var RULES = {\n${rules.join(',\n')}\n};\n${EasyProxy.#pasScript}`;
+        return rules.length > 0
+            ? `var RULES = {\n${rules.join(',\n')}\n};\n${EasyProxy.#pasScript}`
+            : 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}\n';
     }
 
     static make(host) {
