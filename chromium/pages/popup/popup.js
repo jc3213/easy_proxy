@@ -64,11 +64,11 @@ function menuEventSubmit() {
         let { name, value, props, title, parentNode } = type;
         if (props !== 'direct') {
             delete easyRoute[props][name];
-            changes.push({ type: props, proxy: title, rule: name, action: 'remove' });
+            changes.push({ action: 'remove', type: props, proxy: title, rule: name });
         }
         if (value !== 'direct') {
             easyRoute[value][name] = easyProxy;
-            changes.push({ type: value, proxy: easyProxy, rule: name, action: 'add' });
+            changes.push({ action: 'add', type: value, proxy: easyProxy, rule: name });
             type.title = value === 'exclude' ? '' : easyProxy;
         }
         parentNode.classList.remove(props, 'error');
@@ -212,7 +212,7 @@ function proxyItemListing(value, stat) {
     let match = easyMatch[value];
     let tempo = easyTempo[value];
     if (easyExclude[value]) {
-        proxyItemStatus(rule, type, 'exclude', '');
+        proxyItemStatus(rule, type, 'exclude', 'DIRECT');
     } else if (match) {
         proxyItemStatus(rule, type, 'match', match);
     } else if (tempo) {
