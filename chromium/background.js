@@ -249,7 +249,6 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         return;
     }
     let host = getHostname(url);
-    let rule = cacheRules[host] ??= EasyProxy.make(host);
     if (easyAction === 'none') {
         let { error } = easyInspect[tabId];
         error.add(rule);
@@ -262,7 +261,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         return;
     }
     if (easyAction === 'none') {
-        systemMessage({ popup: 'network_error', params: { tabId, rule, host } });
+        systemMessage({ popup: 'network_error', params: { tabId, host } });
         return;
     }
     if (easyAction === 'match') {
