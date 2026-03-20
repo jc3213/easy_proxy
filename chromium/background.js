@@ -216,7 +216,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!hosts.has(host)) {
         hosts.add(host);
         rules.add(rule);
-        chrome.runtime.sendMessage({ popup: 'network_update', params: { tabId, rule, host } });
+        chrome.runtime.sendMessage({ popup: 'network_update', params: { tabId, host, rule } });
     }
     if (!easyNetwork || easyMode === 'direct') {
         return;
@@ -234,18 +234,16 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     let host = getHostname(url);
     if (easyAction === 'none') {
+        let rule = cacheRules[host] ??= EasyProxy.make(host);
         let { error } = easyInspect[tabId];
-        error.add(rule);
         error.add(host);
+        error.add(rule);
+        chrome.runtime.sendMessage({ popup: 'network_error', params: { tabId, host, rule } });
         return;
     }
     let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
     let exclude = cacheSpecial[host] ??= easyExclude.match(host);
     if (routing || exclude) {
-        return;
-    }
-    if (easyAction === 'none') {
-        chrome.runtime.sendMessage({ popup: 'network_error', params: { tabId, host } });
         return;
     }
     if (easyAction === 'match') {
