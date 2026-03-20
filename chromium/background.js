@@ -31,7 +31,7 @@ let easyAction;
 let easyPreset;
 let easyMatch = new EasyProxy();
 let easyTempo = new EasyProxy();
-let easySpecial = new EasyProxy();
+let easyExclude = new EasyProxy();
 let easyMode;
 let easyInspect = {};
 
@@ -76,7 +76,7 @@ function storageUpdated(response, json) {
 function managerFetch(response, tabId) {
     let match = easyMatch.routing;
     let tempo = easyTempo.routing;
-    let exclude = easySpecial.routing;
+    let exclude = easyExclude.routing;
     let { proxies, mode, preset } = easyStorage;
     let inspect = easyInspect[tabId];
     if (!inspect) {
@@ -95,7 +95,7 @@ function proxySubmit(response, { changes, referer }) {
             updated.add(proxy);
             profile = easyMatch;
         } else {
-            profile = type === 'tempo' ? easyTempo : easySpecial;
+            profile = type === 'tempo' ? easyTempo : easyExclude;
         }
         if (action === 'add') {
             profile.add(proxy, rule);
@@ -104,9 +104,9 @@ function proxySubmit(response, { changes, referer }) {
         }
     }
     for (let u of updated) {
-        easyStorage[u] = [...easyMatch.rules.get(u)];
+        easyStorage[u] = easyMatch.getRules(u);
     }
-    easyStorage['exclude'] = [...easySpecial.rules.get('DIRECT')];
+    easyStorage['exclude'] = easyExclude.getRules('DIRECT');
     cacheRouting = {};
     cacheSpecial = {};
     proxyDispatch();
@@ -215,27 +215,32 @@ function getHostname(url) {
     return host;
 }
 
-function inspectRequest(popup, tabId, url) {
-    let host = getHostname(url);
-    let rule = cacheRules[host] ??= EasyProxy.make(host);
-    systemMessage({ popup, params: { tabId, rule, host } });
-    return { host, rule };
-}
-
 chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (tabId === -1) {
         return;
     }
-    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
-    let { host, rule } = inspectRequest('network_update', tabId, url);
-    inspect.rules.add(rule);
-    inspect.hosts.add(host);
+    let { hosts, rules, index } = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
+    let host = getHostname(url);
+    let rule = cacheRules[host] ??= EasyProxy.make(host);
+    let updated = false;
+    if (!rules.has(rule)) {
+        rules.add(rule);
+        updated = true;
+    }
+    if (!hosts.has(host)) {
+        hosts.add(host);
+        updated = true;
+    }
+    if (updated) {
+        systemMessage({ popup: 'network_update', params: { tabId, rule, host } });
+    }
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let route = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
-    if (route) {
-        chrome.action.setBadgeText({ tabId, text: `${++inspect.index}` });
+    let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
+    if (routing) {
+        easyInspect[tabId].index = ++index;
+        chrome.action.setBadgeText({ tabId, text: `${index}` });
     }
 }, { urls: ['http://*/*', 'https://*/*'] });
 
@@ -243,25 +248,28 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     if (!easyHandler.has(error) || !easyPreset) {
         return;
     }
-    let { host, rule } = inspectRequest('network_error', tabId, url);
+    let host = getHostname(url);
+    let rule = cacheRules[host] ??= EasyProxy.make(host);
     if (easyAction === 'none') {
         let { error } = easyInspect[tabId];
         error.add(rule);
         error.add(host);
         return;
     }
-    let route = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
-    let exclude = cacheSpecial[host] ??= easySpecial.match(host);
-    if (route || exclude) {
+    let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
+    let exclude = cacheSpecial[host] ??= easyExclude.match(host);
+    if (routing || exclude) {
+        return;
+    }
+    if (easyAction === 'none') {
+        systemMessage({ popup: 'network_error', params: { tabId, rule, host } });
         return;
     }
     if (easyAction === 'match') {
-        let proxy = easyMatch.rules.get(easyPreset);
-        proxy.add(host);
-        chrome.storage.local.set({ [easyPreset]: proxy.data });
+        easyMatch.add(easyPreset, host);
+        chrome.storage.local.set({ [easyPreset]: easyMatch.getRules(easyPreset) });
     } else {
-        let proxy = easyTempo.rules.get(easyPreset);
-        proxy.add(host);
+        easyTempo.add(easyPreset, host);
     }
     proxyDispatch();
     updateProxyState(url);
@@ -274,7 +282,7 @@ function storageDispatch() {
     easyAction = easyStorage.action;
     easyPreset = easyStorage.preset;
     easyMode = easyStorage.mode;
-    easySpecial.new('DIRECT', ['localhost', '127.0.0.1', ...easyStorage.exclude]);
+    easyExclude.new('DIRECT', ['localhost', '127.0.0.1', ...easyStorage.exclude]);
     proxyDispatch();
 }
 
