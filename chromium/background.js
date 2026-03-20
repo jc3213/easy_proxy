@@ -37,17 +37,12 @@ function storageUpdated(response, json) {
         if (key in systemStorage) {
             continue;
         }
-        if (!json.proxies.includes(key)) {
-            delete json[key];
-            invalid.push(key);
+        if (json.proxies.includes(key)) {
+            easyMatch.new(key, json[key]);
             continue;
         }
-        if (easyStorage.proxies.includes(key)) {
-            easyMatch.new(key, json[key]);
-        } else {
-            easyMatch.new(key);
-            easyTempo.new(key);
-        }
+        invalid.push(key);
+        delete json[key];
     }
     for (let proxy of easyStorage.proxies) {
         if (!json[proxy]) {
