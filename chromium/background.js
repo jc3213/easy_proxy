@@ -173,12 +173,9 @@ function proxyDispatch() {
     chrome.proxy.settings.set({ value });
 }
 
-chrome.tabs.onUpdated.addListener((tabId, { status }) => {
-    let inspect = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
-    if (status == 'loading' && inspect.ok) {
-        delete easyInspect[tabId];
-    } else if (status === 'complete') {
-        inspect.ok = true;
+chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {
+    if (frameId === 0) {
+        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
     }
 });
 
