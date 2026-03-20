@@ -20,7 +20,7 @@ function FindProxyForURL(url, host) {
     static get pacScript() {
         let rules = [];
         for (let i of EasyProxy.#instances) {
-            let proxy = this.#routing['*'];
+            let proxy = i.#routing['*'];
             if (proxy) {
                 return `function FindProxyForURL(url, host) {\n    return "${proxy}";\n}\n`;
             }
@@ -74,7 +74,7 @@ function FindProxyForURL(url, host) {
         if (!rules) {
             return 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}\n';
         }
-        if (rules.has('*') {
+        if (rules.has('*')) {
             return `function FindProxyForURL(url, host) {\n    return "${proxy}";\n}\n`;
         }
         let script = [];
