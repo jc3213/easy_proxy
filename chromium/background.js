@@ -125,21 +125,6 @@ function updateProxyState(url) {
     });
 }
 
-const messageDispatch = {
-    'storage_fetch': (response) => response(easyStorage),
-    'storage_update': storageUpdated,
-    'profile_fetch': (response, params) => response(easyMatch.getScript(params)),
-    'manager_fetch': managerFetch,
-    'manager_update': proxySubmit,
-    'manager_purge': proxyPurge,
-    'easyproxy_mode': modeUpdated
-};
-
-chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
-    messageDispatch[action]?.(response, params);
-    return true;
-});
-
 function proxyDispatch() {
     let value;
     if (easyMode === 'autopac') {
@@ -173,15 +158,30 @@ function proxyDispatch() {
     chrome.proxy.settings.set({ value });
 }
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, { url }) => {
-    let inspect = easyInspect[tabId];
-    if (inspect?.url !== url) {
-        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
-    }
+const messageDispatch = {
+    'storage_fetch': (response) => response(easyStorage),
+    'storage_update': storageUpdated,
+    'profile_fetch': (response, params) => response(easyMatch.getScript(params)),
+    'manager_fetch': managerFetch,
+    'manager_update': proxySubmit,
+    'manager_purge': proxyPurge,
+    'easyproxy_mode': modeUpdated
+};
+
+chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
+    messageDispatch[action]?.(response, params);
+    return true;
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId, url }) => {
     if (frameId === 0) {
+        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
+    }
+});
+
+chrome.tabs.onUpdated.addListener((tabId, { url }) => {
+    let inspect = easyInspect[tabId];
+    if (inspect.url !== url) {
         easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
     }
 });
