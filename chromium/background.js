@@ -213,16 +213,9 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     let { hosts, rules, index } = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
     let host = getHostname(url);
     let rule = cacheRules[host] ??= EasyProxy.make(host);
-    let updated = false;
-    if (!rules.has(rule)) {
-        rules.add(rule);
-        updated = true;
-    }
     if (!hosts.has(host)) {
         hosts.add(host);
-        updated = true;
-    }
-    if (updated) {
+        rules.add(rule);
         chrome.runtime.sendMessage({ popup: 'network_update', params: { tabId, rule, host } });
     }
     if (!easyNetwork || easyMode === 'direct') {
