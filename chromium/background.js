@@ -10,6 +10,15 @@ const systemStorage = {
     exclude: []
 };
 
+function systemMessage(message, callback) {
+    chrome.runtime.sendMessage(message, (response) => {
+        if (chrome.runtime.lastError) {
+            return;
+        }
+        callback?.(response);
+    });
+}
+
 if (systemManifest.manifest_version === 3) {
     importScripts('libs/easyproxy.js');
     setInterval(chrome.runtime.getPlatformInfo, 28000);
@@ -209,7 +218,7 @@ function getHostname(url) {
 function inspectRequest(popup, tabId, url) {
     let host = getHostname(url);
     let rule = cacheRules[host] ??= EasyProxy.make(host);
-    chrome.runtime.sendMessage({ popup, params: { tabId, rule, host } });
+    systemMessage({ popup, params: { tabId, rule, host } });
     return { host, rule };
 }
 
@@ -256,7 +265,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     proxyDispatch();
     updateProxyState(url);
-    chrome.runtime.sendMessage({ popup: 'network_' + easyAction, params: { tabId, host } });
+    systemMessage({ popup: 'network_' + easyAction, params: { tabId, host } });
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function storageDispatch() {
