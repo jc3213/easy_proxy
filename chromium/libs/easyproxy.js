@@ -20,7 +20,10 @@ function FindProxyForURL(url, host) {
     static get pacScript() {
         let rules = [];
         for (let i of EasyProxy.#instances) {
-            rules.push(JSON.stringify(i.#routing, null, 4).slice(2, -2));
+            let rule = JSON.stringify(i.#routing, null, 4).slice(2, -2);
+            if (rule) {
+                rules.push(rule);
+            }
         }
         return `var RULES = {\n${rules.join(',\n')}\n};\n${EasyProxy.#pasScript}`;
     }
@@ -67,7 +70,7 @@ function FindProxyForURL(url, host) {
         for (let r of rules) {
             script.push(`    "${r}": "${proxy}"`);
         }
-        return `var RULES = {\n${script.join('\n')}\n};\n${EasyProxy.#pasScript}`;;
+        return `var RULES = {\n${script.join(',\n')}\n};\n${EasyProxy.#pasScript}`;;
     }
 
     new(proxy, rules = []) {
