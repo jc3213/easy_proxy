@@ -181,7 +181,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId, url }) => {
 
 chrome.tabs.onUpdated.addListener((tabId, { url }) => {
     let inspect = easyInspect[tabId];
-    if (inspect.url !== url) {
+    if (inspect?.url !== url) {
         easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
     }
 });
