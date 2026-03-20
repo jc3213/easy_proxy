@@ -173,9 +173,16 @@ function proxyDispatch() {
     chrome.proxy.settings.set({ value });
 }
 
-chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, { url }) => {
+    let inspect = easyInspect[tabId];
+    if (inspect?.url !== url) {
+        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
+    }
+});
+
+chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId, url }) => {
     if (frameId === 0) {
-        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
+        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
     }
 });
 
@@ -202,7 +209,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (tabId === -1) {
         return;
     }
-    let { hosts, rules, index } = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0 };
+    let { hosts, rules, index } = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
     let host = getHostname(url);
     let rule = cacheRules[host] ??= EasyProxy.make(host);
     if (!hosts.has(host)) {
