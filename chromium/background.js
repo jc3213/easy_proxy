@@ -10,15 +10,6 @@ const systemStorage = {
     exclude: []
 };
 
-function systemMessage(message, callback) {
-    chrome.runtime.sendMessage(message, (response) => {
-        if (chrome.runtime.lastError) {
-            return;
-        }
-        callback?.(response);
-    });
-}
-
 if (systemManifest.manifest_version === 3) {
     importScripts('libs/easyproxy.js');
     setInterval(chrome.runtime.getPlatformInfo, 28000);
@@ -232,7 +223,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
         updated = true;
     }
     if (updated) {
-        systemMessage({ popup: 'network_update', params: { tabId, rule, host } });
+        chrome.runtime.sendMessage({ popup: 'network_update', params: { tabId, rule, host } });
     }
     if (!easyNetwork || easyMode === 'direct') {
         return;
@@ -261,7 +252,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         return;
     }
     if (easyAction === 'none') {
-        systemMessage({ popup: 'network_error', params: { tabId, host } });
+        chrome.runtime.sendMessage({ popup: 'network_error', params: { tabId, host } });
         return;
     }
     if (easyAction === 'match') {
@@ -272,7 +263,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     proxyDispatch();
     updateProxyState(url);
-    systemMessage({ popup: 'network_' + easyAction, params: { tabId, host } });
+    chrome.runtime.sendMessage({ popup: 'network_' + easyAction, params: { tabId, host } });
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function storageDispatch() {
