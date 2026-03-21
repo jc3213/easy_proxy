@@ -53,7 +53,7 @@ proxyMenu.addEventListener('change', (event) => {
 
 modeMenu.addEventListener('change', (event) => {
     let mode = modeMenu.value;
-    chrome.runtime.sendMessage({ action: 'easyproxy_mode', params: { mode, referer: easyUrl } }, () => {
+    chrome.runtime.sendMessage({ action: 'popup_mode', params: { mode, referer: easyUrl } }, () => {
         manager.className = easyMode = mode;
     });
 });
@@ -75,12 +75,9 @@ function menuEventSubmit() {
         parentNode.classList.add(value);
         type.props = value;
     }
-    easyChanges.clear();
-    easyTypes.clear();
-    submitBtn.disabled = defaultBtn.disabled = true;
+    proxyItemPurge();
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
-    rulesPane.innerHTML = '';
-    chrome.runtime.sendMessage({ action: 'manager_update', params: { changes, referer: easyUrl } });
+    chrome.runtime.sendMessage({ action: 'popup_update', params: { changes, referer: easyUrl } });
 }
 
 function menuEventPurge() {
@@ -90,9 +87,10 @@ function menuEventPurge() {
             rule.type.value = rule.type.props = 'direct';
         }
     }
-    chrome.runtime.sendMessage({ action: 'manager_purge', params: easyUrl });
+    console.log(easyUrl);
+    chrome.runtime.sendMessage({ action: 'popup_purge', params: easyUrl });
     easyTempo = {};
-    easyTypes.clear();
+    easyTypes = new Set();
     purgeBtn.disabled = true;
 }
 
@@ -100,7 +98,7 @@ function extraEventDefault() {
     for (let type of easyChanges) {
         type.value = type.props;
     }
-    easyChanges.clear();
+    easyChanges = new Set();
     submitBtn.disabled = defaultBtn.disabled = true;
 }
 
@@ -127,41 +125,40 @@ extraPane.addEventListener('click', (event) => {
     menuEventMap[menu]?.();
 });
 
-const messageDispatch = {
-    'network_update': (host, rule) => {
-        proxyItemListing(rule, 'wildcard');
-        proxyItemListing(host, 'fullhost');
-        manager.className = easyMode;
-    },
-    'network_error': (host, rule) => {
-        easyRules.get(rule)?.classList?.add('error');
-        easyRules.get(host)?.classList?.add('error');
-    },
-    'network_match': (host) => {
-        easyMatch[host] = easyProxy;
-        easyRules.get(host)?.classList?.add('match');
-    },
-    'network_tempo': (host) => {
-        easyTempo[host] = easyProxy;
-        easyRules.get(host)?.classList?.add('tempo');
+chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {
+    if (tabId === easyTab && frameId === 0) {
+        proxyItemPurge();
     }
-};
+});
 
-chrome.runtime.onMessage.addListener(({ popup, params }) => {
-    if (!popup) {
-        return;
-    }
-    let { tabId, host, rule } = params;
+chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
     if (tabId !== easyTab) {
         return;
     }
-    messageDispatch[popup]?.(host, rule);
+    if (url && url !== easyUrl) {
+        easyUrl = url;
+        proxyItemPurge();
+    }
+    if (status) {
+        return;
+    }
+    chrome.runtime.sendMessage({ action: 'popup_sync', params: easyTab }, ({ rules, hosts, error }) => {
+        for (let rule of rules) {
+            proxyItemListing(rule, 'wildcard');
+        }
+        for (let host of hosts) {
+            proxyItemListing(host, 'fullhost');
+        }
+        for (let err of error) {
+            easyRules.get(e).classList.add('error');
+        }
+    });
 });
 
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     easyTab = tab.id;
     easyUrl = tab.url;
-    chrome.runtime.sendMessage({ action: 'manager_fetch', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
+    chrome.runtime.sendMessage({ action: 'popup_setup', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, rules, hosts, error }) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
@@ -176,7 +173,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
         }
         purgeBtn.disabled = Object.keys(tempo).length === 0;
         for (let rule of rules) {
-            proxyItemListing(rule, 'wildcard')
+            proxyItemListing(rule, 'wildcard');
         }
         for (let host of hosts) {
             proxyItemListing(host, 'fullhost');
@@ -186,6 +183,13 @@ chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
         }
     });
 });
+
+function proxyItemPurge() {
+    easyTypes = new Set();
+    easyChanges = new Set();
+    rulesPane.innerHTML = '';
+    submitBtn.disabled = defaultBtn.disabled = true;
+}
 
 function proxyItemCreate(value, stat) {
     rule = hostLET.cloneNode(true);

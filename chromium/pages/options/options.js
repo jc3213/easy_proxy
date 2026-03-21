@@ -28,7 +28,7 @@ function menuEventAdvanced() {
 
 function menuEventSave() {
     saveBtn.disabled = true;
-    chrome.runtime.sendMessage({ action: 'storage_update', params: easyStorage });
+    chrome.runtime.sendMessage({ action: 'options_update', params: easyStorage });
 }
 
 function fileSaver(data, filename, filetype) {
@@ -65,7 +65,7 @@ importEntry.addEventListener('change', (event) => {
         saveBtn.disabled = true;
         actionPane.classList.replace(easyStorage.action, params.action);
         storageDispatch(params);
-        chrome.runtime.sendMessage({ action: 'storage_update', params });
+        chrome.runtime.sendMessage({ action: 'options_update', params });
     };
     reader.readAsText(event.target.files[0]);
 });
@@ -144,13 +144,13 @@ function storageDispatch(json) {
     }
 }
 
-chrome.runtime.sendMessage({ action: 'storage_fetch' }, (storage) => {
+chrome.runtime.sendMessage({ action: 'options_setup' }, (storage) => {
     storageDispatch(storage);
     actionPane.classList.add(storage.action);
 });
 
 function profileExport(id) {
-    chrome.runtime.sendMessage({ action: 'profile_fetch', params: id }, (pac_script) => {
+    chrome.runtime.sendMessage({ action: 'options_fetch', params: id }, (pac_script) => {
         fileSaver(pac_script, id.replace(/[: ]/g, '_'), '.pac');
     });
 }
