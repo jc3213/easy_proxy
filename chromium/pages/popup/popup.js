@@ -86,7 +86,6 @@ function menuEventPurge() {
             rule.type.value = rule.type.props = 'direct';
         }
     }
-    console.log(easyUrl);
     chrome.runtime.sendMessage({ action: 'popup_purge', params: easyUrl });
     easyTempo = {};
     easyTypes = new Set();
