@@ -7,7 +7,7 @@ const systemStorage = {
     network: false,
     preset: null,
     proxies: [],
-    exclude: []
+    exclude: [ 'localhost', '127.0.0.1' ]
 };
 
 if (systemManifest.manifest_version === 3) {
@@ -205,6 +205,14 @@ function getHostname(url) {
     return host;
 }
 
+function sendMessage(message) {
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage(message, (response) => {
+            resolve(chrome.runtime.lastError ? null : response);
+        });
+    });
+}
+
 chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (tabId === -1) {
         return;
@@ -215,7 +223,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!hosts.has(host)) {
         hosts.add(host);
         rules.add(rule);
-        chrome.runtime.sendMessage({ popup: 'network_update', params: { tabId, host, rule } });
+        sendMessage({ popup: 'network_update', params: { tabId, host, rule } });
     }
     if (!easyNetwork || easyMode === 'direct') {
         return;
@@ -237,7 +245,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         let { error } = easyInspect[tabId];
         error.add(host);
         error.add(rule);
-        chrome.runtime.sendMessage({ popup: 'network_error', params: { tabId, host, rule } });
+        sendMessage({ popup: 'network_error', params: { tabId, host, rule } });
         return;
     }
     let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
@@ -253,7 +261,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     proxyDispatch();
     updateProxyState(url);
-    chrome.runtime.sendMessage({ popup: 'network_' + easyAction, params: { tabId, host } });
+    sendMessage({ popup: 'network_' + easyAction, params: { tabId, host } });
 }, { urls: ['http://*/*', 'https://*/*'] });
 
 function storageDispatch() {
