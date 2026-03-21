@@ -71,7 +71,7 @@ function FindProxyForURL(url, host) {
 
     getScript(proxy) {
         let rules = this.#rules.get(proxy);
-        if (!rules) {
+        if (!rules || rules.size === 0) {
             return 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}\n';
         }
         if (rules.has('*')) {
