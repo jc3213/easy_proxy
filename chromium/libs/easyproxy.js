@@ -140,6 +140,13 @@ function FindProxyForURL(url, host) {
         return true;
     }
 
+    purge() {
+        for (let k of this.#rules.keys()) {
+            this.#rules.set(k, new Set());
+        }
+        this.#routing = {};
+    }
+
     destroy() {
         this.#rules = new Map();
         this.#routing = {};

@@ -101,10 +101,8 @@ function proxySubmit(response, { changes, referer }) {
 }
 
 function proxyPurge(response, referer) {
-    for (let proxy of easyStorage.proxies) {
-        easyTempo[proxy].new();
-    }
     cacheRouting = {};
+    easyTempo.purge();
     proxyDispatch();
     updateProxyState(referer);
 }
