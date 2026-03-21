@@ -30,7 +30,7 @@ let cacheRules = {};
 let cacheRouting = {};
 let cacheExclude = {};
 
-function optionsUpdate(response, json) {
+function optionsStorage(response, json) {
     let invalid = [];
     let removed = []
     for (let key of Object.keys(json)) {
@@ -59,7 +59,7 @@ function optionsUpdate(response, json) {
     chrome.storage.local.set(json, response);
 }
 
-function popupSetup(response, tabId) {
+function popupRuntime(response, tabId) {
     let match = easyMatch.routing;
     let tempo = easyTempo.routing;
     let exclude = easyExclude.routing;
@@ -73,12 +73,12 @@ function popupSetup(response, tabId) {
     response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
 }
 
-function popupSync(response, tabId) {
+function popupUpdate(response, tabId) {
     let { rules, hosts, error } = easyInspect[tabId];
     response({ rules: [...rules], hosts: [...hosts], error: [...error] });
 }
 
-function popupUpdate(response, { changes, referer }) {
+function popupSubmit(response, { changes, referer }) {
     let updated = new Set();
     for (let { type, proxy, rule, action } of changes) {
         let profile;
@@ -162,12 +162,12 @@ function proxyDispatch() {
 }
 
 const messageDispatch = {
-    'options_setup': (response) => response(easyStorage),
-    'options_update': optionsUpdate,
-    'options_fetch': (response, params) => response(easyMatch.getScript(params)),
-    'popup_setup': popupSetup,
-    'popup_sync': popupSync,
+    'options_runtime': (response) => response(easyStorage),
+    'options_storage': optionsStorage,
+    'options_script': (response, params) => response(easyMatch.getScript(params)),
+    'popup_runtime': popupRuntime,
     'popup_update': popupUpdate,
+    'popup_submit': popupSubmit,
     'popup_purge': proxyPurge,
     'popup_mode': proxyMode
 };

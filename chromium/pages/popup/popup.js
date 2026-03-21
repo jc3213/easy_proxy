@@ -76,7 +76,7 @@ function menuEventSubmit() {
         type.props = value;
     }
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
-    chrome.runtime.sendMessage({ action: 'popup_update', params: { changes, referer: easyUrl } });
+    chrome.runtime.sendMessage({ action: 'popup_submit', params: { changes, referer: easyUrl } });
 }
 
 function menuEventPurge() {
@@ -140,13 +140,13 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
     if (status) {
         return;
     }
-    chrome.runtime.sendMessage({ action: 'popup_sync', params: easyTab }, ruleListing);
+    chrome.runtime.sendMessage({ action: 'popup_update', params: easyTab }, ruleListing);
 });
 
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     easyTab = tab.id;
     easyUrl = tab.url;
-    chrome.runtime.sendMessage({ action: 'popup_setup', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, ...rules}) => {
+    chrome.runtime.sendMessage({ action: 'popup_runtime', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, ...rules}) => {
         manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
         modeMenu.value = easyMode = mode;
         proxyMenu.value = easyProxy = preset || proxies[0];
