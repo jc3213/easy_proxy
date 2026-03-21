@@ -28,7 +28,7 @@ let easyInspect = {};
 
 let cacheRules = {};
 let cacheRouting = {};
-let cacheSpecial = {};
+let cacheExclude = {};
 
 function storageUpdated(response, json) {
     let invalid = [];
@@ -54,7 +54,7 @@ function storageUpdated(response, json) {
     easyStorage = json;
     storageDispatch();
     cacheRouting = {};
-    cacheSpecial = {};
+    cacheExclude = {};
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json, response);
 }
@@ -94,7 +94,7 @@ function proxySubmit(response, { changes, referer }) {
     }
     easyStorage['exclude'] = easyExclude.getRules('DIRECT');
     cacheRouting = {};
-    cacheSpecial = {};
+    cacheExclude = {};
     proxyDispatch();
     chrome.storage.local.set(easyStorage, response);
     updateProxyState(referer);
@@ -247,7 +247,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         return;
     }
     let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
-    let exclude = cacheSpecial[host] ??= easyExclude.match(host);
+    let exclude = cacheExclude[host] ??= easyExclude.match(host);
     if (routing || exclude) {
         return;
     }
