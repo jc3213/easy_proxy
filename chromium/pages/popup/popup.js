@@ -75,7 +75,6 @@ function menuEventSubmit() {
         parentNode.classList.add(value);
         type.props = value;
     }
-    proxyItemPurge();
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
     chrome.runtime.sendMessage({ action: 'popup_update', params: { changes, referer: easyUrl } });
 }
