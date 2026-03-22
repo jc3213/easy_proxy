@@ -125,7 +125,7 @@ extraPane.addEventListener('click', (event) => {
 
 chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {
     if (tabId === easyTab && frameId === 0) {
-        rulePurge();
+        ruleRefresh();
     }
 });
 
@@ -135,12 +135,8 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
     }
     if (url && url !== easyUrl) {
         easyUrl = url;
-        rulePurge();
+        ruleRefresh();
     }
-    if (status) {
-        return;
-    }
-    chrome.runtime.sendMessage({ action: 'popup_update', params: easyTab }, ruleListing);
 });
 
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
@@ -176,11 +172,16 @@ function ruleListing({ hosts, rules, error }) {
     }
 }
 
-function rulePurge() {
+function ruleRefresh() {
     easyTypes = new Set();
     easyChanges = new Set();
     rulesPane.innerHTML = '';
     submitBtn.disabled = defaultBtn.disabled = true;
+    for (let i = 1; i < 5; i++) {
+        setTimeout(() => {
+            chrome.runtime.sendMessage({ action: 'popup_update', params: easyTab }, ruleListing);
+        }, i * 2500);
+    }
 }
 
 function ruleCreate(value, stat) {
