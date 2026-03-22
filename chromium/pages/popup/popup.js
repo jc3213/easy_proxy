@@ -139,7 +139,7 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
     }
 });
 
-function popupRuntime({ proxies, mode, preset, match, tempo, exclude, ...rules}) {
+function popupRuntime({ proxies, mode, preset, match, tempo, exclude, hosts, rules, error }) {
     manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
     modeMenu.value = easyMode = mode;
     proxyMenu.value = easyProxy = preset || proxies[0];
@@ -153,17 +153,25 @@ function popupRuntime({ proxies, mode, preset, match, tempo, exclude, ...rules})
         proxyMenu.append(menu);
     }
     purgeBtn.disabled = Object.keys(tempo).length === 0;
-    ruleListing(rules);
+    for (let r of rules) {
+        ruleItem(r, 'wildcard');
+    }
+    for (let h of hosts) {
+        ruleItem(h, 'fullhost');
+    }
+    for (let e of error) {
+        easyRules.get(e).classList.add('error');
+    }
 }
 
 const popupPort = chrome.runtime.connect({ name: 'popup' });
 const popupMessage = {
-    'popup_runtime': popupRuntime,
+    'network_ready': popupRuntime,
     'network_update': ({ host, rule }) => {
         ruleItem(rule, 'wildcard');
         ruleItem(host, 'fullhost');
     },
-    'newwork_error': ({ host, rule }) => {
+    'network_error': ({ host, rule }) => {
         easyRules.get(rule)?.classList?.add('error');
         easyRules.get(host)?.classList?.add('error');
     },
@@ -185,18 +193,6 @@ chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     easyUrl = tab.url;
     popupPort.postMessage(easyTab);
 });
-
-function ruleListing({ hosts, rules, error }) {
-    for (let r of rules) {
-        ruleItem(r, 'wildcard');
-    }
-    for (let h of hosts) {
-        ruleItem(h, 'fullhost');
-    }
-    for (let e of error) {
-        easyRules.get(e).classList.add('error');
-    }
-}
 
 function ruleRefresh() {
     easyChecks = new Set();

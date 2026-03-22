@@ -183,10 +183,10 @@ chrome.runtime.onConnect.addListener(port => {
             params.hosts = [...inspect.hosts];
             params.error = [...inspect.error];
         }
-        port.postMessage({ action: 'popup_runtime', params });
+        port.postMessage({ action: 'network_ready', params });
     });
     port.onDisconnect.addListener(() => {
-        easyTab = null;
+        easyPopup = easyTab = null;
     });
 });
 
@@ -228,10 +228,12 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     let { hosts, rules, index } = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
     let host = getHostname(url);
     let rule = cacheRules[host] ??= EasyProxy.make(host);
-    hosts.add(host);
-    rules.add(rule);
-    if (tabId === easyTab) {
-        easyPopup.postMessage({ action: 'network_update', params: { host, rule } });
+    if (!hosts.has(host)) {
+        hosts.add(host);
+        rules.add(rule);
+        if (tabId === easyTab) {
+            easyPopup.postMessage({ action: 'network_update', params: { host, rule } });
+        }
     }
     if (!easyNetwork || easyMode === 'direct') {
         return;
