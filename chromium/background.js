@@ -24,6 +24,8 @@ let easyMatch = new EasyProxy();
 let easyTempo = new EasyProxy();
 let easyExclude = new EasyProxy();
 let easyMode;
+let easyTab;
+let easyPopup;
 let easyInspect = {};
 
 let cacheRules = {};
@@ -57,25 +59,6 @@ function optionsStorage(response, json) {
     cacheExclude = {};
     chrome.storage.local.remove([...invalid, ...removed]);
     chrome.storage.local.set(json, response);
-}
-
-function popupRuntime(response, tabId) {
-    let match = easyMatch.routing;
-    let tempo = easyTempo.routing;
-    let exclude = easyExclude.routing;
-    let { proxies, mode, preset } = easyStorage;
-    let inspect = easyInspect[tabId];
-    if (!inspect) {
-        response({ match, tempo, exclude, rules: [], hosts: [], error: [], proxies, mode, preset });
-        return;
-    }
-    let { rules, hosts, error } = inspect;
-    response({ match, tempo, exclude, rules: [...rules], hosts: [...hosts], error: [...error], proxies, mode, preset });
-}
-
-function popupUpdate(response, tabId) {
-    let { rules, hosts, error } = easyInspect[tabId];
-    response({ rules: [...rules], hosts: [...hosts], error: [...error] });
 }
 
 function popupSubmit(response, { changes, referer }) {
@@ -165,8 +148,6 @@ const messageDispatch = {
     'options_runtime': (response) => response(easyStorage),
     'options_storage': optionsStorage,
     'options_script': (response, params) => response(easyMatch.getScript(params)),
-    'popup_runtime': popupRuntime,
-    'popup_update': popupUpdate,
     'popup_submit': popupSubmit,
     'popup_purge': proxyPurge,
     'popup_mode': proxyMode
@@ -175,6 +156,38 @@ const messageDispatch = {
 chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     messageDispatch[action]?.(response, params);
     return true;
+});
+
+chrome.runtime.onConnect.addListener(port => {
+    if (port.name !== 'popup') {
+        return;
+    }
+    easyPopup = port;
+    port.onMessage.addListener((tabId) => {
+        easyTab = tabId;
+        let { proxies, mode, preset } = easyStorage;
+        let params = {
+            match: easyMatch.routing,
+            tempo: easyTempo.routing,
+            exclude: easyExclude.routing,
+            rules: [],
+            hosts: [],
+            error: [],
+            proxies,
+            mode,
+            preset
+        };
+        let inspect = easyInspect[tabId];
+        if (inspect) {
+            params.rules = [...inspect.rules];
+            params.hosts = [...inspect.hosts];
+            params.error = [...inspect.error];
+        }
+        port.postMessage({ action: 'popup_runtime', params });
+    });
+    port.onDisconnect.addListener(() => {
+        easyTab = null;
+    });
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId, url }) => {
@@ -217,6 +230,9 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     let rule = cacheRules[host] ??= EasyProxy.make(host);
     hosts.add(host);
     rules.add(rule);
+    if (tabId === easyTab) {
+        easyPopup.postMessage({ action: 'network_update', params: { host, rule } });
+    }
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
@@ -237,6 +253,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         let { error } = easyInspect[tabId];
         error.add(host);
         error.add(rule);
+        easyPopup?.postMessage({ action: 'network_error', params: { host, rule } });
         return;
     }
     let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
@@ -250,6 +267,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     } else {
         easyTempo.add(easyPreset, host);
     }
+    easyPopup?.postMessage({ action: 'network_' + easyAction, params: host });
     proxyDispatch();
     updateProxyState(url);
 }, { urls: ['http://*/*', 'https://*/*'] });

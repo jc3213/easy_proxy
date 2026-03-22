@@ -1,5 +1,5 @@
 let easyRules = new Map();
-let easyTypes = new Set();
+let easyChecks = new Set();
 let easyChanges = new Set();
 let easyMatch;
 let easyTempo;
@@ -16,11 +16,11 @@ let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
 let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
 let hostLET = template.children[0];
 
-function proxyUpdate(type) {
-    if (type.props !== type.value) {
-        easyChanges.add(type);
+function proxyUpdate(check) {
+    if (check.props !== check.value) {
+        easyChanges.add(check);
     } else {
-        easyChanges.delete(type);
+        easyChanges.delete(check);
     }
     submitBtn.disabled = defaultBtn.disabled = easyChanges.size === 0;
 }
@@ -60,8 +60,8 @@ modeMenu.addEventListener('change', (event) => {
 
 function menuEventSubmit() {
     let changes = [];
-    for (let type of easyChanges) {
-        let { name, value, props, title, parentNode } = type;
+    for (let check of easyChanges) {
+        let { name, value, props, title, parentNode } = check;
         if (props !== 'direct') {
             delete easyRoute[props][name];
             changes.push({ action: 'remove', type: props, proxy: title, rule: name });
@@ -69,11 +69,11 @@ function menuEventSubmit() {
         if (value !== 'direct') {
             easyRoute[value][name] = easyProxy;
             changes.push({ action: 'add', type: value, proxy: easyProxy, rule: name });
-            type.title = value === 'exclude' ? '' : easyProxy;
+            check.title = value === 'exclude' ? '' : easyProxy;
         }
         parentNode.classList.remove(props, 'error');
         parentNode.classList.add(value);
-        type.props = value;
+        check.props = value;
     }
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
     chrome.runtime.sendMessage({ action: 'popup_submit', params: { changes, referer: easyUrl } });
@@ -83,18 +83,18 @@ function menuEventPurge() {
     for (let rule of easyRules.values()) {
         if (rule.classList.contains('tempo')) {
             rule.classList.replace('tempo', 'direct');
-            rule.type.value = rule.type.props = 'direct';
+            rule.check.value = rule.check.props = 'direct';
         }
     }
     chrome.runtime.sendMessage({ action: 'popup_purge', params: easyUrl });
     easyTempo = {};
-    easyTypes = new Set();
+    easyChecks = new Set();
     purgeBtn.disabled = true;
 }
 
 function extraEventDefault() {
-    for (let type of easyChanges) {
-        type.value = type.props;
+    for (let check of easyChanges) {
+        check.value = check.props;
     }
     easyChanges = new Set();
     submitBtn.disabled = defaultBtn.disabled = true;
@@ -139,25 +139,51 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
     }
 });
 
+function popupRuntime({ proxies, mode, preset, match, tempo, exclude, ...rules}) {
+    manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
+    modeMenu.value = easyMode = mode;
+    proxyMenu.value = easyProxy = preset || proxies[0];
+    easyMatch = match;
+    easyTempo = tempo;
+    easyExclude = exclude;
+    easyRoute = { match, tempo, exclude };
+    for (let proxy of proxies) {
+        let menu = document.createElement('option');
+        menu.textContent = menu.value = proxy;
+        proxyMenu.append(menu);
+    }
+    purgeBtn.disabled = Object.keys(tempo).length === 0;
+    ruleListing(rules);
+}
+
+const popupPort = chrome.runtime.connect({ name: 'popup' });
+const popupMessage = {
+    'popup_runtime': popupRuntime,
+    'network_update': ({ host, rule }) => {
+        ruleItem(rule, 'wildcard');
+        ruleItem(host, 'fullhost');
+    },
+    'newwork_error': ({ host, rule }) => {
+        easyRules.get(rule)?.classList?.add('error');
+        easyRules.get(host)?.classList?.add('error');
+    },
+    'network_match': (host) => {
+        easyMatch[host] = easyProxy;
+        easyRules.get(host)?.classList?.add('match');
+    },
+    'network_tempo': (host) => {
+        easyTempo[host] = easyProxy;
+        easyRules.get(host)?.classList?.add('tempo');
+    }
+};
+popupPort.onMessage.addListener(({ action, params}) => {
+    popupMessage[action]?.(params);
+});
+
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     easyTab = tab.id;
     easyUrl = tab.url;
-    chrome.runtime.sendMessage({ action: 'popup_runtime', params: easyTab }, ({ proxies, mode, preset, match, tempo, exclude, ...rules}) => {
-        manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
-        modeMenu.value = easyMode = mode;
-        proxyMenu.value = easyProxy = preset || proxies[0];
-        easyMatch = match;
-        easyTempo = tempo;
-        easyExclude = exclude;
-        easyRoute = { match, tempo, exclude };
-        for (let proxy of proxies) {
-            let menu = document.createElement('option');
-            menu.textContent = menu.value = proxy;
-            proxyMenu.append(menu);
-        }
-        purgeBtn.disabled = Object.keys(tempo).length === 0;
-        ruleListing(rules);
-    });
+    popupPort.postMessage(easyTab);
 });
 
 function ruleListing({ hosts, rules, error }) {
@@ -173,50 +199,45 @@ function ruleListing({ hosts, rules, error }) {
 }
 
 function ruleRefresh() {
-    easyTypes = new Set();
+    easyChecks = new Set();
     easyChanges = new Set();
     rulesPane.innerHTML = '';
     submitBtn.disabled = defaultBtn.disabled = true;
-    for (let i = 1; i < 5; i++) {
-        setTimeout(() => {
-            chrome.runtime.sendMessage({ action: 'popup_update', params: easyTab }, ruleListing);
-        }, i * 2500);
-    }
 }
 
-function ruleCreate(value, stat) {
+function ruleCreate(value, type) {
     rule = hostLET.cloneNode(true);
-    let [item, type] = rule.children;
-    rule.type = type;
-    rule.classList.add(stat);
-    item.textContent = type.name = value;
+    let [item, check] = rule.children;
+    rule.check = check;
+    rule.classList.add(type);
+    item.textContent = check.name = value;
     easyRules.set(value, rule);
     return rule;
 }
 
-function ruleStatus(rule, type, stat, title) {
-    rule.classList.add(stat);
-    type.value = type.props = stat;
-    type.title = title;
-}
-
-function ruleItem(value, stat) {
-    let rule = easyRules.get(value) ?? ruleCreate(value, stat);
-    let { type } = rule;
-    if (easyTypes.has(type)) {
+function ruleItem(value, type) {
+    let rule = easyRules.get(value) ?? ruleCreate(value, type);
+    let { check } = rule;
+    if (easyChecks.has(check)) {
         return;
     }
     let match = easyMatch[value];
     let tempo = easyTempo[value];
+    let props = 'direct';
+    let proxy = '';
     if (easyExclude[value]) {
-        ruleStatus(rule, type, 'exclude', 'DIRECT');
+        props = 'exclude'
+        proxy = 'DIRECT';
     } else if (match) {
-        ruleStatus(rule, type, 'match', match);
+        props = 'match'
+        proxy = match;
     } else if (tempo) {
-        ruleStatus(rule, type, 'tempo', tempo);
-    } else {
-        ruleStatus(rule, type, 'direct', '');
+        props = 'tempo'
+        proxy = tempo;
     }
-    easyTypes.add(type);
+    rule.classList.add(props);
+    check.value = check.props = props;
+    check.title = proxy;
+    easyChecks.add(check);
     rulesPane.append(rule);
 }
