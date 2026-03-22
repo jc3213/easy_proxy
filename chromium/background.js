@@ -183,7 +183,7 @@ chrome.runtime.onConnect.addListener(port => {
             params.hosts = [...inspect.hosts];
             params.error = [...inspect.error];
         }
-        port.postMessage({ action: 'network_ready', params });
+        port.postMessage({ action: 'proxy_init', params });
     });
     port.onDisconnect.addListener(() => {
         easyPopup = easyTab = null;
@@ -232,7 +232,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
         hosts.add(host);
         rules.add(rule);
         if (tabId === easyTab) {
-            easyPopup.postMessage({ action: 'network_update', params: { host, rule } });
+            easyPopup.postMessage({ action: 'proxy_sync', params: { host, rule } });
         }
     }
     if (!easyNetwork || easyMode === 'direct') {
@@ -255,7 +255,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         let { error } = easyInspect[tabId];
         error.add(host);
         error.add(rule);
-        easyPopup?.postMessage({ action: 'network_error', params: { host, rule } });
+        easyPopup?.postMessage({ action: 'proxy_error', params: { host, rule } });
         return;
     }
     let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
@@ -269,7 +269,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     } else {
         easyTempo.add(easyPreset, host);
     }
-    easyPopup?.postMessage({ action: 'network_' + easyAction, params: host });
+    easyPopup?.postMessage({ action: 'proxy_' + easyAction, params: host });
     proxyDispatch();
     updateProxyState(url);
 }, { urls: ['http://*/*', 'https://*/*'] });

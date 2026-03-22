@@ -139,7 +139,7 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
     }
 });
 
-function popupRuntime({ proxies, mode, preset, match, tempo, exclude, hosts, rules, error }) {
+function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules, error }) {
     manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
     modeMenu.value = easyMode = mode;
     proxyMenu.value = easyProxy = preset || proxies[0];
@@ -166,20 +166,20 @@ function popupRuntime({ proxies, mode, preset, match, tempo, exclude, hosts, rul
 
 const popupPort = chrome.runtime.connect({ name: 'popup' });
 const popupMessage = {
-    'network_ready': popupRuntime,
-    'network_update': ({ host, rule }) => {
+    'proxy_init': proxyInit,
+    'proxy_sync': ({ host, rule }) => {
         ruleItem(rule, 'wildcard');
         ruleItem(host, 'fullhost');
     },
-    'network_error': ({ host, rule }) => {
+    'proxy_error': ({ host, rule }) => {
         easyRules.get(rule)?.classList?.add('error');
         easyRules.get(host)?.classList?.add('error');
     },
-    'network_match': (host) => {
+    'proxy_match': (host) => {
         easyMatch[host] = easyProxy;
         easyRules.get(host)?.classList?.add('match');
     },
-    'network_tempo': (host) => {
+    'proxy_tempo': (host) => {
         easyTempo[host] = easyProxy;
         easyRules.get(host)?.classList?.add('tempo');
     }
