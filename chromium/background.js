@@ -161,14 +161,12 @@ chrome.runtime.onConnect.addListener(port => {
     if (port.name !== 'popup') {
         return;
     }
-    let tab;
-    easyMessage = (tabId, action, params) => {
-        if (tabId === tab) {
-            port.postMessage({ action, params });
-        }
-    };
     port.onMessage.addListener((tabId) => {
-        tab = tabId;
+        easyMessage = (id, action, params) => {
+            if (tabId === id) {
+                port.postMessage({ action, params });
+            }
+        };
         let { proxies, mode, preset } = easyStorage;
         let params = {
             match: easyMatch.routing,
