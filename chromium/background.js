@@ -25,8 +25,7 @@ let easyMatch = new EasyProxy();
 let easyTempo = new EasyProxy();
 let easyExclude = new EasyProxy();
 let easyMode;
-let easyTab;
-let easyPopup;
+let easyMessage;
 let easyInspect = {};
 
 let cacheRules = {};
@@ -162,9 +161,14 @@ chrome.runtime.onConnect.addListener(port => {
     if (port.name !== 'popup') {
         return;
     }
-    easyPopup = port;
+    let tab;
+    easyMessage = (tabId, action, params) => {
+        if (tabId === tab) {
+            port.postMessage({ action, params });
+        }
+    };
     port.onMessage.addListener((tabId) => {
-        easyTab = tabId;
+        tab = tabId;
         let { proxies, mode, preset } = easyStorage;
         let params = {
             match: easyMatch.routing,
@@ -186,7 +190,7 @@ chrome.runtime.onConnect.addListener(port => {
         port.postMessage({ action: 'proxy_init', params });
     });
     port.onDisconnect.addListener(() => {
-        easyPopup = easyTab = null;
+        easyMessage = null;
     });
 });
 
@@ -231,9 +235,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!hosts.has(host)) {
         hosts.add(host);
         rules.add(rule);
-        if (tabId === easyTab) {
-            easyPopup.postMessage({ action: 'proxy_sync', params: { host, rule } });
-        }
+        easyMessage?.(tabId, 'proxy_sync', { host, rule });
     }
     if (!easyNetwork || easyMode === 'direct') {
         return;
@@ -255,7 +257,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         let { error } = easyInspect[tabId];
         error.add(host);
         error.add(rule);
-        easyPopup?.postMessage({ action: 'proxy_error', params: { host, rule } });
+        easyMessage?.(tabId, 'proxy_error', { host, rule });
         return;
     }
     let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
@@ -269,9 +271,9 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     } else {
         easyTempo.add(easyPreset, host);
     }
-    easyPopup?.postMessage({ action: 'proxy_' + easyAction, params: host });
     proxyDispatch();
     updateProxyState(url);
+    easyMessage?.(tabId, 'proxy_' + easyAction, host);
 }, { urls: systemURLs });
 
 function storageDispatch() {
