@@ -128,6 +128,10 @@ function FindProxyForURL(url, host) {
         return true;
     }
 
+    find(rule) {
+        return this.#routing[rule];
+    }
+
     remove(proxy) {
         let rules = this.#rules.get(proxy);
         if (!rules) {

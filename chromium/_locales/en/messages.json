@@ -5,6 +5,9 @@
     "extension_description": {
         "message": "An ease to use auto-proxy browser extension"
     },
+    "shortcut_proxy": {
+        "message": "Toggle proxy rule for current host"
+    },
     "common_direct": {
         "message": "Direct"
     },
