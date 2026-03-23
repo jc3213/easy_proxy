@@ -5,9 +5,6 @@
     "extension_description": {
         "message": "一个简单易用的自动代理扩展"
     },
-    "shortcut_proxy": {
-        "message": "切换当前域名的代理规则"
-    },
     "common_direct": {
         "message": "直连"
     },

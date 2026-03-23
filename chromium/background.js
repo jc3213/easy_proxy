@@ -190,41 +190,6 @@ chrome.runtime.onConnect.addListener(port => {
     });
 });
 
-chrome.commands.onCommand.addListener((command) => {
-    if (command !== 'toggle_proxy') {
-        return;
-    }
-    chrome.tabs.query({ url: systemURLs, active: true, currentWindow: true }, ([tab]) => {
-        if (!tab) {
-            return;
-        }
-        let host = getHostname(tab.url);
-        let proxy = easyMatch.find(host);
-        let options;
-        if (proxy) {
-            easyMatch.delete(proxy, host);
-            options = 'match_remove';
-        } else {
-            proxy = easyPreset;
-            easyMatch.add(proxy, host);
-            options = 'match_add';
-        }
-        let value = easyStorage[proxy] = easyMatch.getRules(proxy);
-        proxyDispatch();
-        chrome.storage.sync.set({ [proxy]: value });
-        chrome.tabs.query({ url: '*://' + host + '/*' }, (tabs) => {
-            for (let { id } of tabs) {
-                chrome.tabs.reload(id);
-            }
-        });
-        chrome.runtime.sendMessage({ options, params: { proxy, host } }, () => {
-            if (chrome.runtime.lastError) {
-                return;
-            }
-        });
-    });
-});
-
 chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId, url }) => {
     if (frameId === 0) {
         easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };

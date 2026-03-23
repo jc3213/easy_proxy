@@ -108,13 +108,13 @@ actionPane.addEventListener('click', (event) => {
 
 excludeEntry.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
-        matchEntry('exclude', excludeList, excludeEntry);
+        matchAdd('exclude', excludeList, excludeEntry);
     }
 });
 
 const excludeEventMap = {
-    'match_add': matchEntry,
-    'match_resort': profileResort,
+    'match_add': matchAdd,
+    'match_resort': matchResort,
     'match_remove': (id, $, _, event) => matchRemove(id, event.target.parentNode)
 };
 
@@ -144,20 +144,6 @@ function storageDispatch(json) {
     }
 }
 
-chrome.runtime.onMessage.addListener(({ options, params }) => {
-    if (!options) {
-        return;
-    }
-    let { proxy, host } = params;
-    let { matches } = easyProfile[proxy];
-    if (options === 'match_add') {
-        matchAdd(proxy, host, matches);
-    } else if (options === 'match_remove') {
-        let rule = matches.querySelector('[title="' + host+ '"]');
-        matchRemove(proxy, rule);
-    }
-});
-
 chrome.runtime.sendMessage({ action: 'options_runtime' }, (storage) => {
     storageDispatch(storage);
     actionPane.classList.add(storage.action);
@@ -169,11 +155,11 @@ function profileExport(id) {
     });
 }
 
-function profileResort(id, list) {
+function matchResort(id, matches) {
     saveBtn.disabled = false;
     easyStorage[id].sort();
-    let resort = [...list.children].sort((a, b) => a.title.localeCompare(b.title));
-    list.append(...resort);
+    let resort = [...matches.children].sort((a, b) => a.title.localeCompare(b.title));
+    matches.append(...resort);
 }
 
 function profileRemove(id) {
@@ -191,42 +177,36 @@ function profileRemove(id) {
     }
 }
 
-function matchEntry(id, list, entry) {
+function matchAdd(id, matches, entry) {
     let value = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9]+)(?=\/|$)/)?.[1];
     entry.value = '';
     if (!value) {
         return;
     }
-    matchAdd(id, value, list);
-    saveBtn.disabled = false;
-}
-
-function matchAdd(proxy, value, list) {
-    let storage = easyStorage[proxy];
+    let storage = easyStorage[id];
     if (storage.includes(value)) {
         return;
     }
-    createMatchPattern(list, value);
+    createMatchPattern(matches, value);
     storage.push(value);
-    list.scrollTop = list.scrollHeight;
+    matches.scrollTop = matches.scrollHeight;
+    saveBtn.disabled = false;
 }
 
-function matchRemove(proxy, rule) {
+function matchRemove(id, rule) {
     let value = rule.title;
-    let profile = easyStorage[proxy];
+    let profile = easyStorage[id];
     rule.remove();
     profile.splice(profile.indexOf(value), 1);
+    saveBtn.disabled = false;
 }
 
 const profileEventMap = {
     'profile_export': profileExport,
     'profile_remove': profileRemove,
-    'match_add': matchEntry,
-    'match_resort': profileResort,
-    'match_remove': (id, $, _, event) => {
-        matchRemove(id, event.target.parentNode);
-        saveBtn.disabled = false;
-    }
+    'match_add': matchAdd,
+    'match_resort': matchResort,
+    'match_remove': (id, $, _, event) => matchRemove(id, event.target.parentNode)
 };
 
 function createMatchProfile(id) {
@@ -240,7 +220,7 @@ function createMatchProfile(id) {
     });
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
-            matchEntry(id, matches, entry);
+            matchAdd(id, matches, entry);
         }
     });
     for (let value of easyStorage[id]) {
@@ -251,9 +231,9 @@ function createMatchProfile(id) {
     managePane.appendChild(profile);
 }
 
-function createMatchPattern(list, value) {
+function createMatchPattern(matches, value) {
     let match = matchLET.cloneNode(true);
     let name = match.children[0];
     name.textContent = match.title = value;
-    list.appendChild(match);
+    matches.appendChild(match);
 }
