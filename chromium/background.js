@@ -8,7 +8,7 @@ const systemStorage = {
     network: false,
     preset: null,
     proxies: [],
-    exclude: [ 'localhost', '127.0.0.1' ]
+    exclude: ['localhost', '127.0.0.1']
 };
 
 if (systemManifest.manifest_version === 3) {
@@ -34,7 +34,6 @@ let cacheRouting = {};
 let cacheExclude = {};
 
 function optionsStorage(response, json) {
-    let invalid = [];
     let removed = []
     for (let key of Object.keys(json)) {
         if (key in systemStorage) {
@@ -44,7 +43,7 @@ function optionsStorage(response, json) {
             easyMatch.new(key, json[key]);
             continue;
         }
-        invalid.push(key);
+        removed.push(key);
         delete json[key];
     }
     for (let proxy of easyStorage.proxies) {
@@ -58,7 +57,7 @@ function optionsStorage(response, json) {
     storageDispatch();
     cacheRouting = {};
     cacheExclude = {};
-    chrome.storage.local.remove([...invalid, ...removed]);
+    chrome.storage.local.remove(removed);
     chrome.storage.local.set(json, response);
 }
 
