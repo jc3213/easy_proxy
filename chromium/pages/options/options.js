@@ -108,12 +108,12 @@ actionPane.addEventListener('click', (event) => {
 
 excludeEntry.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
-        matchAddNew('exclude', excludeList, excludeEntry);
+        matchEntry('exclude', excludeList, excludeEntry);
     }
 });
 
 const excludeEventMap = {
-    'match_add': matchAddNew,
+    'match_add': matchEntry,
     'match_resort': profileResort,
     'match_remove': (id, $, _, event) => matchRemove(id, event.target.parentNode)
 };
@@ -143,6 +143,20 @@ function storageDispatch(json) {
         }
     }
 }
+
+chrome.runtime.onMessage.addListener(({ options, params }) => {
+    if (!options) {
+        return;
+    }
+    let { proxy, host } = params;
+    let { matches } = easyProfile[proxy];
+    if (options === 'match_add') {
+        matchAdd(proxy, host, matches);
+    } else if (options === 'match_remove') {
+        let rule = matches.querySelector('[title="' + host+ '"]');
+        matchRemove(proxy, rule);
+    }
+});
 
 chrome.runtime.sendMessage({ action: 'options_runtime' }, (storage) => {
     storageDispatch(storage);
@@ -177,22 +191,29 @@ function profileRemove(id) {
     }
 }
 
-function matchAddNew(id, list, entry) {
+function matchEntry(id, list, entry) {
     let value = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9]+)(?=\/|$)/)?.[1];
-    let storage = easyStorage[id];
     entry.value = '';
-    if (value && !storage.includes(value)) {
-        saveBtn.disabled = false;
-        createMatchPattern(list, value);
-        storage.push(value);
-        list.scrollTop = list.scrollHeight;
+    if (!value) {
+        return;
     }
+    matchAdd(id, value, list);
+    saveBtn.disabled = false;
 }
 
-function matchRemove(id, rule) {
-    saveBtn.disabled = false;
+function matchAdd(proxy, value, list) {
+    let storage = easyStorage[proxy];
+    if (storage.includes(value)) {
+        return;
+    }
+    createMatchPattern(list, value);
+    storage.push(value);
+    list.scrollTop = list.scrollHeight;
+}
+
+function matchRemove(proxy, rule) {
     let value = rule.title;
-    let profile = easyStorage[id];
+    let profile = easyStorage[proxy];
     rule.remove();
     profile.splice(profile.indexOf(value), 1);
 }
@@ -200,29 +221,32 @@ function matchRemove(id, rule) {
 const profileEventMap = {
     'profile_export': profileExport,
     'profile_remove': profileRemove,
-    'match_add': matchAddNew,
+    'match_add': matchEntry,
     'match_resort': profileResort,
-    'match_remove': (id, $, _, event) => matchRemove(id, event.target.parentNode)
+    'match_remove': (id, $, _, event) => {
+        matchRemove(id, event.target.parentNode);
+        saveBtn.disabled = false;
+    }
 };
 
 function createMatchProfile(id) {
     let profile = profileLET.cloneNode(true);
-    let [proxy,, entry,,,, list] = profile.children;
+    let [proxy,, entry,,,, matches] = profile.children;
     let server = document.createElement('option');
     proxy.textContent = server.value = server.textContent = id;
     profile.addEventListener('click', (event) => {
         let menu = event.target.getAttribute('i18n-tips');
-        profileEventMap[menu]?.(id, list, entry, event);
+        profileEventMap[menu]?.(id, matches, entry, event);
     });
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
-            matchAddNew(id, list, entry);
+            matchEntry(id, matches, entry);
         }
     });
     for (let value of easyStorage[id]) {
-        createMatchPattern(list, value);
+        createMatchPattern(matches, value);
     }
-    easyProfile[id] = { profile, server };
+    easyProfile[id] = { profile, server, matches };
     proxyMenu.appendChild(server);
     managePane.appendChild(profile);
 }
