@@ -25,7 +25,6 @@ let easyMatch = new EasyProxy();
 let easyTempo = new EasyProxy();
 let easyExclude = new EasyProxy();
 let easyMode;
-let easyMessage;
 let easyInspect = {};
 
 let cacheRules = {};
@@ -58,56 +57,6 @@ function optionsStorage(response, json) {
     cacheExclude = {};
     chrome.storage.local.remove(removed);
     chrome.storage.local.set(json, response);
-}
-
-function popupSubmit(response, { changes, referer }) {
-    let updated = new Set();
-    for (let { type, proxy, rule, action } of changes) {
-        let profile;
-        if (type === 'match') {
-            updated.add(proxy);
-            profile = easyMatch;
-        } else {
-            profile = type === 'tempo' ? easyTempo : easyExclude;
-        }
-        if (action === 'add') {
-            profile.add(proxy, rule);
-        } else {
-            profile.delete(proxy, rule);
-        }
-    }
-    for (let u of updated) {
-        easyStorage[u] = easyMatch.getRules(u);
-    }
-    easyStorage['exclude'] = easyExclude.getRules('DIRECT');
-    chrome.storage.local.set(easyStorage, response);
-    cacheRouting = {};
-    cacheExclude = {};
-    proxyDispatch();
-    updateProxyState(referer);
-}
-
-function proxyPurge(response, referer) {
-    cacheRouting = {};
-    easyTempo.purge();
-    proxyDispatch();
-    updateProxyState(referer);
-}
-
-function proxyMode(response, { mode, referer }) {
-    easyMode = easyStorage.mode = mode;
-    proxyDispatch();
-    chrome.storage.local.set(easyStorage, response);
-    updateProxyState(referer);
-}
-
-function updateProxyState(url) {
-    let host = getHostname(url);
-    chrome.tabs.query({ url: '*://' + host + '/*', currentWindow: true }, (tabs) => {
-        for (let { id } of tabs) {
-            chrome.tabs.reload(id);
-        }
-    });
 }
 
 function proxyDispatch() {
@@ -146,10 +95,7 @@ function proxyDispatch() {
 const messageDispatch = {
     'options_runtime': (response) => response(easyStorage),
     'options_storage': optionsStorage,
-    'options_script': (response, params) => response(easyMatch.getScript(params)),
-    'popup_submit': popupSubmit,
-    'popup_purge': proxyPurge,
-    'popup_mode': proxyMode
+    'options_script': (response, params) => response(easyMatch.getScript(params))
 };
 
 chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
@@ -157,38 +103,105 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     return true;
 });
 
-chrome.runtime.onConnect.addListener(port => {
+let popupTab;
+let popupPort;
+
+function popupMessage(tabId, action, params) {
+    if (tabId === popupTab) {
+        port.postMessage({ action, params });
+    }
+}
+
+function popupRuntime(tabId, port) {
+    popupTab = tabId;
+    let { proxies, mode, preset } = easyStorage;
+    let params = {
+        match: easyMatch.routing,
+        tempo: easyTempo.routing,
+        exclude: easyExclude.routing,
+        rules: [],
+        hosts: [],
+        error: [],
+        proxies,
+        mode,
+        preset
+    };
+    let inspect = easyInspect[tabId];
+    if (inspect) {
+        params.rules = [...inspect.rules];
+        params.hosts = [...inspect.hosts];
+        params.error = [...inspect.error];
+    }
+    popupPort.postMessage({ action: 'proxy_init', params });
+}
+
+function popupSubmit({ changes, url }) {
+    let updated = new Set();
+    for (let { type, proxy, rule, action } of changes) {
+        let profile;
+        if (type === 'match') {
+            updated.add(proxy);
+            profile = easyMatch;
+        } else {
+            profile = type === 'tempo' ? easyTempo : easyExclude;
+        }
+        if (action === 'add') {
+            profile.add(proxy, rule);
+        } else {
+            profile.delete(proxy, rule);
+        }
+    }
+    for (let u of updated) {
+        easyStorage[u] = easyMatch.getRules(u);
+    }
+    easyStorage['exclude'] = easyExclude.getRules('DIRECT');
+    chrome.storage.local.set(easyStorage);
+    cacheRouting = {};
+    cacheExclude = {};
+    proxyDispatch();
+    reloadTabs(url);
+}
+
+function popupPurge(url) {
+    cacheRouting = {};
+    easyTempo.purge();
+    proxyDispatch();
+    reloadTabs(url);
+}
+
+function popupMode(mode) {
+    easyMode = easyStorage.mode = mode;
+    proxyDispatch();
+    chrome.storage.local.set(easyStorage);
+    reloadTabs('*');
+}
+
+function reloadTabs(url) {
+    let host = getHostname(url);
+    chrome.tabs.query({ url: '*://' + host + '/*', currentWindow: true }, (tabs) => {
+        for (let { id } of tabs) {
+            chrome.tabs.reload(id);
+        }
+    });
+}
+
+const popupDispatch = {
+    'popup_runtime': popupRuntime,
+    'popup_submit': popupSubmit,
+    'popup_purge': popupPurge,
+    'popup_mode': popupMode
+}
+
+chrome.runtime.onConnect.addListener((port) => {
     if (port.name !== 'popup') {
         return;
     }
-    port.onMessage.addListener((tabId) => {
-        easyMessage = (id, action, params) => {
-            if (tabId === id) {
-                port.postMessage({ action, params });
-            }
-        };
-        let { proxies, mode, preset } = easyStorage;
-        let params = {
-            match: easyMatch.routing,
-            tempo: easyTempo.routing,
-            exclude: easyExclude.routing,
-            rules: [],
-            hosts: [],
-            error: [],
-            proxies,
-            mode,
-            preset
-        };
-        let inspect = easyInspect[tabId];
-        if (inspect) {
-            params.rules = [...inspect.rules];
-            params.hosts = [...inspect.hosts];
-            params.error = [...inspect.error];
-        }
-        port.postMessage({ action: 'proxy_init', params });
+    popupPort = port;
+    port.onMessage.addListener(({ action, params }) => {
+        popupDispatch[action]?.(params);
     });
     port.onDisconnect.addListener(() => {
-        easyMessage = null;
+        popupPort = popupTab = null;
     });
 });
 
@@ -233,7 +246,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!hosts.has(host)) {
         hosts.add(host);
         rules.add(rule);
-        easyMessage?.(tabId, 'proxy_sync', { host, rule });
+        popupMessage(tabId, 'proxy_sync', { host, rule });
     }
     if (!easyNetwork || easyMode === 'direct') {
         return;
@@ -255,7 +268,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         let { error } = easyInspect[tabId];
         error.add(host);
         error.add(rule);
-        easyMessage?.(tabId, 'proxy_error', { host, rule });
+        popupMessage(tabId, 'proxy_error', { host, rule });
         return;
     }
     let routing = cacheRouting[host] ??= easyMatch.match(host) || easyTempo.match(host);
@@ -270,8 +283,8 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         easyTempo.add(easyPreset, host);
     }
     proxyDispatch();
-    updateProxyState(url);
-    easyMessage?.(tabId, 'proxy_' + easyAction, host);
+    reloadTabs(url);
+    popupMessage(tabId, 'proxy_' + easyAction, host);
 }, { urls: systemURLs });
 
 function storageDispatch() {

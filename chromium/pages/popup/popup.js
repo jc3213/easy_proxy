@@ -8,7 +8,7 @@ let easyRoute;
 let easyMode;
 let easyProxy;
 let easyTab;
-let easyUrl
+let easyUrl;
 
 let manager = document.body;
 let [rulesPane, extraPane,, menuPane, template] = manager.children;
@@ -53,9 +53,9 @@ proxyMenu.addEventListener('change', (event) => {
 
 modeMenu.addEventListener('change', (event) => {
     let mode = modeMenu.value;
-    chrome.runtime.sendMessage({ action: 'popup_mode', params: { mode, referer: easyUrl } }, () => {
-        manager.className = easyMode = mode;
-    });
+    popupPort.postMessage({ action: 'popup_mode', params: mode });
+    manager.classList.replace(easyMode, mode);
+    easyMode = mode;
 });
 
 function menuEventSubmit() {
@@ -76,7 +76,7 @@ function menuEventSubmit() {
         check.props = value;
     }
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
-    chrome.runtime.sendMessage({ action: 'popup_submit', params: { changes, referer: easyUrl } });
+    popupPort.postMessage({ action: 'popup_submit', params: { changes, referer: easyUrl } });
 }
 
 function menuEventPurge() {
@@ -86,7 +86,7 @@ function menuEventPurge() {
             rule.check.value = rule.check.props = 'direct';
         }
     }
-    chrome.runtime.sendMessage({ action: 'popup_purge', params: easyUrl });
+    popupPort.postMessage({ action: 'popup_purge', params: easyUrl });
     easyTempo = {};
     easyChecks = new Set();
     purgeBtn.disabled = true;
@@ -140,7 +140,10 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
 });
 
 function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules, error }) {
-    manager.className = proxies.length === 0 || rules.length === 0 && hosts.length === 0 ? 'asleep' : mode;
+    if (proxies.length === 0 || rules.length === 0 && hosts.length === 0) {
+        manager.classList.add('asleep');
+    }
+    manager.classList.add(mode);
     modeMenu.value = easyMode = mode;
     proxyMenu.value = easyProxy = preset || proxies[0];
     easyMatch = match;
@@ -165,7 +168,7 @@ function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules,
 }
 
 const popupPort = chrome.runtime.connect({ name: 'popup' });
-const popupMessage = {
+const popupDispatch = {
     'proxy_init': proxyInit,
     'proxy_sync': ({ host, rule }) => {
         ruleItem(rule, 'wildcard');
@@ -185,13 +188,13 @@ const popupMessage = {
     }
 };
 popupPort.onMessage.addListener(({ action, params}) => {
-    popupMessage[action]?.(params);
+    popupDispatch[action]?.(params);
 });
 
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     easyTab = tab.id;
     easyUrl = tab.url;
-    popupPort.postMessage(easyTab);
+    popupPort.postMessage({ action: 'popup_runtime', params: easyTab });
 });
 
 function ruleRefresh() {
