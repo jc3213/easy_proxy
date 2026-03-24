@@ -76,7 +76,7 @@ function menuEventSubmit() {
         check.props = value;
     }
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
-    popupPort.postMessage({ action: 'popup_submit', params: { changes, referer: easyUrl } });
+    popupPort.postMessage({ action: 'popup_submit', params: { changes, url: easyUrl } });
 }
 
 function menuEventPurge() {
