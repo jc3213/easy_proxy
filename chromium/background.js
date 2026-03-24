@@ -103,15 +103,6 @@ chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
     return true;
 });
 
-let popupTab;
-let popupPort;
-
-function popupMessage(tabId, action, params) {
-    if (tabId === popupTab) {
-        port.postMessage({ action, params });
-    }
-}
-
 function popupRuntime(tabId, port) {
     popupTab = tabId;
     let { proxies, mode, preset } = easyStorage;
@@ -177,7 +168,7 @@ function popupMode(mode) {
 }
 
 function reloadTabs(url) {
-    let host = getHostname(url);
+    let host = url === '*' ? url : getHostname(url);
     chrome.tabs.query({ url: '*://' + host + '/*', currentWindow: true }, (tabs) => {
         for (let { id } of tabs) {
             chrome.tabs.reload(id);
@@ -190,6 +181,15 @@ const popupDispatch = {
     'popup_submit': popupSubmit,
     'popup_purge': popupPurge,
     'popup_mode': popupMode
+}
+
+let popupTab;
+let popupPort;
+
+function popupMessage(tabId, action, params) {
+    if (tabId === popupTab) {
+        popupPort.postMessage({ action, params });
+    }
 }
 
 chrome.runtime.onConnect.addListener((port) => {
