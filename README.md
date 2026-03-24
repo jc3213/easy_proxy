@@ -31,8 +31,8 @@
 - 火狐必须勾选隐私模式才能正常工作
 
 ## 界面截图
-<img width="1280" height="800" alt="Options - Empty" src="https://github.com/user-attachments/assets/62a6c02f-f38b-41d1-934f-b6fe27de01dd" />
-<img width="1280" height="800" alt="Options - Advanced" src="https://github.com/user-attachments/assets/68acc25b-1eff-4887-8587-7c8c538781aa" />
+<img width="1280" height="800" alt="Options" src="https://github.com/user-attachments/assets/a7ea4499-0b61-446c-9d0e-3086620758f6" />
+<img width="1280" height="800" alt="Options - Proxy" src="https://github.com/user-attachments/assets/9295bba0-fdcb-4947-ae6a-10641156a73f" />
 <img width="1280" height="800" alt="Toolbar" src="https://github.com/user-attachments/assets/644a7433-6bff-45aa-bf8e-6f9610812b59" />
 <img width="1280" height="800" alt="Toolbar - Switch" src="https://github.com/user-attachments/assets/ebaefe27-9f97-4098-8ac0-b6d8e5cf2437" />
 <img width="1280" height="800" alt="Toolbar - Proxy Rule" src="https://github.com/user-attachments/assets/ae48e74b-d673-4a41-a6f8-de54e316b7ec" />
