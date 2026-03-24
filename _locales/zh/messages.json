@@ -1,0 +1,116 @@
+{
+    "extension_name": {
+        "message": "简易代理"
+    },
+    "extension_description": {
+        "message": "一个简单易用的自动代理扩展"
+    },
+    "common_direct": {
+        "message": "直连"
+    },
+    "common_autopac": {
+        "message": "智能"
+    },
+    "common_global": {
+        "message": "全局"
+    },
+    "common_submit": {
+        "message": "提交"
+    },
+    "common_match": {
+        "message": "储存"
+    },
+    "common_tempo": {
+        "message": "临时"
+    },
+    "common_disable": {
+        "message": "禁用"
+    },
+    "option_title": {
+        "message": "简易代理设置"
+    },
+    "option_advanced": {
+        "message": "进阶设置"
+    },
+    "option_save": {
+        "message": "保存"
+    },
+    "option_import": {
+        "message": "导入"
+    },
+    "option_export": {
+        "message": "导出"
+    },
+    "option_preset": {
+        "message": "预设代理"
+    },
+    "option_preset_title": {
+        "message": "设置用于\"自动化代理\"及\"全局代理模式\"的预设代理档案"
+    },
+    "option_network": {
+        "message": "代理计数器"
+    },
+    "option_network_title": {
+        "message": "记录各标签页已代理的网络请求\n\n此功能\"直连\"模式不会生效"
+    },
+    "option_automate": {
+        "message": "自动化代理"
+    },
+    "option_automate_title": {
+        "message": "当网络请求发生错误时，自动将对应的域名添加到临时代理规则"
+    },
+    "option_errors": {
+        "message": "Manage"
+    },
+    "option_exclude": {
+        "message": "例外规则"
+    },
+    "profile_export": {
+        "message": "将此代理导出为PAC脚本"
+    },
+    "profile_remove": {
+        "message": "移除此代理"
+    },
+    "match_add": {
+        "message": "添加新规则"
+    },
+    "match_resort": {
+        "message": "排序所有匹配规则"
+    },
+    "match_remove": {
+        "message": "移除此规则"
+    },
+    "error_refused": {
+        "message": "连接被拒绝"
+    },
+    "error_reset": {
+        "message": "连接被重置"
+    },
+    "error_timeout": {
+        "message": "连接超时"
+    },
+    "error_dnserr": {
+        "message": "无法解析域名"
+    },
+    "popup_title": {
+        "message": "简易代理管理"
+    },
+    "popup_purge": {
+        "message": "清除"
+    },
+    "popup_default": {
+        "message": "默认"
+    },
+    "popup_switch": {
+        "message": "切换"
+    },
+    "popup_options": {
+        "message": "设置"
+    },
+    "popup_exclude": {
+        "message": "例外"
+    },
+    "full_host": {
+        "message": "切换域名匹配规则"
+    }
+}

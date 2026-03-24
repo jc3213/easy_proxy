@@ -1,0 +1,116 @@
+{
+    "extension_name": {
+        "message": "Easy Proxy"
+    },
+    "extension_description": {
+        "message": "An ease to use auto-proxy browser extension"
+    },
+    "common_direct": {
+        "message": "Direct"
+    },
+    "common_autopac": {
+        "message": "Auto"
+    },
+    "common_global": {
+        "message": "Global"
+    },
+    "common_submit": {
+        "message": "Submit"
+    },
+    "common_match": {
+        "message": "Storage"
+    },
+    "common_tempo": {
+        "message": "Session"
+    },
+    "common_disable": {
+        "message": "Disabled"
+    },
+    "option_title": {
+        "message": "Easy Proxy Options"
+    },
+    "option_advanced": {
+        "message": "Advanced"
+    },
+    "option_save": {
+        "message": "Save"
+    },
+    "option_import": {
+        "message": "Import"
+    },
+    "option_export": {
+        "message": "Export"
+    },
+    "option_preset": {
+        "message": "Preset Proxy"
+    },
+    "option_preset_title": {
+        "message": "Set preset proxy profile for \"Automated Proxy\" and \"Proxy Mode: Global\""
+    },
+    "option_network": {
+        "message": "Network Traffic"
+    },
+    "option_network_title": {
+        "message": "Record proxied network requests for each tab\n\nThis won't work for \"Direct\" mode"
+    },
+    "option_automate": {
+        "message": "Automated Proxy"
+    },
+    "option_automate_title": {
+        "message": "Auto add hosts to temporary match rules where network error has occurred"
+    },
+    "option_errors": {
+        "message": "Manage"
+    },
+    "option_exclude": {
+        "message": "Exclude Rules"
+    },
+    "profile_export": {
+        "message": "Export this proxy profile as PAC script"
+    },
+    "profile_remove": {
+        "message": "Remove this proxy profile"
+    },
+    "match_add": {
+        "message": "Add new match patterns"
+    },
+    "match_resort": {
+        "message": "Resort all match patterns"
+    },
+    "match_remove": {
+        "message": "Remove this match pattern"
+    },
+    "error_refused": {
+        "message": "Connection Refused"
+    },
+    "error_reset": {
+        "message": "Connection Reset"
+    },
+    "error_timeout": {
+        "message": "Connection Time Out"
+    },
+    "error_dnserr": {
+        "message": "DNS Failed to Resolve"
+    },
+    "popup_title": {
+        "message": "Easy Proxy Manager"
+    },
+    "popup_purge": {
+        "message": "Purge"
+    },
+    "popup_default": {
+        "message": "Default"
+    },
+    "popup_switch": {
+        "message": "Switch"
+    },
+    "popup_options": {
+        "message": "Options"
+    },
+    "popup_exclude": {
+        "message": "Exclude"
+    },
+    "full_host": {
+        "message": "Toggle host name match rules"
+    }
+}
