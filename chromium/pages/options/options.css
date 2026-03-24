@@ -3,8 +3,7 @@ body {
 }
 
 body.direct .x-direct > :is(select, input, label),
-body.global .x-global > :is(select, input, label),
-body:not(.autopac) #errors > div > * {
+body.global .x-global > :is(select, input, label) {
     filter: var(--item-disabled);
     pointer-events: none;
 }

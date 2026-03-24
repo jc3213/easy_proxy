@@ -26,43 +26,43 @@
     "common_disable": {
         "message": "Disabled"
     },
-    "options_title": {
+    "option_title": {
         "message": "Easy Proxy Options"
     },
-    "options_advanced": {
+    "option_advanced": {
         "message": "Advanced"
     },
-    "options_save": {
+    "option_save": {
         "message": "Save"
     },
-    "options_import": {
+    "option_import": {
         "message": "Import"
     },
-    "options_export": {
+    "option_export": {
         "message": "Export"
     },
-    "options_preset": {
+    "option_preset": {
         "message": "Preset Proxy"
     },
-    "options_preset_title": {
+    "option_preset_title": {
         "message": "Set preset proxy profile for \"Automated Proxy\" and \"Proxy Mode: Global\""
     },
-    "options_network": {
+    "option_network": {
         "message": "Network Traffic"
     },
-    "options_network_title": {
+    "option_network_title": {
         "message": "Record proxied network requests for each tab\n\nThis won't work for \"Direct\" mode"
     },
-    "options_automate": {
+    "option_automate": {
         "message": "Automated Proxy"
     },
-    "options_automate_title": {
+    "option_automate_title": {
         "message": "Auto add hosts to temporary match rules where network error has occurred"
     },
-    "options_errors": {
+    "option_errors": {
         "message": "Manage"
     },
-    "options_exclude": {
+    "option_exclude": {
         "message": "Exclude Rules"
     },
     "profile_export": {
