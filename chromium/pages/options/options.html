@@ -32,6 +32,10 @@
                     <option value="global" i18n="common_global">Global</option>
                 </select>
             </div>
+            <div class="x-direct" i18n-tips="options_network_title">
+                <input type="checkbox" id="network">
+                <label for="network" i18n="options_network">Proxied Network</label>
+            </div>
             <div class="x-direct x-global" i18n-tips="options_automate_title">
                 <label i18n="options_automate">Automated Proxy</label>
                 <select id="action">
@@ -40,7 +44,7 @@
                     <option value="none" i18n="common_disable" i18n-tips="automate_disabled">Disabled</option>
                 </select>
                 <div id="errors">
-                    <button hotkey="ctrl+a">Manage</button>
+                    <button i18n="options_errors" hotkey="ctrl+a">Manage</button>
                     <div class="hidden">
                         <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
                         <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
@@ -48,10 +52,6 @@
                         <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
                     </div>
                 </div>
-            </div>
-            <div class="x-direct" i18n-tips="options_network_title">
-                <input type="checkbox" id="network">
-                <label for="network" i18n="options_network">Proxied Network</label>
             </div>
         </div>
         <div id="manager"></div>

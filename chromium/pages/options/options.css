@@ -7,7 +7,8 @@ body > div {
 }
 
 body.direct .x-direct > :is(select, input, label),
-body.global .x-global > :is(select, input, label) {
+body.global .x-global > :is(select, input, label),
+body:not(.autopac) #errors > div > * {
     filter: var(--item-disabled);
     pointer-events: none;
 }
@@ -27,12 +28,16 @@ input[type="file"], a {
     gap: 15px 5px;
 }
 
-#options > :nth-child(-n+2) {
+#options > :nth-child(2) {
+    margin: auto;
+}
+
+#options > :nth-child(3) {
     display: inline-block;
     flex-basis: 100%;
 }
 
-#options > :nth-child(n+3) {
+#options > :nth-child(n+4) {
     flex-basis: 50%;
 }
 
