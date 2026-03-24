@@ -16,7 +16,7 @@
             </select>
             <input name="proxy" type="text" placeholder="localhost:8080">
             <button i18n="common_submit" hotkey="ctrl+enter">Submit</button>
-            <button i18n="options_save" hotkey="ctrl+s" disabled>Save</button>
+            <button class="goto-r" i18n="options_save" hotkey="ctrl+s" disabled>Save</button>
             <button i18n="options_import">Import</button>
             <button i18n="options_export">Export</button>
             <input id="import-options" type="file" accept=".json">
@@ -69,7 +69,7 @@
                 <input type="text">
                 <button i18n-tips="match_add">➕</button>
                 <button i18n-tips="match_resort">🧲</button>
-                <button i18n-tips="profile_remove">❌</button>
+                <button class="goto-r" i18n-tips="profile_remove">❌</button>
                 <div class="matches"></div>
             </div>
             <div class="rule">
