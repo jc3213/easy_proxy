@@ -26,43 +26,43 @@
     "common_disable": {
         "message": "禁用"
     },
-    "option_title": {
+    "options_title": {
         "message": "简易代理设置"
     },
-    "option_advanced": {
+    "options_advanced": {
         "message": "进阶设置"
     },
-    "option_save": {
+    "options_save": {
         "message": "保存"
     },
-    "option_import": {
+    "options_import": {
         "message": "导入"
     },
-    "option_export": {
+    "options_export": {
         "message": "导出"
     },
-    "option_preset": {
+    "options_preset": {
         "message": "预设代理"
     },
-    "option_preset_title": {
+    "options_preset_title": {
         "message": "设置用于\"自动化代理\"及\"全局代理模式\"的预设代理档案"
     },
-    "option_network": {
+    "options_network": {
         "message": "代理计数器"
     },
-    "option_network_title": {
+    "options_network_title": {
         "message": "记录各标签页已代理的网络请求\n\n此功能\"直连\"模式不会生效"
     },
-    "option_automate": {
+    "options_automate": {
         "message": "自动化代理"
     },
-    "option_automate_title": {
+    "options_automate_title": {
         "message": "当网络请求发生错误时，自动将对应的域名添加到临时代理规则"
     },
-    "option_errors": {
+    "options_errors": {
         "message": "Manage"
     },
-    "option_exclude": {
+    "options_exclude": {
         "message": "例外规则"
     },
     "profile_export": {

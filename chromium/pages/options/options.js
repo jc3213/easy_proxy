@@ -36,9 +36,9 @@ function fileSaver(data, filename, filetype) {
 
 const menuEventMap = {
     'common_submit': menuEventSubmit,
-    'option_save': menuEventSave,
-    'option_import': () => importEntry.click(),
-    'option_export': () => fileSaver(JSON.stringify(easyStorage, null, 4), 'easy_proxy', '.json')
+    'options_save': menuEventSave,
+    'options_import': () => importEntry.click(),
+    'options_export': () => fileSaver(JSON.stringify(easyStorage, null, 4), 'easy_proxy', '.json')
 };
 
 menuPane.addEventListener('click', (event) => {
