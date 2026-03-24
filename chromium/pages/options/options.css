@@ -6,11 +6,6 @@ body > div {
     padding: 10px;
 }
 
-body:not(.autopac) #handler,
-#handler.none {
-    display: none;
-}
-
 body.direct .x-direct > :is(select, input, label),
 body.global .x-global > :is(select, input, label) {
     filter: var(--item-disabled);
@@ -27,61 +22,67 @@ input[type="file"], a {
 
 #options {
     border-style: inset;
-    border-width: 2px;
+    border-width: 1px;
     flex-wrap: wrap;
-    gap: 10px 5px;
+    gap: 15px 5px;
 }
 
-#options > :nth-child(2) {
-    margin-left: auto;
+#options > :nth-child(-n+2) {
+    display: inline-block;
+    flex-basis: 100%;
 }
 
 #options > :nth-child(n+3) {
-    flex: 1;
+    flex-basis: 50%;
 }
 
 #options label {
     font-weight: bold;
 }
 
+#options button {
+    padding: 1px 5px;
+}
+
 #preset {
     min-width: 200px;
 }
 
-#handler {
+#errors {
+    display: inline-block;
+    position: relative;
+}
+
+#errors > div {
     border-style: solid;
     border-width: 1px;
-    left: calc(100% + 16px);
+    left: calc(100% + 5px);
     position: absolute;
-    top: -12px;
+    top: 0px;
     width: 200px;
     z-index: 9;
 }
 
-#handler > *,
-#handler > ::before {
+#errors > div > *,
+#errors > div > ::before {
     padding: 5px;
 }
 
-#handler > :hover {
+#errors > div > :hover {
     filter: var(--item-hover);
 }
 
-#handler > :active {
+#errors > div > :active {
     filter: var(--item-active);
 }
 
-#handler > ::before {
+#errors > div > ::before {
     content: "✔️";
     visibility: hidden;
 }
 
-#handler > .checked::before {
+#errors > div > .checked::before {
     visibility: visible;
-}
-
-.checkbox {
-    padding: 5px;
 }
 
 .flexmenu {

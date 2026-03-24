@@ -2,10 +2,11 @@ let easyProfile = {};
 let easyHandler;
 
 let extension = document.body;
-let [menuPane, optionsPane,, managePane, excludePane, template] = extension.children;
-let [schemeEntry, proxyEntry, submitBtn, optionsBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
-let [, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
-let [proxyMenu, modeMenu, actionMenu, actionPane, networkMenu, persistMenu] = optionsPane.querySelectorAll('[id]');
+let [menuPane, optionsPane, managePane, excludePane, template] = extension.children;
+let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
+let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
+let [proxyMenu, modeMenu, actionMenu, actionMgr, networkMenu] = optionsPane.querySelectorAll('[id]');
+let [actionBtn, actionPane] = actionMgr.children;
 let [profileLET, matchLET] = template.children;
 
 function menuEventSubmit() {
@@ -19,11 +20,6 @@ function menuEventSubmit() {
     schemeEntry.value = 'HTTP';
     proxyEntry.value = '';
     saveBtn.disabled = false;
-}
-
-function menuEventAdvanced() {
-    optionsBtn.classList.toggle('checked');
-    optionsPane.classList.toggle('hidden');
 }
 
 function menuEventSave() {
@@ -40,7 +36,6 @@ function fileSaver(data, filename, filetype) {
 
 const menuEventMap = {
     'common_submit': menuEventSubmit,
-    'options_advanced': menuEventAdvanced,
     'options_save': menuEventSave,
     'options_import': () => importEntry.click(),
     'options_export': () => fileSaver(JSON.stringify(easyStorage, null, 4), 'easy_proxy', '.json')
@@ -93,10 +88,15 @@ optionsPane.addEventListener('change', (event) => {
     saveBtn.disabled = false;
 });
 
+actionBtn.addEventListener('click', (event) => {
+    actionBtn.classList.toggle('checked');
+    actionPane.classList.toggle('hidden');
+});
+
 actionPane.addEventListener('click', (event) => {
     saveBtn.disabled = false;
     let error = event.target;
-    let value = error.classList[0];
+    let value = error.className;
     if (easyHandler.has(value)) {
         easyHandler.delete(value);
     } else {

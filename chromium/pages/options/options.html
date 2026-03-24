@@ -15,16 +15,15 @@
                 <option value="SOCKS5">SOCKS5</option>
             </select>
             <input name="proxy" type="text" placeholder="localhost:8080">
-            <button i18n="common_submit">Submit</button>
-            <button i18n="options_advanced" hotkey="ctrl+q">Advanced</button>
+            <button i18n="common_submit" hotkey="ctrl+enter">Submit</button>
             <button i18n="options_save" hotkey="ctrl+s" disabled>Save</button>
             <button i18n="options_import">Import</button>
             <button i18n="options_export">Export</button>
             <input id="import-options" type="file" accept=".json">
             <a></a>
         </div>
-        <div id="options" class="flex hidden">
-            <div i18n-tips="options_preset_title">
+        <div id="options" class="flex">
+            <div class="flex" i18n-tips="options_preset_title">
                 <label i18n="options_preset">Preset Proxy</label>
                 <select id="preset"></select>
                 <select id="proxy-mode">
@@ -40,19 +39,21 @@
                     <option value="tempo" i18n="common_tempo" i18n-tips="automate_temporary">Session</option>
                     <option value="none" i18n="common_disable" i18n-tips="automate_disabled">Disabled</option>
                 </select>
-                <div id="handler">
-                    <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
-                    <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
-                    <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
-                    <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
+                <div id="errors">
+                    <button hotkey="ctrl+a">Manage</button>
+                    <div class="hidden">
+                        <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
+                        <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
+                        <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
+                        <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
+                    </div>
                 </div>
             </div>
-            <div class="checkbox x-direct" i18n-tips="options_network_title">
+            <div class="x-direct" i18n-tips="options_network_title">
                 <input type="checkbox" id="network">
                 <label for="network" i18n="options_network">Proxied Network</label>
             </div>
         </div>
-        <hr>
         <div id="manager"></div>
         <div id="exclude" class="flexmenu">
             <div class="proxy" i18n="options_exclude">Exclude</div>
