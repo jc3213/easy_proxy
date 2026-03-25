@@ -168,8 +168,13 @@ function popupMode(mode) {
 }
 
 function reloadTabs(url) {
-    let host = url === '*' ? url : getHostname(url);
-    chrome.tabs.query({ url: ['http://' + host + '/*', 'https://' + host + '/*'], currentWindow: true }, (tabs) => {
+    if (url === '*') {
+        url = systemURLs;
+    } else {
+        let host = getHostname(url);
+        url = ['http://' + host + '/*', 'https://' + host + '/*'];
+    }
+    chrome.tabs.query({ url, currentWindow: true }, (tabs) => {
         for (let { id } of tabs) {
             chrome.tabs.reload(id);
         }
