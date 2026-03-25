@@ -96,7 +96,7 @@ actionBtn.addEventListener('click', (event) => {
 actionPane.addEventListener('click', (event) => {
     saveBtn.disabled = false;
     let error = event.target;
-    let value = error.className;
+    let value = error.classList[0];
     if (easyHandler.has(value)) {
         easyHandler.delete(value);
     } else {
