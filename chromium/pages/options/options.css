@@ -87,7 +87,7 @@ input[type="file"], a {
 }
 
 #errors > div > :active {
-    filter: var(--item-active);
+    opacity: 0.8;
 }
 
 #errors > div > ::before {
