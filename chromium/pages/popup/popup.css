@@ -16,7 +16,7 @@ body.asleep > #extra > #proxy,
 body.direct > #menu > button:first-of-type,
 body.direct > #extra > #proxy,
 body.global > #menu > button:first-of-type {
-    filter: var(--item-disabled);
+    filter: var(--disabled);
     pointer-events: none;
 }
 

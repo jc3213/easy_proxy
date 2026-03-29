@@ -171,6 +171,7 @@ const popupPort = chrome.runtime.connect({ name: 'popup' });
 const popupDispatch = {
     'proxy_init': proxyInit,
     'proxy_sync': ({ host, rule }) => {
+        manager.classList.remove('asleep');
         ruleItem(rule, 'wildcard');
         ruleItem(host, 'fullhost');
     },
