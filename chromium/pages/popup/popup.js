@@ -13,8 +13,8 @@ let easyUrl;
 let manager = document.body;
 let [rulesPane, extraPane,, menuPane, template] = manager.children;
 let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
-let [modeMenu, purgeBtn, submitBtn, tempoBtn, optionsBtn] = menuPane.children;
-let hostLET = template.children[0];
+let [modeMenu, purgeBtn, submitBtn] = menuPane.children;
+let hostLET = template.firstElementChild;
 
 function proxyUpdate(check) {
     if (check.props !== check.value) {

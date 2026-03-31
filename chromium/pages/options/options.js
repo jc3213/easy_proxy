@@ -3,7 +3,7 @@ let easyHandler;
 
 let extension = document.body;
 let [menuPane, optionsPane, managePane, excludePane, template] = extension.children;
-let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exporter] = menuPane.children;
+let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exportFile] = menuPane.children;
 let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
 let [proxyMenu, modeMenu, networkMenu, actionMenu, actionMgr] = optionsPane.querySelectorAll('[id]');
 let [actionBtn, actionPane] = actionMgr.children;
@@ -29,9 +29,9 @@ function menuEventSave() {
 
 function fileSaver(data, filename, filetype) {
     let blob = new Blob([data]);
-    exporter.href = URL.createObjectURL(blob);
-    exporter.download = filename + '-' + new Date().toLocaleString('ja').replace(/[/: ]/g, '_') + filetype;
-    exporter.click();
+    exportFile.href = URL.createObjectURL(blob);
+    exportFile.download = filename + '-' + new Date().toLocaleString('ja').replace(/[/: ]/g, '_') + filetype;
+    exportFile.click();
 }
 
 const menuEventMap = {
@@ -236,7 +236,7 @@ function createMatchProfile(id) {
 
 function createMatchPattern(matches, value) {
     let match = matchLET.cloneNode(true);
-    let name = match.children[0];
+    let name = match.firstElementChild;
     name.textContent = match.title = value;
     matches.appendChild(match);
 }
