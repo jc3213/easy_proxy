@@ -288,8 +288,8 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
         easyTempo.add(easyPreset, host);
     }
     proxyDispatch();
-    reloadTabs(url);
     popupMessage(tabId, 'proxy_' + easyAction, host);
+    reloadTabs(url);
 }, { urls: systemURLs });
 
 function storageDispatch() {

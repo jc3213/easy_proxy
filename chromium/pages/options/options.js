@@ -58,6 +58,7 @@ importEntry.addEventListener('change', (event) => {
         let params = JSON.parse(reader.result);
         managePane.innerHTML = excludeList.innerHTML = importEntry.value = '';
         saveBtn.disabled = true;
+        proxyMenu.innerHTML = '';
         actionPane.classList.replace(easyStorage.action, params.action);
         storageDispatch(params);
         chrome.runtime.sendMessage({ action: 'options_storage', params });
@@ -140,6 +141,8 @@ function storageDispatch(json) {
         let value = item.classList[0];
         if (easyHandler.has(value)) {
             item.classList.add('checked');
+        } else {
+            item.classList.remove('checked');
         }
     }
 }

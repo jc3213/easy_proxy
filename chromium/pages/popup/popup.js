@@ -6,7 +6,7 @@ let easyTempo;
 let easyExclude;
 let easyRoute;
 let easyMode;
-let easyProxy;
+let easyPreset;
 let easyTab;
 let easyUrl;
 
@@ -48,7 +48,7 @@ rulesPane.addEventListener('mousedown', (event) => {
 });
 
 proxyMenu.addEventListener('change', (event) => {
-    easyProxy = event.target.value;
+    easyPreset = event.target.value;
 });
 
 modeMenu.addEventListener('change', (event) => {
@@ -58,7 +58,7 @@ modeMenu.addEventListener('change', (event) => {
     easyMode = mode;
 });
 
-function menuEventSubmit() {
+function popupSubmit() {
     let changes = [];
     for (let check of easyChanges) {
         let { name, value, props, title, parentNode } = check;
@@ -67,9 +67,9 @@ function menuEventSubmit() {
             changes.push({ action: 'remove', type: props, proxy: title, rule: name });
         }
         if (value !== 'direct') {
-            easyRoute[value][name] = easyProxy;
-            changes.push({ action: 'add', type: value, proxy: easyProxy, rule: name });
-            check.title = value === 'exclude' ? '' : easyProxy;
+            easyRoute[value][name] = easyPreset;
+            changes.push({ action: 'add', type: value, proxy: easyPreset, rule: name });
+            check.title = value === 'exclude' ? '' : easyPreset;
         }
         parentNode.classList.remove(props, 'error');
         parentNode.classList.add(value);
@@ -79,7 +79,7 @@ function menuEventSubmit() {
     popupPort.postMessage({ action: 'popup_submit', params: { changes, url: easyUrl } });
 }
 
-function menuEventPurge() {
+function popupPurge() {
     for (let rule of easyRules.values()) {
         if (rule.classList.contains('tempo')) {
             rule.classList.replace('tempo', 'direct');
@@ -92,7 +92,7 @@ function menuEventPurge() {
     purgeBtn.disabled = true;
 }
 
-function extraEventDefault() {
+function popupDefault() {
     for (let check of easyChanges) {
         check.value = check.props;
     }
@@ -100,27 +100,27 @@ function extraEventDefault() {
     submitBtn.disabled = defaultBtn.disabled = true;
 }
 
-function extraEventSwitch() {
+function popupSwitch() {
     rulesPane.classList.toggle('switch'); 
     switchBtn.classList.toggle('checked');
 }
 
-const menuEventMap = {
-    'common_submit': menuEventSubmit,
-    'popup_purge': menuEventPurge,
-    'popup_options': () => chrome.runtime.openOptionsPage(),
-    'popup_default': extraEventDefault,
-    'popup_switch': extraEventSwitch
+const popupMap = {
+    'common_submit': popupSubmit,
+    'popup_purge': popupPurge,
+    'popup_options': chrome.runtime.openOptionsPage,
+    'popup_default': popupDefault,
+    'popup_switch': popupSwitch
 };
 
 menuPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    menuEventMap[menu]?.();
+    popupMap[menu]?.();
 });
 
 extraPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    menuEventMap[menu]?.();
+    popupMap[menu]?.();
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {
@@ -140,12 +140,11 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
 });
 
 function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules, error }) {
+    console.log(preset);
     if (proxies.length === 0 || rules.length === 0 && hosts.length === 0) {
         manager.classList.add('asleep');
     }
     manager.classList.add(mode);
-    modeMenu.value = easyMode = mode;
-    proxyMenu.value = easyProxy = preset || proxies[0];
     easyMatch = match;
     easyTempo = tempo;
     easyExclude = exclude;
@@ -155,6 +154,8 @@ function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules,
         menu.textContent = menu.value = proxy;
         proxyMenu.append(menu);
     }
+    modeMenu.value = easyMode = mode;
+    proxyMenu.value = easyPreset = preset || proxies[0];
     purgeBtn.disabled = Object.keys(tempo).length === 0;
     for (let r of rules) {
         ruleItem(r, 'wildcard');
@@ -180,11 +181,11 @@ const popupDispatch = {
         easyRules.get(host)?.classList?.add('error');
     },
     'proxy_match': (host) => {
-        easyMatch[host] = easyProxy;
+        easyMatch[host] = easyPreset;
         easyRules.get(host)?.classList?.add('match');
     },
     'proxy_tempo': (host) => {
-        easyTempo[host] = easyProxy;
+        easyTempo[host] = easyPreset;
         easyRules.get(host)?.classList?.add('tempo');
     }
 };
