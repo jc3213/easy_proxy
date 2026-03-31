@@ -140,7 +140,6 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
 });
 
 function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules, error }) {
-    console.log(preset);
     if (proxies.length === 0 || rules.length === 0 && hosts.length === 0) {
         manager.classList.add('asleep');
     }
