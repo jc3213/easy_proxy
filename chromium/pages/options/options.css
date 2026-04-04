@@ -13,6 +13,7 @@ input[type="file"], a {
 }
 
 #menu {
+    border-radius: 0 0 5px 5px;
     border-style: solid;
     border-width: 0px 1px 1px;
     padding: 8px;
@@ -28,7 +29,7 @@ input[type="file"], a {
 }
 
 #options {
-    border-style: inset;
+    border-style: outset;
     border-width: 1px;
     flex-wrap: wrap;
     gap: 15px 5px;
