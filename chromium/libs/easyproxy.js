@@ -54,9 +54,10 @@ function FindProxyForURL(url, host) {
         let sbd = array.at(-3);
         let sld = array.at(-2);
         let tld = array.at(-1);
-        return sbd && EasyProxy.#etld.has(sld)
-            ? `${sbd}.${sld}.${tld}`
-            : `${sld}.${tld}`;
+        if (sbd && EasyProxy.#etld.has(sld)) {
+            return `${sbd}.${sld}.${tld}`;
+        }
+        return `${sld}.${tld}`;
     }
 
     #rules = new Map();
@@ -82,11 +83,11 @@ function FindProxyForURL(url, host) {
         if (rules.has('*')) {
             return `function FindProxyForURL(url, host) {\n    return "${proxy}";\n}\n`;
         }
-        let script = [];
+        let scripts = [];
         for (let r of rules) {
-            script.push(`    "${r}": PROXY`);
+            scripts.push(`    "${r}": PROXY`);
         }
-        return `var PROXY = "${proxy}";\n\nvar RULES = {\n${script.join(',\n')}\n};\n${EasyProxy.#pasScript}`;;
+        return `var PROXY = "${proxy}";\n\nvar RULES = {\n${scripts.join(',\n')}\n};\n${EasyProxy.#pasScript}`;;
     }
 
     getRules(proxy) {
