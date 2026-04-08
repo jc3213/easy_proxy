@@ -47,12 +47,13 @@ button, input, select, option {
     background-color: var(--color-item);
 }
 
-input, option {
-    border-style: inset;
+input {
+    border-style: solid;
     border-width: 1px;
+    padding: 1px 5px;
 }
 
-input, option {
+input {
     padding: 1px 5px;
 }
 
@@ -64,10 +65,6 @@ input[type="checkbox"] {
 
 select {
     padding: 0px 1px;
-}
-
-option:hover {
-    background-color: 
 }
 
 option:checked {
