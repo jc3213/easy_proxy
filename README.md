@@ -31,8 +31,8 @@
 - 火狐必须勾选隐私模式才能正常工作
 
 ## 界面截图
-<img width="1280" height="800" alt="Options" src="https://github.com/user-attachments/assets/a7ea4499-0b61-446c-9d0e-3086620758f6" />
-<img width="1280" height="800" alt="Options - Proxy" src="https://github.com/user-attachments/assets/9295bba0-fdcb-4947-ae6a-10641156a73f" />
-<img width="1280" height="800" alt="Toolbar" src="https://github.com/user-attachments/assets/644a7433-6bff-45aa-bf8e-6f9610812b59" />
-<img width="1280" height="800" alt="Toolbar - Switch" src="https://github.com/user-attachments/assets/ebaefe27-9f97-4098-8ac0-b6d8e5cf2437" />
-<img width="1280" height="800" alt="Toolbar - Proxy Rule" src="https://github.com/user-attachments/assets/ae48e74b-d673-4a41-a6f8-de54e316b7ec" />
+![设置：初始化](https://github.com/user-attachments/assets/d2f7f366-3515-4f04-bd05-2f10bf30ae82)
+![设置：样例](https://github.com/user-attachments/assets/f924d1b2-c38c-4c95-b9f6-3b3158f2c3ef)
+![工具栏：通用规则](https://github.com/user-attachments/assets/f11ed72e-be7a-4681-809a-3e3e15771694)
+![工具栏：域名规则](https://github.com/user-attachments/assets/cdd730e6-acb3-41dd-bbd8-60429599377d)
+
