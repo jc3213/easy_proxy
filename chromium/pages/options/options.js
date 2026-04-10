@@ -3,11 +3,12 @@ let easyHandler;
 
 let extension = document.body;
 let [menuPane, optionsPane, managePane, excludePane, template] = extension.children;
-let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exportFile] = menuPane.children;
+let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry] = menuPane.children;
 let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
 let [proxyMenu, modeMenu, networkMenu, actionMenu, actionMgr] = optionsPane.querySelectorAll('[id]');
 let [actionBtn, actionPane] = actionMgr.children;
 let [profileLET, matchLET] = template.children;
+let exportFile = document.createElement('a');
 
 function menuEventSubmit() {
     let id = schemeEntry.value + ' ' + proxyEntry.value ;

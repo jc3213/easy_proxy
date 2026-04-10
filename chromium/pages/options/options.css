@@ -8,7 +8,7 @@ body.global .x-global > :is(select, input, label) {
     pointer-events: none;
 }
 
-input[type="file"], a {
+input[type="file"] {
     display: none;
 }
 
