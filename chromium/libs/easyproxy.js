@@ -17,7 +17,7 @@ function FindProxyForURL(url, host) {
 }
 `;
 
-    static #build(instances) {
+    static getScript(instances) {
         let proxies = [];
         let scripts = [];
         for (let i of instances) {
@@ -29,8 +29,13 @@ function FindProxyForURL(url, host) {
                 if (rules.size === 0) {
                     continue;
                 }
-                let id = `PROXY${proxies.length}`;
-                proxies.push(`var ${id} = "${proxy}";`);
+                let id;
+                if (proxy === 'DIRECT') {
+                    id = '"DIRECT"';
+                } else {
+                    id = `PROXY${proxies.length}`;
+                    proxies.push(`var ${id} = "${proxy}";`);
+                }
                 for (let r of rules) {
                     scripts.push(`    "${r}": ${id}`);
                 }
@@ -43,7 +48,7 @@ function FindProxyForURL(url, host) {
     }
 
     static get pacScript() {
-        return EasyProxy.#build(EasyProxy.#instances);
+        return EasyProxy.getScript(EasyProxy.#instances);
     }
 
     static make(host) {
@@ -72,7 +77,7 @@ function FindProxyForURL(url, host) {
     }
 
     get pacScript() {
-        return EasyProxy.#build([this]);
+        return EasyProxy.getScript([this]);
     }
 
     getScript(proxy) {
