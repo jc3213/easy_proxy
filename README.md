@@ -1,15 +1,16 @@
 # 简易代理
 
 ## 安装
-| <a href="https://microsoftedge.microsoft.com/addons/detail/mdoojhdlkngkgcgkefkbmfaahpclojen"><img src="https://github.com/user-attachments/assets/755ede26-33d5-41eb-9000-9ba903886041" title="Microsoft Edge" width="64" height="64"></a> | <a href="https://addons.mozilla.org/firefox/addon/easy-proxy/"><img src="https://github.com/user-attachments/assets/e2bb973f-5106-4eae-8d1d-4a3dd25b01e5" title="Mozilla Firefox" width="64" height="64"></a> | TBA |
+| <a href="//microsoftedge.microsoft.com/addons/detail/mdoojhdlkngkgcgkefkbmfaahpclojen"><img src="//github.com/user-attachments/assets/755ede26-33d5-41eb-9000-9ba903886041" title="Microsoft Edge" width="64" height="64"></a> | <a href="//addons.mozilla.org/firefox/addon/easy-proxy/"><img src="//github.com/user-attachments/assets/e2bb973f-5106-4eae-8d1d-4a3dd25b01e5" title="Mozilla Firefox" width="64" height="64"></a> | TBA |
 | - | - | - |
 
 ## 关于
-- 一个简单易用的自动代理扩展
+- 这是一个简单易用的自动代理扩展
 - 可以通过设置添加代理服务器跟对应规则
 - 可以通过设置导出代理规则或PAC自动代理脚本
 - 可以通过工具栏图标查询当前页面的可代理规则
 - 可以通过工具栏图标添加代理规则或临时代理规则
+- 可以通过[PAC 脚本压缩工具](//jc3213.github.io/webware/html/minifier.html)压缩PAC脚本大小
 
 ## 用户手册
 - 通过`设置`添加并管理代理档案
@@ -31,8 +32,8 @@
 - 火狐必须勾选隐私模式才能正常工作
 
 ## 界面截图
-![设置：初始化](https://github.com/user-attachments/assets/d2f7f366-3515-4f04-bd05-2f10bf30ae82)
-![设置：样例](https://github.com/user-attachments/assets/f924d1b2-c38c-4c95-b9f6-3b3158f2c3ef)
-![工具栏：通用规则](https://github.com/user-attachments/assets/f11ed72e-be7a-4681-809a-3e3e15771694)
-![工具栏：域名规则](https://github.com/user-attachments/assets/cdd730e6-acb3-41dd-bbd8-60429599377d)
+![设置：初始化](//github.com/user-attachments/assets/d2f7f366-3515-4f04-bd05-2f10bf30ae82)
+![设置：样例](//github.com/user-attachments/assets/f924d1b2-c38c-4c95-b9f6-3b3158f2c3ef)
+![工具栏：通用规则](//github.com/user-attachments/assets/f11ed72e-be7a-4681-809a-3e3e15771694)
+![工具栏：域名规则](/github.com/user-attachments/assets/cdd730e6-acb3-41dd-bbd8-60429599377d)
 
