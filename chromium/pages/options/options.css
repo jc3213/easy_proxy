@@ -8,10 +8,6 @@ body.global .x-global > :is(select, input, label) {
     pointer-events: none;
 }
 
-input[type="file"] {
-    display: none;
-}
-
 #menu, #options {
     border-style: solid;
     position: fixed;
