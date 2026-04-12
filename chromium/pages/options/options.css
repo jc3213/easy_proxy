@@ -58,6 +58,7 @@ body.global .x-global > :is(select, input, label) {
     border-width: 1px;
     display: inline-block;
     position: absolute;
+    left: calc(100% + 3px);
     width: 200px;
     z-index: 9;
 }

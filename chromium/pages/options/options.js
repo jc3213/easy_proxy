@@ -1,8 +1,7 @@
 let easyProfile = {};
 let easyHandler;
 
-let extension = document.body;
-let [menuPane, optionsPane, managePane, excludePane, template] = extension.children;
+let [menuPane, optionsPane, managePane, excludePane, template] = document.body.children;
 let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exportFile] = menuPane.children;
 let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
 let [proxyMenu, modeMenu, networkMenu, actionMenu, actionBtn, actionPane] = optionsPane.querySelectorAll('[id]');
@@ -67,7 +66,7 @@ importEntry.addEventListener('change', (event) => {
 
 const optionHandlers = {
     'proxy-mode': ({ value }) => {
-        extension.className = value;
+        document.body.className = value;
         easyStorage.mode = value;
     },
     'preset': ({ value }) => {
@@ -132,7 +131,7 @@ function storageDispatch(json) {
     for (let value of json.exclude) {
         createMatchPattern(excludeList, value);
     }
-    extension.className = modeMenu.value = json.mode;
+    document.body.className = modeMenu.value = json.mode;
     proxyMenu.value = json.preset ?? json.proxies[0];
     actionMenu.value = json.action;
     networkMenu.checked = json.network;

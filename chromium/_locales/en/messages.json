@@ -59,7 +59,7 @@
     "options_automate_title": {
         "message": "Auto add hosts to temporary match rules where network error has occurred"
     },
-    "options_errors": {
+    "options_action": {
         "message": "Manage"
     },
     "options_exclude": {
