@@ -299,6 +299,7 @@ function storageDispatch() {
     easyPreset = easyStorage.preset;
     easyMode = easyStorage.mode;
     easyExclude.new('DIRECT', ['localhost', '127.0.0.1', ...easyStorage.exclude]);
+    easyStorage.exclude = easyExclude.getRules('DIRECT');
     proxyDispatch();
 }
 
