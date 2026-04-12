@@ -5,8 +5,7 @@ let extension = document.body;
 let [menuPane, optionsPane, managePane, excludePane, template] = extension.children;
 let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exportFile] = menuPane.children;
 let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
-let [proxyMenu, modeMenu, networkMenu, actionMenu, actionMgr] = optionsPane.querySelectorAll('[id]');
-let [actionBtn, actionPane] = actionMgr.children;
+let [proxyMenu, modeMenu, networkMenu, actionMenu, actionBtn, actionPane] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
 function menuEventSubmit() {

@@ -98,6 +98,11 @@ button.checked {
     box-shadow: var(--shadows);
 }
 
+h4 {
+    margin: 1px 0px;
+    padding: 1px 0px;
+}
+
 .hidden, .template {
     display: none !important;
 }
@@ -108,15 +113,6 @@ button.checked {
 
 .flex {
     gap: 3px;
-}
-
-.flexmenu > h4 {
-    padding: 2px 0px;
-}
-
-.flexmenu > h4 + input {
-    margin-left: auto;
-    width: 50%;
 }
 
 .flexmenu > button {

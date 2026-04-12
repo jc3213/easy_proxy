@@ -37,17 +37,8 @@ body.global .x-global > :is(select, input, label) {
     width: 658px;
 }
 
-#options > :nth-child(2) {
-    margin: auto;
-}
-
-#options > :nth-child(3) {
+#options > * {
     display: inline-block;
-    flex-basis: 100%;
-}
-
-#options > :nth-child(n+4) {
-    flex-basis: 50%;
 }
 
 #options label {
@@ -63,40 +54,34 @@ body.global .x-global > :is(select, input, label) {
 }
 
 #errors {
-    display: inline-block;
-    position: relative;
-}
-
-#errors > div {
     border-style: solid;
     border-width: 1px;
-    left: calc(100% + 3px);
+    display: inline-block;
     position: absolute;
-    top: 0px;
     width: 200px;
     z-index: 9;
 }
 
-#errors > div > *,
-#errors > div > ::before {
-    margin: 1px;
-    padding: 2px;
+#errors > * {
+    padding: 3px;
+    margin: 3px;
 }
 
-#errors > div > :hover {
-    box-shadow: var(--shadows);
-}
-
-#errors > div > :active {
-    opacity: 0.8;
-}
-
-#errors > div > ::before {
+#errors > ::before {
     content: "✔️";
+    padding: 3px;
     visibility: hidden;
 }
 
-#errors > div > .checked::before {
+#errors > :hover {
+    box-shadow: var(--shadows);
+}
+
+#errors > :active {
+    opacity: 0.8;
+}
+
+#errors > .checked::before {
     visibility: visible;
 }
 
@@ -104,50 +89,58 @@ body.global .x-global > :is(select, input, label) {
     margin-top: 156px;
 }
 
-#profile > .flexmenu > button:last-of-type {
+#profile input {
+    width: 33.33%;
+}
+
+#exclude input {
+    width: 50%;
+}
+
+.centered {
+    margin: auto;
+}
+
+.go-right {
     margin-left: auto;
 }
 
-.goto-r {
-    margin-left: auto;
+.proxy {
+    font-size: 28px;
+    font-weight: bold;
 }
 
 .flexmenu {
     flex-wrap: wrap;
 }
 
-.proxy {
-    display: inline-block;
-    font-size: 28px;
-    font-weight: bold;
-}
-
 .flexmenu > input {
     height: 21px;
-    margin: auto 0px 0px auto;
+    margin-top: auto;
 }
 
 .flexmenu > button {
-    margin: auto 0px 0px 0px;
+    margin-top: auto;
 }
 
 .matches {
-    border-style: outset;
+    background-color: var(--color-item);
+    border-style: solid;
     border-width: 1px;
     display: grid;
     flex-basis: 100%;
     grid-auto-rows: 25px;
     grid-template-columns: repeat(3, 33.33%);
+    height: 200px;
     margin: 3px 0px 25px;
-    max-height: 200px;
-    min-height: 50px;
     overflow-y: auto;
 }
 
 .rule {
-    border-style: outset;
+    border-style: solid;
     border-width: 1px;
     display: flex;
+    gap: 1px;
 }
 
 .rule > div {

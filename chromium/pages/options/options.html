@@ -16,7 +16,7 @@
             </select>
             <input name="proxy" type="text" placeholder="localhost:8080">
             <button i18n="common_submit">Submit</button>
-            <button class="goto-r" i18n="options_save" hotkey="Ctrl+S" disabled>Save</button>
+            <button class="go-right" i18n="options_save" hotkey="Ctrl+S" disabled>Save</button>
             <button i18n="options_import">Import</button>
             <button i18n="options_export">Export</button>
             <input type="file" accept=".json" class="hidden">
@@ -32,7 +32,7 @@
                     <option value="global" i18n="common_global">Global</option>
                 </select>
             </div>
-            <div class="x-direct" i18n-tips="options_network_title">
+            <div class="centered x-direct" i18n-tips="options_network_title">
                 <input type="checkbox" id="network">
                 <label for="network" i18n="options_network">Proxied Network</label>
             </div>
@@ -43,21 +43,19 @@
                     <option value="tempo" i18n="common_tempo" i18n-tips="automate_temporary">Session</option>
                     <option value="none" i18n="common_disable" i18n-tips="automate_disabled">Disabled</option>
                 </select>
-                <div id="errors">
-                    <button i18n="options_errors" hotkey="Ctrl+A">Manage</button>
-                    <div class="hidden">
-                        <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
-                        <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
-                        <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
-                        <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
-                    </div>
+                <button id="manage" i18n="options_errors" hotkey="Ctrl+A">Manage</button>
+                <div id="errors" class="hidden">
+                    <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
+                    <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
+                    <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
+                    <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
                 </div>
             </div>
         </div>
         <div id="profile"></div>
         <div id="exclude" class="flexmenu">
             <div class="proxy" i18n="options_exclude">Exclude</div>
-            <input type="text">
+            <input type="text" class="go-right">
             <button i18n-tips="match_add">➕</button>
             <button i18n-tips="match_resort">🧲</button>
             <div class="matches"></div>
@@ -66,10 +64,10 @@
             <div class="flexmenu">
                 <div class="proxy"></div>
                 <button i18n-tips="profile_export">💾</button>
-                <input type="text">
+                <input type="text" class="go-right">
                 <button i18n-tips="match_add">➕</button>
                 <button i18n-tips="match_resort">🧲</button>
-                <button class="goto-r" i18n-tips="profile_remove">❌</button>
+                <button class="go-right" i18n-tips="profile_remove">❌</button>
                 <div class="matches"></div>
             </div>
             <div class="rule">
