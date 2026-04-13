@@ -59,8 +59,8 @@
     "options_automate_title": {
         "message": "当网络请求发生错误时，自动将对应的域名添加到临时代理规则"
     },
-    "options_action": {
-        "message": "Manage"
+    "options_manage": {
+        "message": "管理"
     },
     "options_exclude": {
         "message": "例外规则"
