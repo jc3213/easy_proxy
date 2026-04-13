@@ -2,8 +2,8 @@ body {
     width: 680px;
 }
 
-body.direct .x-direct > :is(select, input, label, #action),
-body.global .x-global > :is(select, input, label, #action) {
+body.direct .x-direct > :is(select, input, label),
+body.global .x-global > :is(select, input, label) {
     filter: var(--disabled);
     pointer-events: none;
 }
