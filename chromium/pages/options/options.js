@@ -101,7 +101,7 @@ excludeEntry.addEventListener('keydown', (event) => {
     }
 });
 
-const excludeEventMap = {
+const excludeEvents = {
     'match_add': matchAdd,
     'match_resort': matchResort,
     'match_remove': (id, $, _, event) => matchRemove(id, event.target.parentNode)
@@ -109,7 +109,7 @@ const excludeEventMap = {
 
 excludePane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n-tips');
-    excludeEventMap[menu]?.('exclude', excludeList, excludeEntry, event);
+    excludeEvents[menu]?.('exclude', excludeList, excludeEntry, event);
 });
 
 function storageDispatch(json) {
