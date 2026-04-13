@@ -26,9 +26,8 @@
     box-shadow: var(--shadows);
 }
 
-body, button, input, select {
-    font-family: "Segoe UI", Tahoma, sans-serif;
-    font-size: 16px;
+body {
+    margin: auto;
 }
 
 body, div {
@@ -38,19 +37,19 @@ body, div {
     position: relative;
 }
 
-body {
-    margin: auto;
+body, button, input, textarea, select {
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 16px;
 }
 
-button, input, select, option {
-    color: var(--color-text);
+button, input, textarea, select, option {
     background-color: var(--color-item);
+    color: var(--color-text);
 }
 
-input {
+button, input, textarea, select {
     border-style: solid;
     border-width: 1px;
-    padding: 1px 5px;
 }
 
 input {
@@ -72,8 +71,6 @@ option:checked {
 }
 
 button {
-    border-style: solid;
-    border-width: 1px;
     padding: 3px 6px;
     white-space: nowrap;
 }
@@ -94,7 +91,7 @@ button:disabled {
 }
 
 button.checked {
-    border-color: #1f6feb;
+    border-color: #1F6FEB;
     box-shadow: var(--shadows);
 }
 

@@ -8,7 +8,7 @@ body.global .x-global > :is(select, input, label) {
     pointer-events: none;
 }
 
-#menu, #options {
+#menu, #options, #errors {
     border-style: solid;
     position: fixed;
     z-index: 9;
@@ -16,7 +16,6 @@ body.global .x-global > :is(select, input, label) {
 
 #menu {
     border-radius: 0px;
-    border-style: solid;
     border-width: 0px 1px 0px 1px;
     padding: 8px;
     top: 0px;
@@ -54,12 +53,10 @@ body.global .x-global > :is(select, input, label) {
 }
 
 #errors {
-    border-style: solid;
-    border-width: 1px;
     display: inline-block;
     position: absolute;
     left: calc(100% + 3px);
-    width: 200px;
+    width: max-content;
     z-index: 9;
 }
 
@@ -124,10 +121,14 @@ body.global .x-global > :is(select, input, label) {
     margin-top: auto;
 }
 
-.matches {
-    background-color: var(--color-item);
+.matches,
+.rule {
     border-style: solid;
     border-width: 1px;
+}
+
+.matches {
+    background-color: var(--color-item);
     display: grid;
     flex-basis: 100%;
     grid-auto-rows: 25px;
@@ -138,8 +139,6 @@ body.global .x-global > :is(select, input, label) {
 }
 
 .rule {
-    border-style: solid;
-    border-width: 1px;
     display: flex;
     gap: 1px;
 }
