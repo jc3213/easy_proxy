@@ -73,7 +73,6 @@ const optionHandlers = {
         easyStorage.preset = value;
     },
     'action': ({ value }) => {
-        actionPane.classList.replace(easyStorage.action, value);
         easyStorage.action = value;
     },
     'network': ({ checked }) => {
