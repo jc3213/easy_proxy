@@ -57,7 +57,6 @@ importEntry.addEventListener('change', (event) => {
         managePane.innerHTML = excludeList.innerHTML = importEntry.value = '';
         saveBtn.disabled = true;
         proxyMenu.innerHTML = '';
-        actionPane.classList.replace(easyStorage.action, params.action);
         storageDispatch(params);
         chrome.runtime.sendMessage({ action: 'options_storage', params });
     };
@@ -135,10 +134,7 @@ function storageDispatch(json) {
     }
 }
 
-chrome.runtime.sendMessage({ action: 'options_runtime' }, (storage) => {
-    storageDispatch(storage);
-    actionPane.classList.add(storage.action);
-});
+chrome.runtime.sendMessage({ action: 'options_runtime' }, storageDispatch);
 
 function profileExport(id) {
     chrome.runtime.sendMessage({ action: 'options_script', params: id }, (pac_script) => {
