@@ -7,7 +7,7 @@ let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = exclu
 let [proxyMenu, modeMenu, networkMenu, actionMenu, actionBtn, actionPane] = optionsPane.querySelectorAll('[id]');
 let [profileLET, matchLET] = template.children;
 
-function menuEventSubmit() {
+function menuSubmit() {
     let id = schemeEntry.value + ' ' + proxyEntry.value ;
     if (easyStorage[id] || !/^(HTTPS?|SOCKS5?) ([^.]+\.)+[^.:]*:\d+$/.test(id)) {
         return;
@@ -20,7 +20,7 @@ function menuEventSubmit() {
     saveBtn.disabled = false;
 }
 
-function menuEventSave() {
+function menuSave() {
     saveBtn.disabled = true;
     chrome.runtime.sendMessage({ action: 'options_storage', params: easyStorage });
 }
@@ -32,16 +32,16 @@ function fileSaver(data, filename, filetype) {
     exportFile.click();
 }
 
-const menuEventMap = {
-    'common_submit': menuEventSubmit,
-    'options_save': menuEventSave,
+const menuEvents = {
+    'common_submit': menuSubmit,
+    'options_save': menuSave,
     'options_import': () => importEntry.click(),
     'options_export': () => fileSaver(JSON.stringify(easyStorage, null, 4), 'easy_proxy', '.json')
 };
 
 menuPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    menuEventMap[menu]?.();
+    menuEvents[menu]?.();
 });
 
 menuPane.addEventListener('keydown', (event) => {
@@ -64,25 +64,16 @@ importEntry.addEventListener('change', (event) => {
     reader.readAsText(event.target.files[0]);
 });
 
-const optionHandlers = {
-    'proxy-mode': ({ value }) => {
+const optionEvents = {
+    'proxy-mode': (value) => {
         document.body.className = value;
-        easyStorage.mode = value;
-    },
-    'preset': ({ value }) => {
-        easyStorage.preset = value;
-    },
-    'action': ({ value }) => {
-        easyStorage.action = value;
-    },
-    'network': ({ checked }) => {
-        easyStorage.network = checked;
     }
 };
 
 optionsPane.addEventListener('change', (event) => {
-    let entry = event.target;
-    optionHandlers[entry.id]?.(entry);
+    let { id, value } = event.target;
+    easyStorage[id] = value;
+    optionEvents[id]?.(value);
     saveBtn.disabled = false;
 });
 
@@ -201,7 +192,7 @@ function matchRemove(id, rule) {
     saveBtn.disabled = false;
 }
 
-const profileEventMap = {
+const profileEvents = {
     'profile_export': profileExport,
     'profile_remove': profileRemove,
     'match_add': matchAdd,
@@ -216,7 +207,7 @@ function createMatchProfile(id) {
     proxy.textContent = server.value = server.textContent = id;
     profile.addEventListener('click', (event) => {
         let menu = event.target.getAttribute('i18n-tips');
-        profileEventMap[menu]?.(id, matches, entry, event);
+        profileEvents[menu]?.(id, matches, entry, event);
     });
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
