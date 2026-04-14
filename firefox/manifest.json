@@ -1,10 +1,9 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "manifest_version": 2,
     "permissions": [
-        "privacy",
         "proxy",
         "storage",
         "tabs",
@@ -40,7 +39,6 @@
         "_execute_browser_action": {
         }
     },
-    "incognito": "spanning",
     "browser_specific_settings": {
         "gecko": {
             "id": "firefox@easyproxy",
