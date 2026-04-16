@@ -70,8 +70,8 @@ const optionEvents = {
 };
 
 optionsPane.addEventListener('change', (event) => {
-    let { id, value } = event.target;
-    easyStorage[id] = value;
+    let { id, type, value, checked } = event.target;
+    easyStorage[id] = type === 'checkbox' ? checked : value;
     optionEvents[id]?.(value);
     saveBtn.disabled = false;
 });
