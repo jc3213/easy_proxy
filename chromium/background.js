@@ -112,7 +112,7 @@ function popupRuntime(tabId, port) {
         rules: [],
         hosts: [],
         error: [],
-        proxies: easyMatch.listProxies(),
+        proxies: easyStorage.proxies,
         mode: easyStorage.mode,
         preset: easyStorage.preset
     };

@@ -183,13 +183,13 @@ function FindProxyForURL(url, host) {
             return [...rules];
         }
         if (proxy !== null && proxy !== undefined) {
-            return [];
+            return;
         }
-        rules = [];
+        let result = {};
         for (let [proxy, ruleSet] of this.#rules) {
-            rules.push([proxy, [...ruleSet]]);
+            result[proxy] = [...ruleSet];
         }
-        return rules;
+        return result;
     }
 
     purgeRules() {
