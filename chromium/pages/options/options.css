@@ -84,8 +84,21 @@ body.global .x-global > :is(select, input, label) {
     visibility: visible;
 }
 
+#editor, #exclude {
+    margin-bottom: 24px;
+}
+
+#editor {
+    margin-top: 8px;
+    padding: 2px 5px;
+    position: absolute;
+    resize: none;
+    width: calc(100% - 12px);
+    z-index: 5;
+}
+
 #profile {
-    margin-top: 156px;
+    margin-top: 146px;
 }
 
 #profile input {
@@ -135,7 +148,7 @@ body.global .x-global > :is(select, input, label) {
     grid-auto-rows: 25px;
     grid-template-columns: repeat(3, 33.33%);
     height: 200px;
-    margin: 3px 0px 25px;
+    margin: 3px 0px 24px;
     overflow-y: auto;
 }
 

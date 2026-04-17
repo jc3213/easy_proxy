@@ -105,7 +105,7 @@ function popupSwitch() {
     switchBtn.classList.toggle('checked');
 }
 
-const popupMap = {
+const menuEvents = {
     'common_submit': popupSubmit,
     'popup_purge': popupPurge,
     'popup_options': chrome.runtime.openOptionsPage,
@@ -115,12 +115,12 @@ const popupMap = {
 
 menuPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    popupMap[menu]?.();
+    menuEvents[menu]?.();
 });
 
 extraPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    popupMap[menu]?.();
+    menuEvents[menu]?.();
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {

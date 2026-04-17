@@ -62,6 +62,9 @@
     "options_manage": {
         "message": "Manage"
     },
+    "options_editor": {
+        "message": "Enable Editor Mode"
+    },
     "options_exclude": {
         "message": "Exclude Rules"
     },
