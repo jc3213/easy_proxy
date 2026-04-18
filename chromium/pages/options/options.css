@@ -148,7 +148,7 @@ body.global .x-global > :is(select, input, label) {
     grid-auto-rows: 25px;
     grid-template-columns: repeat(3, 33.33%);
     height: 200px;
-    margin: 3px 0px 24px;
+    margin: 1px 0px 24px;
     overflow-y: auto;
 }
 
