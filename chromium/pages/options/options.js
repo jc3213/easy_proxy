@@ -229,7 +229,7 @@ function profileRemove(id) {
     if (proxies.length === 0) {
         proxyMenu.value = easyStorage.preset = null;
     } else if (id === preset) {
-        proxyMenu.value = easyStorage.preset = easyStorage.proxies[0];
+        proxyMenu.value = easyStorage.preset = proxies[0];
     }
     server.remove();
     profile.remove();
@@ -242,7 +242,7 @@ function matchAdd(id, matches, entry) {
     if (!value) {
         return;
     }
-    let rules = id === 'direct' ? easyStorage.exclude : easyStorage[id];
+    let rules = id === 'exclude' ? easyStorage.exclude : easyStorage[id];
     if (rules.includes(value)) {
         return;
     }
