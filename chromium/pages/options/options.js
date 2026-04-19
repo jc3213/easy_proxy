@@ -263,8 +263,8 @@ function matchResort(id, matches) {
 function matchRemove(id, rule) {
     let value = rule.title;
     let rules = easyStorage[id];
-    rule.remove();
     rules.splice(rules.indexOf(value), 1);
+    rule.remove();
     saveBtn.disabled = openEditor = false;
 }
 
