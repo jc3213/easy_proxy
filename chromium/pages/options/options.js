@@ -242,7 +242,7 @@ function matchAdd(id, matches, entry) {
     if (!value) {
         return;
     }
-    let rules = id === 'exclude' ? easyStorage.exclude : easyStorage[id];
+    let rules = easyStorage[id];
     if (rules.includes(value)) {
         return;
     }
