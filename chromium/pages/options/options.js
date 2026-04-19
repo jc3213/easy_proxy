@@ -158,6 +158,7 @@ editorPane.addEventListener('change', (event) => {
     if (!proxies.has(easyStorage.preset)) {
         proxyMenu.value = easyStorage.preset = easyStorage.proxies[0];
     }
+    editorPane.style.height = editorHeight();
     saveBtn.disabled = false;
 });
 
@@ -223,6 +224,8 @@ function profileExport(id) {
 function profileRemove(id) {
     let { profile, server } = easyProfile[id];
     let { preset, proxies } = easyStorage;
+    proxies.splice(proxies.indexOf(id), 1);
+    delete easyStorage[id];
     if (proxies.length === 0) {
         proxyMenu.value = easyStorage.preset = null;
     } else if (id === preset) {
