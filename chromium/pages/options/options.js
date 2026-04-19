@@ -139,6 +139,11 @@ editorPane.addEventListener('change', (event) => {
             rules.add(value);
         }
     }
+    for (let id of easyStorage.proxies) {
+        if (!proxies.has(id)) {
+            delete easyStorage[id];
+        }
+    }
     proxyMenu.innerHTML = profilePane.innerHTML = excludeList.innerHTML = '';
     for (let id of proxies) {
         let rules = updated[id];
