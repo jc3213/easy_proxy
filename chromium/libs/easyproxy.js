@@ -3,7 +3,7 @@ class EasyProxy {
     static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
     static #pasScript = `
 function FindProxyForURL(url, host) {
-    while (true) {
+    for (;;) {
         var hit = RULES[host];
         if (hit) {
             return hit;
@@ -130,12 +130,8 @@ function FindProxyForURL(url, host) {
         return this.#rules.has(proxy);
     }
 
-    listProxies() {
-        return [...this.#rules.keys()];
-    }
-
     findProxy(host) {
-        while (true) {
+        for (;;) {
             let proxy = this.#routing[host];
             if (proxy) {
                 return proxy;
@@ -146,6 +142,10 @@ function FindProxyForURL(url, host) {
             }
             host = host.substring(dot + 1);
         }
+    }
+
+    listProxies() {
+        return [...this.#rules.keys()];
     }
 
     addRule(proxy, rule) {
