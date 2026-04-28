@@ -51,7 +51,7 @@ function FindProxyForURL(url, host) {
         return EasyProxy.getScript(EasyProxy.#instances);
     }
 
-    static make(host) {
+    static makeRule(host) {
         let array = host.split('.');
         if (array.length < 2) {
             return host;

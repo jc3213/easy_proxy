@@ -246,7 +246,7 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     }
     let { hosts, rules, index } = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
     let host = getHostname(url);
-    let rule = cacheRules[host] ??= EasyProxy.make(host);
+    let rule = cacheRules[host] ??= EasyProxy.makeRule(host);
     if (!hosts.has(host)) {
         hosts.add(host);
         rules.add(rule);
@@ -268,7 +268,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     let host = getHostname(url);
     if (easyAction === 'none') {
-        let rule = cacheRules[host] ??= EasyProxy.make(host);
+        let rule = cacheRules[host] ??= EasyProxy.makeRule(host);
         let { error } = easyInspect[tabId];
         error.add(host);
         error.add(rule);
