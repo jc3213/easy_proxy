@@ -1,7 +1,7 @@
 class EasyProxy {
     static #instances = new Set();
     static #etld = new Set([ 'ac', 'co', 'com', 'edu', 'go', 'gov', 'ne', 'net', 'or', 'org', 'sch' ]);
-    static #pasScript = `
+    static #pacScript = `
 function FindProxyForURL(url, host) {
     for (;;) {
         var hit = RULES[host];
@@ -44,7 +44,7 @@ function FindProxyForURL(url, host) {
         if (proxies.length === 0) {
             return 'function FindProxyForURL(url, host) {\n    return "DIRECT";\n}\n';
         }
-        return `${proxies.join('\n')}\n\nvar RULES = {\n${scripts.join(',\n')}\n};\n${EasyProxy.#pasScript}`;
+        return `${proxies.join('\n')}\n\nvar RULES = {\n${scripts.join(',\n')}\n};\n${EasyProxy.#pacScript}`;
     }
 
     static get pacScript() {
@@ -92,7 +92,7 @@ function FindProxyForURL(url, host) {
         for (let r of rules) {
             scripts.push(`    "${r}": PROXY`);
         }
-        return `var PROXY = "${proxy}";\n\nvar RULES = {\n${scripts.join(',\n')}\n};\n${EasyProxy.#pasScript}`;;
+        return `var PROXY = "${proxy}";\n\nvar RULES = {\n${scripts.join(',\n')}\n};\n${EasyProxy.#pacScript}`;;
     }
 
     addProxy(proxy, rules) {
