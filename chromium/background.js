@@ -26,6 +26,7 @@ let easyTempo = new EasyProxy();
 let easyExclude = new EasyProxy();
 let easyMode;
 let easyInspect = {};
+let easyDelayed;
 
 let cacheRules = {};
 let cacheRouting = {};
@@ -282,7 +283,10 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     if (easyAction === 'match') {
         easyMatch.addRule(easyPreset, host);
-        chrome.storage.local.set({ [easyPreset]: easyMatch.getRules(easyPreset) });
+        clearTimeout(easyDelayed);
+        easyDelayed = setTimeout(() => {
+            chrome.storage.local.set({ [easyPreset]: easyMatch.getRules(easyPreset) });
+        }, 3000);
     } else {
         easyTempo.addRule(easyPreset, host);
     }
