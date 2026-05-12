@@ -57,7 +57,7 @@
         "message": "自动化代理"
     },
     "options_automate_title": {
-        "message": "当网络请求发生错误时，自动将对应的域名添加到临时代理规则"
+        "message": "当网络请求发生错误时，自动添加相关域名到代理理规则\n\n此功能\"直连\"模式不会生效"
     },
     "options_manage": {
         "message": "管理"

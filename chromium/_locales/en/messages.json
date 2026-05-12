@@ -57,7 +57,7 @@
         "message": "Automated Proxy"
     },
     "options_automate_title": {
-        "message": "Auto add hosts to temporary match rules where network error has occurred"
+        "message": "Auto add hosts to proxy rules where network error has occurred\n\nThis won't work for \"Direct\" mode"
     },
     "options_manage": {
         "message": "Manage"
