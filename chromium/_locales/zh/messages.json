@@ -69,7 +69,7 @@
         "message": "当工具栏菜单更新代理规则/模式后重新加载——"
     },
     "options_reload_none": {
-        "message": "不重载"
+        "message": "什么都不做"
     },
     "options_reload_current": {
         "message": "当前标签页"
