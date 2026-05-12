@@ -62,11 +62,14 @@
     "options_manage": {
         "message": "Manage"
     },
+    "options_manage_title": {
+        "message": "Manage possible network errors"
+    },
     "options_reload": {
         "message": "Reload Tabs"
     },
     "options_reload_title": {
-        "message": "Reload [selected] tabs when rules or mode have been changed by toolbar"
+        "message": "Reload [selected] tabs when rules or mode have been changed by toolbar..."
     },
     "options_reload_none": {
         "message": "None"
@@ -101,14 +104,26 @@
     "error_refused": {
         "message": "Connection Refused"
     },
+    "error_refused_title": {
+        "message": "The server refused the connection request\n\nReference: net::ERR_CONNECTION_REFUSED"
+    },
     "error_reset": {
         "message": "Connection Reset"
+    },
+    "error_reset_title": {
+        "message": "The connection was reset before completion\n\nReference: net::ERR_CONNECTION_RESET"
     },
     "error_timeout": {
         "message": "Connection Time Out"
     },
+    "error_timeout_title": {
+        "message": "The request timed out waiting for a response\n\nReference: net::ERR_CONNECTION_TIMED_OUT"
+    },
     "error_dnserr": {
         "message": "DNS Failed to Resolve"
+    },
+    "error_dnserr_title": {
+        "message": "The name server failed to resolve the hostname\n\nReference: net::ERR_NAME_NOT_RESOLVED"
     },
     "popup_title": {
         "message": "Easy Proxy Manager"

@@ -62,6 +62,9 @@
     "options_manage": {
         "message": "管理"
     },
+    "options_manage_title": {
+        "message": "管理网络请求错误"
+    },
     "options_reload": {
         "message": "重新加载"
     },
@@ -101,14 +104,26 @@
     "error_refused": {
         "message": "连接被拒绝"
     },
+    "error_refused_title": {
+        "message": "服务器拒绝了连接请求\n\n参考：net::ERR_CONNECTION_REFUSED"
+    },
     "error_reset": {
         "message": "连接被重置"
+    },
+    "error_reset_title": {
+        "message": "连接在传输过程中被重置\n\n参考：net::ERR_CONNECTION_RESET"
     },
     "error_timeout": {
         "message": "连接超时"
     },
+    "error_timeout_title": {
+        "message": "等待服务器响应时连接超时\n\n参考：net::ERR_CONNECTION_TIMED_OUT"
+    },
     "error_dnserr": {
         "message": "无法解析域名"
+    },
+    "error_dnserr_title": {
+        "message": "解析域名时发生错误\n\n参考：net::ERR_NAME_NOT_RESOLVED"
     },
     "popup_title": {
         "message": "简易代理管理"

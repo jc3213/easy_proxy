@@ -43,12 +43,12 @@
                     <option value="tempo" i18n="common_tempo">Session</option>
                     <option value="none" i18n="common_disable">Disabled</option>
                 </select>
-                <button id="show-actions" i18n="options_manage" hotkey="Ctrl+M">Manage</button>
+                <button id="show-actions" i18n="options_manage" i18n-tips="options_manage_title" hotkey="Ctrl+M">Manage</button>
                 <div id="errors" class="hidden">
-                    <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused">Connection Refused</div>
-                    <div class="net::ERR_CONNECTION_RESET" i18n="error_reset">Connection Reset</div>
-                    <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
-                    <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
+                    <div class="net::ERR_CONNECTION_REFUSED" i18n="error_refused" i18n-tips="error_refused_title">Connection Refused</div>
+                    <div class="net::ERR_CONNECTION_RESET" i18n="error_reset" i18n-tips="error_reset_title">Connection Reset</div>
+                    <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout" i18n-tips="error_timeout_title">Connection Timed Out</div>
+                    <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr" i18n-tips="error_dnserr_title">DNS Failed to Resolve</div>
                 </div>
             </div>
             <div class="flex centered" i18n-tips="options_reload_title">
