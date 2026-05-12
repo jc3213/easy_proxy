@@ -193,8 +193,9 @@ function editorHeight() {
 function storageDispatch(json) {
     easyStorage = json;
     easyHandler = new Set(json.handler);
-    actionMenu.value = json.action;
     networkMenu.checked = json.network;
+    actionMenu.value = json.action;
+    reloadMenu.value = json.reload;
     document.body.className = modeMenu.value = json.mode;
     for (let item of actionPane.children) {
         let value = item.classList[0];
