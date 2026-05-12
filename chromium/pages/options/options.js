@@ -6,7 +6,7 @@ let easyRegExp = /^(HTTPS?|SOCKS5?) ([^.]+\.)+[^.:]*:\d+$/;
 
 let [menuPane, optionsPane, editorPane, profilePane, excludePane, template] = document.body.children;
 let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exportFile] = menuPane.children;
-let [proxyMenu, modeMenu, networkMenu, actionMenu, actionBtn, actionPane, editorBtn] = optionsPane.querySelectorAll('[id]');
+let [proxyMenu, modeMenu, networkMenu, actionMenu, actionBtn, actionPane, reloadMenu, editorBtn] = optionsPane.querySelectorAll('[id]');
 let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
 let [profileLET, matchLET] = template.children;
 

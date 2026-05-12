@@ -39,9 +39,9 @@
             <div class="x-direct x-global" i18n-tips="options_automate_title">
                 <label i18n="options_automate">Automated Proxy</label>
                 <select id="action">
-                    <option value="match" i18n="common_match" i18n-tips="automate_storage">Storage</option>
-                    <option value="tempo" i18n="common_tempo" i18n-tips="automate_temporary">Session</option>
-                    <option value="none" i18n="common_disable" i18n-tips="automate_disabled">Disabled</option>
+                    <option value="match" i18n="common_match">Storage</option>
+                    <option value="tempo" i18n="common_tempo">Session</option>
+                    <option value="none" i18n="common_disable">Disabled</option>
                 </select>
                 <button id="show-actions" i18n="options_manage" hotkey="Ctrl+M">Manage</button>
                 <div id="errors" class="hidden">
@@ -50,6 +50,14 @@
                     <div class="net::ERR_CONNECTION_TIMED_OUT" i18n="error_timeout">Connection Timed Out</div>
                     <div class="net::ERR_NAME_NOT_RESOLVED" i18n="error_dnserr">Name Not Resolved</div>
                 </div>
+            </div>
+            <div class="flex centered" i18n-tips="options_reload_title">
+                <label i18n="options_reload">Reload Tabs</label>
+                <select id="reload">
+                    <option value="none" i18n="options_reload_none">None</option>
+                    <option value="current" i18n="options_reload_current">Current</option>
+                    <option value="relative" i18n="options_reload_relative">Relative</option>
+                </select>
             </div>
             <button id="open-editor" class="centered" i18n="options_editor" hotkey="Ctrl+E">Enable Editor Mode</button>
         </div>
