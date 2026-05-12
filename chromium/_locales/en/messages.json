@@ -62,8 +62,23 @@
     "options_manage": {
         "message": "Manage"
     },
+    "options_reload": {
+        "message": "Reload Tabs"
+    },
+    "options_reload_title": {
+        "message": "Reload [selected] tabs when rules or mode have been changed by toolbar"
+    },
+    "options_reload_none": {
+        "message": "None"
+    },
+    "options_reload_current": {
+        "message": "Current"
+    },
+    "options_reload_relative": {
+        "message": "Relative"
+    },
     "options_editor": {
-        "message": "Enable Editor Mode"
+        "message": "Open Editor"
     },
     "options_exclude": {
         "message": "Exclude Rules"

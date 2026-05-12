@@ -62,8 +62,23 @@
     "options_manage": {
         "message": "管理"
     },
+    "options_reload": {
+        "message": "重新加载"
+    },
+    "options_reload_title": {
+        "message": "当工具栏菜单更新代理规则/模式后重新加载——"
+    },
+    "options_reload_none": {
+        "message": "不重载"
+    },
+    "options_reload_current": {
+        "message": "当前标签页"
+    },
+    "options_reload_relative": {
+        "message": "关联标签页"
+    },
     "options_editor": {
-        "message": "启用编辑器模式"
+        "message": "打开编辑器"
     },
     "options_exclude": {
         "message": "例外规则"
