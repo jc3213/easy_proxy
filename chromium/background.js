@@ -6,6 +6,7 @@ const systemStorage = {
     action: 'none',
     handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
     network: false,
+    reload: 'none',
     preset: null,
     proxies: [],
     exclude: ['localhost', '127.0.0.1']
@@ -21,6 +22,7 @@ let easyHandler;
 let easyNetwork;
 let easyAction;
 let easyPreset;
+let easyReload;
 let easyMatch = new EasyProxy();
 let easyTempo = new EasyProxy();
 let easyExclude = new EasyProxy();
@@ -126,7 +128,7 @@ function popupRuntime(tabId, port) {
     popupPort.postMessage({ action: 'proxy_init', params });
 }
 
-function popupSubmit({ changes, url }) {
+function popupSubmit({ changes, tabId, url }) {
     let updated = new Set();
     for (let { type, proxy, rule, action } of changes) {
         let profile;
@@ -150,24 +152,31 @@ function popupSubmit({ changes, url }) {
     cacheRouting = {};
     cacheExclude = {};
     proxyDispatch();
-    reloadTabs(url);
+    reloadTabs(tabId, url);
 }
 
-function popupPurge(url) {
+function popupPurge({ tabId, url }) {
     cacheRouting = {};
     easyTempo.purge();
     proxyDispatch();
-    reloadTabs(url);
+    reloadTabs(tabId, url);
 }
 
-function popupMode(mode) {
+function popupMode({ mode, tabId }) {
     easyMode = easyStorage.mode = mode;
     proxyDispatch();
     chrome.storage.local.set(easyStorage);
-    reloadTabs('*');
+    reloadTabs(tabId, '*');
 }
 
-function reloadTabs(url) {
+function reloadTabs(tabId, url) {
+    if (easyReload === 'none') {
+        return;
+    }
+    if (easyReload === 'current') {
+        chrome.tabs.reload(tabId);
+        return;
+    }
     if (url === '*') {
         url = systemURLs;
     } else {
@@ -292,7 +301,7 @@ chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
     }
     proxyDispatch();
     popupMessage(tabId, 'proxy_' + easyAction, host);
-    reloadTabs(url);
+    reloadTabs(tabId, url);
 }, { urls: systemURLs });
 
 function storageDispatch() {
@@ -300,6 +309,7 @@ function storageDispatch() {
     easyHandler = new Set(easyStorage.handler);
     easyAction = easyStorage.action;
     easyPreset = easyStorage.preset;
+    easyReload = easyStorage.reload;
     easyMode = easyStorage.mode;
     easyExclude.addProxy('DIRECT', ['localhost', '127.0.0.1', ...easyStorage.exclude]);
     easyStorage.exclude = easyExclude.getRules('DIRECT');

@@ -53,7 +53,7 @@ proxyMenu.addEventListener('change', (event) => {
 
 modeMenu.addEventListener('change', (event) => {
     let mode = modeMenu.value;
-    popupPort.postMessage({ action: 'popup_mode', params: mode });
+    popupPort.postMessage({ action: 'popup_mode', params: { mode, tabId: easyTab } });
     manager.classList.replace(easyMode, mode);
     easyMode = mode;
 });
@@ -76,7 +76,7 @@ function popupSubmit() {
         check.props = value;
     }
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
-    popupPort.postMessage({ action: 'popup_submit', params: { changes, url: easyUrl } });
+    popupPort.postMessage({ action: 'popup_submit', params: { changes, tabId: easyTab, url: easyUrl } });
 }
 
 function popupPurge() {
@@ -86,7 +86,7 @@ function popupPurge() {
             rule.check.value = rule.check.props = 'direct';
         }
     }
-    popupPort.postMessage({ action: 'popup_purge', params: easyUrl });
+    popupPort.postMessage({ action: 'popup_purge', params: { tabId: easyTab, url: easyUrl } });
     easyTempo = {};
     easyChecks = new Set();
     purgeBtn.disabled = true;
