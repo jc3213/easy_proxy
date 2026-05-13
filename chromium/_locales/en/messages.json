@@ -57,7 +57,7 @@
         "message": "Automated Proxy"
     },
     "options_automate_title": {
-        "message": "Auto add hosts to proxy rules where network error has occurred\n\nThis won't work for \"Direct\" mode"
+        "message": "Auto add hosts to proxy rules where network error has occurred\n\nThis won't work for \"Direct\" or \"Global\" mode"
     },
     "options_manage": {
         "message": "Manage"
@@ -69,16 +69,7 @@
         "message": "Reload Tabs"
     },
     "options_reload_title": {
-        "message": "Reload [selected] tabs when rules or mode have been changed by toolbar..."
-    },
-    "options_reload_none": {
-        "message": "None"
-    },
-    "options_reload_current": {
-        "message": "Current"
-    },
-    "options_reload_relative": {
-        "message": "Relative"
+        "message": "Reload seleceted tabs when changes has been made by toolbar"
     },
     "options_editor": {
         "message": "Open Editor"
@@ -124,6 +115,15 @@
     },
     "error_dnserr_title": {
         "message": "The name server failed to resolve the hostname\n\nReference: net::ERR_NAME_NOT_RESOLVED"
+    },
+    "reload_none": {
+        "message": "None"
+    },
+    "reload_current": {
+        "message": "Current"
+    },
+    "reload_related": {
+        "message": "Related"
     },
     "popup_title": {
         "message": "Easy Proxy Manager"

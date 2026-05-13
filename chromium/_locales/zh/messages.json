@@ -57,7 +57,7 @@
         "message": "自动化代理"
     },
     "options_automate_title": {
-        "message": "当网络请求发生错误时，自动添加相关域名到代理理规则\n\n此功能\"直连\"模式不会生效"
+        "message": "当网络请求发生错误时，自动添加相关域名到代理理规则\n\n此功能\"直连\"和\"全局\"模式不会生效"
     },
     "options_manage": {
         "message": "管理"
@@ -70,15 +70,6 @@
     },
     "options_reload_title": {
         "message": "当工具栏菜单更新代理规则/模式后重新加载——"
-    },
-    "options_reload_none": {
-        "message": "什么都不做"
-    },
-    "options_reload_current": {
-        "message": "当前标签页"
-    },
-    "options_reload_relative": {
-        "message": "关联标签页"
     },
     "options_editor": {
         "message": "打开编辑器"
@@ -124,6 +115,15 @@
     },
     "error_dnserr_title": {
         "message": "解析域名时发生错误\n\n参考：net::ERR_NAME_NOT_RESOLVED"
+    },
+    "reload_none": {
+        "message": "什么都不做"
+    },
+    "reload_current": {
+        "message": "当前标签页"
+    },
+    "reload_related": {
+        "message": "关联标签页"
     },
     "popup_title": {
         "message": "简易代理管理"

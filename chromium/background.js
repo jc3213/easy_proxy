@@ -170,11 +170,11 @@ function popupMode({ mode, tabId }) {
 }
 
 function reloadTabs(tabId, url) {
-    if (easyReload === 'none') {
-        return;
-    }
     if (easyReload === 'current') {
         chrome.tabs.reload(tabId);
+        return;
+    }
+    if (easyReload === 'none' || easyReload !== 'related') {
         return;
     }
     if (url === '*') {
