@@ -174,7 +174,7 @@ function reloadTabs(tabId, url) {
         chrome.tabs.reload(tabId);
         return;
     }
-    if (easyReload === 'none' || easyReload !== 'related') {
+    if (easyReload !== 'related') {
         return;
     }
     if (url === '*') {
