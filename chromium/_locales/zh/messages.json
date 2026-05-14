@@ -125,6 +125,9 @@
     "reload_related": {
         "message": "关联标签页"
     },
+    "reload_all": {
+        "message": "所有标签页"
+    },
     "popup_title": {
         "message": "简易代理管理"
     },

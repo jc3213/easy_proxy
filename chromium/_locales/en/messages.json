@@ -117,13 +117,16 @@
         "message": "The name server failed to resolve the hostname\n\nReference: net::ERR_NAME_NOT_RESOLVED"
     },
     "reload_none": {
-        "message": "None"
+        "message": "Nothing"
     },
     "reload_current": {
         "message": "Current"
     },
     "reload_related": {
         "message": "Related"
+    },
+    "reload_all": {
+        "message": "All Tabs"
     },
     "popup_title": {
         "message": "Easy Proxy Manager"

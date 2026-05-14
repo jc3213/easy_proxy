@@ -53,7 +53,7 @@ proxyMenu.addEventListener('change', (event) => {
 
 modeMenu.addEventListener('change', (event) => {
     let mode = modeMenu.value;
-    popupPort.postMessage({ action: 'popup_mode', params: { mode, tabId: easyTab } });
+    popupPort.postMessage({ action: 'popup_mode', params: { mode, tabId: easyTab, url: easyUrl } });
     manager.classList.replace(easyMode, mode);
     easyMode = mode;
 });

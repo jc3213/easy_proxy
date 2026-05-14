@@ -162,26 +162,26 @@ function popupPurge({ tabId, url }) {
     reloadTabs(tabId, url);
 }
 
-function popupMode({ mode, tabId }) {
+function popupMode({ mode, tabId, url }) {
     easyMode = easyStorage.mode = mode;
     proxyDispatch();
     chrome.storage.local.set(easyStorage);
-    reloadTabs(tabId, '*');
+    reloadTabs(tabId, url);
 }
 
 function reloadTabs(tabId, url) {
+    if (easyReload === 'none') {
+        return;
+    }
     if (easyReload === 'current') {
         chrome.tabs.reload(tabId);
         return;
     }
-    if (easyReload !== 'related') {
-        return;
-    }
-    if (url === '*') {
-        url = systemURLs;
-    } else {
+    if (easyReload === 'related') {
         let host = getHostname(url);
         url = ['http://' + host + '/*', 'https://' + host + '/*'];
+    } else if (easyReload === 'all') {
+        url = systemURLs;
     }
     chrome.tabs.query({ url, currentWindow: true }, (tabs) => {
         for (let { id } of tabs) {
