@@ -69,17 +69,8 @@ body.global > #extra > button,
     background-color: #E6A92A;
 }
 
-.exclude {
-    order: 2;    
-}
-
-.exclude > select {
-    color: #FFFFFF;
-    background-color: #A39F8C;
-}
-
 .error {
-    order: 3;
+    order: 2;
 }
 
 .error > select {
@@ -88,5 +79,14 @@ body.global > #extra > button,
 }
 
 .direct {
+    order: 3;
+}
+
+.exclude {
     order: 4;
+}
+
+.exclude > select {
+    color: #FFFFFF;
+    background-color: #A39F8C;
 }
