@@ -25,7 +25,9 @@ function FindProxyForURL(url, host) {
             if (global) {
                 return `function FindProxyForURL(url, host) {\n    return "${global}";\n}\n`;
             }
-            for (let [proxy, rules] of i.#rules) {
+            for (let entries of i.#rules) {
+                let proxy = entries[0];
+                let rules = entries[1];
                 if (rules.size === 0) {
                     continue;
                 }
@@ -186,8 +188,10 @@ function FindProxyForURL(url, host) {
             return;
         }
         let result = {};
-        for (let [proxy, ruleSet] of this.#rules) {
-            result[proxy] = [...ruleSet];
+        for (let entries of this.#rules) {
+            let proxy = entries[0];
+            let rules = entries[1];
+            result[proxy] = [...rules];
         }
         return result;
     }
