@@ -36,7 +36,9 @@ let cacheExclude = {};
 
 function optionsStorage(response, json) {
     let removed = []
-    for (let key of Object.keys(json)) {
+    let new_keys = Object.keys(json);
+    for (let i = 0, l = new_keys.length; i < l; i++) {
+        let key = new_keys[i];
         if (key in systemStorage) {
             continue;
         }
@@ -47,7 +49,9 @@ function optionsStorage(response, json) {
         removed.push(key);
         delete json[key];
     }
-    for (let proxy of easyStorage.proxies) {
+    let old_proxies = easyStorage.proxies;
+    for (let i = 0, l = old_proxies.length; i < l; i++) {
+        let proxy = old_proxies[i];
         if (!json[proxy]) {
             easyMatch.removeProxy(proxy);
             easyTempo.removeProxy(proxy);
@@ -73,9 +77,11 @@ function proxyDispatch() {
             ? { proxyType: 'none' }
             : { mode: 'direct' };
     } else {
+        let proxy = easyPreset || easyStorage.proxies[0];
+        let entries = proxy.split(' ');
         if (systemFirefox) {
-            let proxy = easyPreset ?? easyStorage.proxies[0];
-            let [scheme, url] = proxy.split(' ');
+            let scheme = entries[0];
+            let url = entries[1];
             value = { proxyType: 'manual', passthrough: 'localhost, 127.0.0.1' };
             if (scheme === 'HTTP') {
                 value.http = 'http://' + url;
@@ -86,9 +92,7 @@ function proxyDispatch() {
                 value.socksVersion = scheme === 'SOCKS' ? 4 : 5;
             }
         } else {
-            let proxy = easyPreset ?? easyStorage.proxies[0];
-            let [scheme, host, port] = proxy.split(/[\s:]/);
-            let singleProxy = { scheme: scheme.toLowerCase(), host, port: port | 0 };
+            let singleProxy = { scheme: entries[0].toLowerCase(), host: entries[1], port: entries[2] | 0 };
             value = { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
         }
     }
@@ -101,9 +105,12 @@ const messageDispatch = {
     'options_script': (response, params) => response(easyMatch.getScript(params))
 };
 
-chrome.runtime.onMessage.addListener(({ action, params }, sender, response) => {
-    messageDispatch[action]?.(response, params);
-    return true;
+chrome.runtime.onMessage.addListener((message, sender, response) => {
+    let handler = messageDispatch[message.action];
+    if (handler) {
+        handler(response, message.params);
+        return true;
+    }
 });
 
 function popupRuntime(tabId, port) {
@@ -128,45 +135,51 @@ function popupRuntime(tabId, port) {
     popupPort.postMessage({ action: 'proxy_init', params });
 }
 
-function popupSubmit({ changes, tabId, url }) {
+function popupSubmit(params) {
+    let changes = params.changes;
     let updated = new Set();
-    for (let { type, proxy, rule, action } of changes) {
+    for (let i = 0, l = changes.length; i < l; i++) {
+        let change = changes[i];
+        let type = change.type;
+        let proxy = change.proxy;
         let profile;
         if (type === 'match') {
             updated.add(proxy);
             profile = easyMatch;
+        } else if (type === 'tempo') {
+            profile = easyTempo;
         } else {
-            profile = type === 'tempo' ? easyTempo : easyExclude;
+            profile = easyExclude;
         }
-        if (action === 'add') {
-            profile.addRule(proxy, rule);
+        if (change.action === 'add') {
+            profile.addRule(proxy, change.rule);
         } else {
-            profile.removeRule(proxy, rule);
+            profile.removeRule(proxy, change.rule);
         }
     }
-    for (let u of updated) {
-        easyStorage[u] = easyMatch.getRules(u);
+    for (let up of updated) {
+        easyStorage[up] = easyMatch.getRules(up);
     }
     easyStorage['exclude'] = easyExclude.getRules('DIRECT');
     chrome.storage.local.set(easyStorage);
     cacheRouting = {};
     cacheExclude = {};
     proxyDispatch();
-    reloadTabs(tabId, url);
+    reloadTabs(params.tabId, params.url);
 }
 
-function popupPurge({ tabId, url }) {
+function popupPurge(params) {
     cacheRouting = {};
     easyTempo.purge();
     proxyDispatch();
-    reloadTabs(tabId, url);
+    reloadTabs(params.tabId, params.url);
 }
 
-function popupMode({ mode, tabId, url }) {
-    easyMode = easyStorage.mode = mode;
+function popupMode(params) {
+    easyMode = easyStorage.mode = params.mode;
     proxyDispatch();
     chrome.storage.local.set(easyStorage);
-    reloadTabs(tabId, url);
+    reloadTabs(params.tabId, params.url);
 }
 
 function reloadTabs(tabId, url) {
@@ -184,8 +197,8 @@ function reloadTabs(tabId, url) {
         url = systemURLs;
     }
     chrome.tabs.query({ url, currentWindow: true }, (tabs) => {
-        for (let { id } of tabs) {
-            chrome.tabs.reload(id);
+        for (let i = 0, l = tabs.length; i < l; i++) {
+            chrome.tabs.reload(tabs[i].id);
         }
     });
 }
@@ -211,22 +224,30 @@ chrome.runtime.onConnect.addListener((port) => {
         return;
     }
     popupPort = port;
-    port.onMessage.addListener(({ action, params }) => {
-        popupDispatch[action]?.(params);
+    port.onMessage.addListener((message) => {
+        let handler = popupDispatch[message.action];
+        if (handler) {
+            handler(message.params);
+        }
     });
     port.onDisconnect.addListener(() => {
         popupPort = popupTab = null;
     });
 });
 
-chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId, url }) => {
-    if (frameId === 0) {
-        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.frameId === 0) {
+        easyInspect[details.tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url: details.url };
     }
 });
 
-chrome.tabs.onUpdated.addListener((tabId, { url }) => {
-    if (url && url !== easyInspect[tabId]?.url) {
+chrome.tabs.onUpdated.addListener((tabId, tab) => {
+    let url = tab.url;
+    if (!url) {
+        return;
+    }
+    let inspect = easyInspect[tabId];
+    if (!inspect || inspect.url !== url) {
         easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
     }
 });
@@ -250,13 +271,25 @@ function getHostname(url) {
     return host;
 }
 
-chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
+chrome.webRequest.onBeforeRequest.addListener((details) => {
+    let tabId = details.tabId;
     if (tabId === -1) {
         return;
     }
-    let { hosts, rules, index } = easyInspect[tabId] ??= { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
+    let url = details.url;
+    let inspect = easyInspect[tabId];
+    if (!inspect) {
+        inspect = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
+        easyInspect[tabId] = inspect;
+    }
+    let hosts = inspect.hosts;
+    let rules = inspect.rules;
     let host = getHostname(url);
-    let rule = cacheRules[host] ??= EasyProxy.makeRule(host);
+    let rule = cacheRules[host];
+    if (rule === undefined) {
+        rule = EasyProxy.makeRule(host);
+        cacheRules[host] = rule;
+    }
     if (!hosts.has(host)) {
         hosts.add(host);
         rules.add(rule);
@@ -265,31 +298,49 @@ chrome.webRequest.onBeforeRequest.addListener(({ tabId, type, url }) => {
     if (!easyNetwork || easyMode === 'direct') {
         return;
     }
-    let routing = cacheRouting[host] ??= easyMatch.findProxy(host) || easyTempo.findProxy(host);
+    let routing = cacheRouting[host];
+    if (routing === undefined) {
+        routing = easyMatch.findProxy(host) || easyTempo.findProxy(host);
+        cacheRouting[host] = routing;
+    }
     if (routing) {
-        easyInspect[tabId].index = ++index;
-        chrome.action.setBadgeText({ tabId, text: `${index}` });
+        chrome.action.setBadgeText({ tabId, text: `${++inspect.index}` });
     }
 }, { urls: systemURLs });
 
-chrome.webRequest.onErrorOccurred.addListener(({ tabId, error, url }) => {
+chrome.webRequest.onErrorOccurred.addListener((details) => {
+    let error = details.error;
     if (!easyHandler.has(error) || !easyPreset) {
         return;
     }
+    let url = details.url;
     let host = getHostname(url);
     if (easyAction === 'none') {
-        let rule = cacheRules[host] ??= EasyProxy.makeRule(host);
-        let { error } = easyInspect[tabId];
+        let rule = cacheRules[host];
+        if (rule === undefined) {
+            rule = EasyProxy.makeRule(host);
+            cacheRules[host] = rule;
+        }
+        let error = easyInspect[tabId].error;
         error.add(host);
         error.add(rule);
         popupMessage(tabId, 'proxy_error', { host, rule });
         return;
     }
-    let routing = cacheRouting[host] ??= easyMatch.findProxy(host) || easyTempo.findProxy(host);
-    let exclude = cacheExclude[host] ??= easyExclude.findProxy(host);
+    let routing = cacheRouting[host];
+    if (routing === undefined) {
+        routing = easyMatch.findProxy(host) || easyTempo.findProxy(host);
+        cacheRouting[host] = routing;
+    }
+    let exclude = cacheExclude[host];
+    if (exclude === undefined) {
+        exclude = easyExclude.findProxy(host);
+        cacheExclude[host] = exclude;
+    }
     if (routing || exclude) {
         return;
     }
+    let tabId = details.tabId;
     if (easyAction === 'match') {
         easyMatch.addRule(easyPreset, host);
         clearTimeout(easyDelayed);
@@ -316,12 +367,17 @@ function storageDispatch() {
     proxyDispatch();
 }
 
-chrome.action ??= chrome.browserAction;
+if (!chrome.action) {
+    chrome.action = chrome.browserAction;
+}
+
 chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
 
 chrome.storage.local.get(null, async (json) => {
     easyStorage = {...systemStorage, ...json};
-    for (let proxy of easyStorage.proxies) {
+    let proxies = easyStorage.proxies;
+    for (let i = 0, l = proxies.length; i < l; i++) {
+        let proxy = proxies[i];
         easyMatch.addProxy(proxy, easyStorage[proxy]);
         easyTempo.addProxy(proxy);
     }

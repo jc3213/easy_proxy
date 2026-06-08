@@ -44,7 +44,10 @@ const menuEvents = {
 
 menuPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    menuEvents[menu]?.();
+    let handler = menuEvents[menu];
+    if (handler) {
+        handler();
+    }
 });
 
 menuPane.addEventListener('keydown', (event) => {
@@ -65,16 +68,14 @@ importEntry.addEventListener('change', (event) => {
     reader.readAsText(event.target.files[0]);
 });
 
-const optionEvents = {
-    'proxy-mode': (value) => {
+optionsPane.addEventListener('change', (event) => {
+    let entry = event.target;
+    let id = entry.id;
+    let value = entry.type === 'checkbox' ? entry.checked : entry.value;
+    if (id === 'proxy-mode') {
         document.body.className = value;
     }
-};
-
-optionsPane.addEventListener('change', (event) => {
-    let { id, type, value, checked } = event.target;
-    easyStorage[id] = type === 'checkbox' ? checked : value;
-    optionEvents[id]?.(value);
+    easyStorage[id] = value;
     saveBtn.disabled = false;
 });
 
@@ -105,53 +106,66 @@ editorBtn.addEventListener('click', (event) => {
         return;
     }
     openEditor = true;
-    let { proxies, exclude } = easyStorage;
+    let proxies = easyStorage.proxies;
+    let exclude = easyStorage.exclude;
     let editor = [];
-    for (let proxy of proxies) {
-        for (let r of easyStorage[proxy]) {
-            editor.push(r + '=' + proxy);
+    for (let i = 0, l = proxies.length; i < l; i++) {
+        let id = proxies[i];
+        let rules = easyStorage[id];
+        for (let j = 0, m = rules.length; j < m; j++) {
+            editor.push(rules[j] + '=' + id);
         }
     }
-    for (let e of exclude) {
-        editor.push(e + '=DIRECT');
+    for (let i = 0, l = exclude.length; i < l; i++) {
+        editor.push(exclude[i] + '=DIRECT');
     }
     editorPane.value = editor.join('\n');
     editorPane.style.height = editorHeight();
 });
 
 editorPane.addEventListener('change', (event) => {
+    let updated = {};
     let proxies = new Set();
     let exclude = new Set();
-    let updated = {};
-    for (let rule of editorPane.value.split('\n')) {
+    let lines = editorPane.value.split('\n');
+    for (let i = 0, l = lines.length; i < l; i++) {
+        let rule = lines[i];
         if (!rule) {
             continue;
         }
-        let [value, proxy] = rule.split('=');
+        let entries = rule.split('=');
+        let value = entries[0];
+        let proxy = entries[1];
         if (!value || !proxy) {
             continue;
         }
         if (proxy === 'DIRECT') {
             exclude.add(value);
         } else if (easyRegExp.test(proxy)) {
-            let rules = updated[proxy] ??= new Set();
-            proxies.add(proxy);
+            let rules = updated[proxy];
+            if (!rules) {
+                rules = new Set();
+                proxies.add(proxy);
+                updated[proxy] = rules;
+            }
             rules.add(value);
         }
     }
-    for (let id of easyStorage.proxies) {
+    let old_proxies = easyStorage.proxies;
+    for (let i = 0, l = old_proxies.length; i < l; i++) {
+        let id = old_proxies[i];
         if (!proxies.has(id)) {
             delete easyStorage[id];
         }
     }
     proxyMenu.innerHTML = profilePane.innerHTML = excludeList.innerHTML = '';
     for (let id of proxies) {
-        let rules = updated[id];
-        easyStorage[id] = [...rules];
+        let rules = [...updated[id]];
+        easyStorage[id] = rules;
         createProfiles(id, rules);
     }
-    for (let rule of exclude) {
-        createRules(excludeList, rule);
+    for (let ex of exclude) {
+        createRules(excludeList, ex);
     }
     easyStorage.proxies = [...proxies];
     easyStorage.exclude = [...exclude];
@@ -176,17 +190,17 @@ const excludeEvents = {
 
 excludePane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n-tips');
-    excludeEvents[menu]?.('exclude', excludeList, excludeEntry, event);
-});
-
-excludePane.addEventListener('click', (event) => {
-    let menu = event.target.getAttribute('i18n-tips');
-    excludeEvents[menu]?.('exclude', event);
+    let handler = excludeEvents[menu];
+    if (handler) {
+        handler('exclude', excludeList, excludeEntry, event);
+    }
 });
 
 function editorHeight() {
     let profileTop = profilePane.getBoundingClientRect().top;
-    let { top: excludeTop, height: excludeHeight } = excludePane.getBoundingClientRect();
+    let bounding = excludePane.getBoundingClientRect();
+    let excludeTop = bounding.top;
+    let excludeHeight = bounding.height;
     return excludeTop + excludeHeight - profileTop - 38 + 'px';
 }
 
@@ -197,21 +211,26 @@ function storageDispatch(json) {
     actionMenu.value = json.action;
     reloadMenu.value = json.reload;
     document.body.className = modeMenu.value = json.mode;
-    for (let item of actionPane.children) {
-        let value = item.classList[0];
+    let actions = actionPane.children;
+    for (let i = 0, l = actions.length; i < l; i++) {
+        let action = actions[i];
+        let value = action.classList[0];
         if (easyHandler.has(value)) {
-            item.classList.add('checked');
+            action.classList.add('checked');
         } else {
-            item.classList.remove('checked');
+            action.classList.remove('checked');
         }
     }
-    for (let proxy of json.proxies) {
+    let proxies = json.proxies;
+    for (let i = 0, l = proxies.length; i < l; i++) {
+        let proxy = proxies[i];
         createProfiles(proxy, json[proxy]);
     }
-    for (let rule of json.exclude) {
-        createRules(excludeList, rule);
+    let exclude = json.exclude;
+    for (let i = 0, l = exclude.length; i < l; i++) {
+        createRules(excludeList, exclude[i]);
     }
-    proxyMenu.value = json.preset ?? json.proxies[0];
+    proxyMenu.value = json.preset || json.proxies[0];
 }
 
 chrome.runtime.sendMessage({ action: 'options_runtime' }, storageDispatch);
@@ -223,8 +242,11 @@ function profileExport(id) {
 }
 
 function profileRemove(id) {
-    let { profile, server } = easyProfile[id];
-    let { preset, proxies } = easyStorage;
+    let nodes = easyProfile[id];
+    let profile = nodes.profile;
+    let server = nodes.server;
+    let proxies = easyStorage.proxies;
+    let preset = easyStorage.preset;
     proxies.splice(proxies.indexOf(id), 1);
     delete easyStorage[id];
     if (proxies.length === 0) {
@@ -238,11 +260,11 @@ function profileRemove(id) {
 }
 
 function matchAdd(id, matches, entry) {
-    let value = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9]+)(?=\/|$)/)?.[1];
-    entry.value = '';
-    if (!value) {
+    let match = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9]+)(?=\/|$)/);
+    if (!match) {
         return;
     }
+    let value = match[1];
     let rules = easyStorage[id];
     if (rules.includes(value)) {
         return;
@@ -279,12 +301,18 @@ const profileEvents = {
 
 function createProfiles(id, values) {
     let profile = profileLET.cloneNode(true);
-    let [proxy,, entry,,,, matches] = profile.children;
+    let tree = profile.children;
+    let proxy = tree[0];
+    let entry = tree[2];
+    let matches = tree[6];
     let server = document.createElement('option');
     proxy.textContent = server.value = server.textContent = id;
     profile.addEventListener('click', (event) => {
         let menu = event.target.getAttribute('i18n-tips');
-        profileEvents[menu]?.(id, matches, entry, event);
+        let handler = profileEvents[menu];
+        if (handler) {
+            handler(id, matches, entry, event);
+        }
     });
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
@@ -297,8 +325,8 @@ function createProfiles(id, values) {
     if (!values) {
         return;
     }
-    for (let v of values) {
-        createRules(matches, v);
+    for (let i = 0, l = values.length; i < l; i++) {
+        createRules(matches, values[i]);
     }
 }
 

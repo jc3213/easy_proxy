@@ -10,10 +10,24 @@ let easyPreset;
 let easyTab;
 let easyUrl;
 
-let manager = document.body;
-let [rulesPane, extraPane,, menuPane, template] = manager.children;
-let [proxyMenu, switchBtn, defaultBtn] = extraPane.children;
-let [modeMenu, purgeBtn, submitBtn] = menuPane.children;
+let mainframe = document.body;
+
+let mainTree = mainframe.children;
+let rulesPane = mainTree[0];
+let extraPane = mainTree[1];
+let menuPane  = mainTree[3];
+let template  = mainTree[4];
+
+let extraTree = extraPane.children;
+let proxyMenu  = extraTree[0];
+let switchBtn  = extraTree[1];
+let defaultBtn = extraTree[2];
+
+let menuTree = menuPane.children;
+let modeMenu  = menuTree[0];
+let purgeBtn  = menuTree[1];
+let submitBtn = menuTree[2];
+
 let hostLET = template.firstElementChild;
 
 function proxyUpdate(check) {
@@ -30,14 +44,14 @@ rulesPane.addEventListener('change', (event) => {
 });
 
 rulesPane.addEventListener('wheel', (event) => {
-    let { target, deltaY } = event;
-    if (target.localName !== 'select') {
+    let options = event.target;
+    if (options.localName !== 'select') {
         return;
     }
     event.preventDefault();
-    let index = target.selectedIndex + Math.sign(deltaY);
-    target.selectedIndex = index < 0 ? 3 : index > 3 ? 0 : index;
-    proxyUpdate(target);
+    let index = options.selectedIndex + Math.sign(event.deltaY);
+    options.selectedIndex = index < 0 ? 3 : index > 3 ? 0 : index;
+    proxyUpdate(options);
 });
 
 rulesPane.addEventListener('mousedown', (event) => {
@@ -54,25 +68,28 @@ proxyMenu.addEventListener('change', (event) => {
 modeMenu.addEventListener('change', (event) => {
     let mode = modeMenu.value;
     popupPort.postMessage({ action: 'popup_mode', params: { mode, tabId: easyTab, url: easyUrl } });
-    manager.classList.replace(easyMode, mode);
+    mainframe.classList.replace(easyMode, mode);
     easyMode = mode;
 });
 
 function popupSubmit() {
     let changes = [];
     for (let check of easyChanges) {
-        let { name, value, props, title, parentNode } = check;
+        let props = check.props;
+        let value = check.value;
+        let name = check.name;
+        let parent = check.parentNode;
         if (props !== 'direct') {
             delete easyRoute[props][name];
-            changes.push({ action: 'remove', type: props, proxy: title, rule: name });
+            changes.push({ action: 'remove', type: props, proxy: check.title, rule: name });
         }
         if (value !== 'direct') {
             easyRoute[value][name] = easyPreset;
             changes.push({ action: 'add', type: value, proxy: easyPreset, rule: name });
             check.title = value === 'exclude' ? '' : easyPreset;
         }
-        parentNode.classList.remove(props, 'error');
-        parentNode.classList.add(value);
+        parent.classList.remove(props, 'error');
+        parent.classList.add(value);
         check.props = value;
     }
     purgeBtn.disabled = Object.keys(easyTempo).length === 0;
@@ -115,12 +132,18 @@ const menuEvents = {
 
 menuPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    menuEvents[menu]?.();
+    let handler = menuEvents[menu];
+    if (handler) {
+        handler();
+    }
 });
 
 extraPane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n');
-    menuEvents[menu]?.();
+    let handler = menuEvents[menu];
+    if (handler) {
+        handler();
+    }
 });
 
 chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {
@@ -139,30 +162,36 @@ chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
     }
 });
 
-function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules, error }) {
+function proxyInit(message) {
+    let proxies = message.proxies;
+    let rules = message.rules;
+    let hosts = message.hosts;
     if (proxies.length === 0 || rules.length === 0 && hosts.length === 0) {
-        manager.classList.add('asleep');
+        mainframe.classList.add('asleep');
     }
-    manager.classList.add(mode);
-    easyMatch = match;
-    easyTempo = tempo;
-    easyExclude = exclude;
-    easyRoute = { match, tempo, exclude };
-    for (let proxy of proxies) {
+    easyMatch = message.match;
+    easyTempo = message.tempo;
+    easyExclude = message.exclude;
+    easyRoute = { match: easyMatch, tempo: easyTempo, exclude: easyExclude };
+    for (let i = 0, l = proxies.length; i < l; i++) {
         let menu = document.createElement('option');
-        menu.textContent = menu.value = proxy;
+        menu.textContent = menu.value = proxies[i];
         proxyMenu.append(menu);
     }
+    let mode = message.mode;
+    mainframe.classList.add(mode);
     modeMenu.value = easyMode = mode;
-    proxyMenu.value = easyPreset = preset || proxies[0];
-    purgeBtn.disabled = Object.keys(tempo).length === 0;
-    for (let r of rules) {
-        ruleItem(r, 'wildcard');
+    proxyMenu.value = easyPreset = message.preset || proxies[0];
+    purgeBtn.disabled = Object.keys(easyTempo).length === 0;
+    for (let i = 0, l = rules.length; i < l; i++) {
+        ruleItem(rules[i], 'wildcard');
     }
-    for (let h of hosts) {
-        ruleItem(h, 'fullhost');
+    for (let i = 0, l = hosts.length; i < l; i++) {
+        ruleItem(rules[i], 'fullhost');
     }
-    for (let e of error) {
+    let error = message.error;
+    for (let i = 0, l = error.length; i < l; i++) {
+        let e = error[i];
         easyRules.get(e).classList.add('error');
     }
 }
@@ -170,29 +199,47 @@ function proxyInit({ proxies, mode, preset, match, tempo, exclude, hosts, rules,
 const popupPort = chrome.runtime.connect({ name: 'popup' });
 const popupDispatch = {
     'proxy_init': proxyInit,
-    'proxy_sync': ({ host, rule }) => {
-        manager.classList.remove('asleep');
+    'proxy_sync': (params) => {
+        let rule = params.rule;
+        let host = params.host;
         ruleItem(rule, 'wildcard');
         ruleItem(host, 'fullhost');
+        mainframe.classList.remove('asleep');
     },
-    'proxy_error': ({ host, rule }) => {
-        easyRules.get(rule)?.classList?.add('error');
-        easyRules.get(host)?.classList?.add('error');
+    'proxy_error'(params) {
+        let rule = easyRules.get(params.rule);
+        let host = easyRules.get(params.host);
+        if (host) {
+            host.classList.add('error');
+        }
+        if (rule) {
+            rule.classList.add('error');
+        }
     },
-    'proxy_match': (host) => {
+    'proxy_match'(host) {
+        let rule = easyRules.get(host);
         easyMatch[host] = easyPreset;
-        easyRules.get(host)?.classList?.add('match');
+        if (rule) {
+            rule.classList.add('match');
+        }
     },
-    'proxy_tempo': (host) => {
+    'proxy_tempo'(host) {
+        let rule = easyRules.get(host);
         easyTempo[host] = easyPreset;
-        easyRules.get(host)?.classList?.add('tempo');
+        if (rule) {
+            rule.classList.add('tempo');
+        }
     }
 };
-popupPort.onMessage.addListener(({ action, params}) => {
-    popupDispatch[action]?.(params);
+popupPort.onMessage.addListener((message) => {
+    let handler = popupDispatch[message.action];
+    if (handler) {
+        handler(message.params);
+    }
 });
 
-chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    let tab = tabs[0];
     easyTab = tab.id;
     easyUrl = tab.url;
     popupPort.postMessage({ action: 'popup_runtime', params: easyTab });
@@ -206,18 +253,23 @@ function ruleRefresh() {
 }
 
 function ruleCreate(value, type) {
-    rule = hostLET.cloneNode(true);
-    let [item, check] = rule.children;
+    let rule = hostLET.cloneNode(true);
+    let tree = rule.children;
+    let label = tree[0];
+    let check = tree[1];
     rule.check = check;
     rule.classList.add(type);
-    item.textContent = check.name = value;
+    label.textContent = check.name = value;
     easyRules.set(value, rule);
     return rule;
 }
 
 function ruleItem(value, type) {
-    let rule = easyRules.get(value) ?? ruleCreate(value, type);
-    let { check } = rule;
+    let rule = easyRules.get(value);
+    if (!rule) {
+        rule = ruleCreate(value, type);
+    }
+    let check = rule.check;
     if (easyChecks.has(check)) {
         return;
     }
