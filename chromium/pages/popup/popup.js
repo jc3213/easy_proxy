@@ -146,16 +146,17 @@ extraPane.addEventListener('click', (event) => {
     }
 });
 
-chrome.webNavigation.onBeforeNavigate.addListener(({ tabId, frameId }) => {
-    if (tabId === easyTab && frameId === 0) {
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.frameId === 0 && details.tabId === easyTab) {
         ruleRefresh();
     }
 });
 
-chrome.tabs.onUpdated.addListener((tabId, { status, url }) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (tabId !== easyTab) {
         return;
     }
+    let url = changeInfo.url;
     if (url && url !== easyUrl) {
         easyUrl = url;
         ruleRefresh();

@@ -4,11 +4,44 @@ let easyHandler;
 let easyEditor;
 let easyRegExp = /^(HTTPS?|SOCKS5?) ([^.]+\.)+[^.:]*:\d+$/;
 
-let [menuPane, optionsPane, editorPane, profilePane, excludePane, template] = document.body.children;
-let [schemeEntry, proxyEntry, submitBtn, saveBtn, importBtn, exportBtn, importEntry, exportFile] = menuPane.children;
-let [proxyMenu, modeMenu, networkMenu, actionMenu, actionBtn, actionPane, reloadMenu, editorBtn] = optionsPane.querySelectorAll('[id]');
-let [excludeTitle, excludeEntry, excludeAdd, excludeResort, excludeList] = excludePane.children;
-let [profileLET, matchLET] = template.children;
+let mainTree = document.body.children;
+let menuPane = mainTree[0];
+let optionsPane = mainTree[1];
+let editorPane = mainTree[2];
+let profilePane = mainTree[3];
+let excludePane = mainTree[4];
+let template = mainTree[5];
+
+let menuTree = menuPane.children;
+let schemeEntry = menuTree[0];
+let proxyEntry = menuTree[1];
+let submitBtn = menuTree[2];
+let saveBtn = menuTree[3];
+let importBtn = menuTree[4];
+let exportBtn = menuTree[5];
+let importEntry = menuTree[6];
+let exportFile = menuTree[7];
+
+let optionEntries = optionsPane.querySelectorAll('[id]');
+let proxyMenu = optionEntries[0];
+let modeMenu = optionEntries[1];
+let networkMenu = optionEntries[2];
+let actionMenu = optionEntries[3];
+let actionBtn = optionEntries[4];
+let actionPane = optionEntries[5];
+let reloadMenu = optionEntries[6];
+let editorBtn = optionEntries[7];
+
+let excludeTree = excludePane.children;
+let excludeTitle = excludeTree[0];
+let excludeEntry = excludeTree[1];
+let excludeAdd = excludeTree[2];
+let excludeResort = excludeTree[3];
+let excludeList = excludeTree[4];
+
+let templateTree = template.children;
+let profileLET = templateTree[0];
+let matchLET = templateTree[1];
 
 function menuSubmit() {
     let id = schemeEntry.value + ' ' + proxyEntry.value ;
