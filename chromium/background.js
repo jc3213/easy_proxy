@@ -58,8 +58,7 @@ function optionsStorage(response, json) {
             removed.push(proxy);
         }
     }
-    easyStorage = json;
-    storageDispatch();
+    storageDispatch(json);
     cacheRouting = {};
     cacheExclude = {};
     chrome.storage.local.remove(removed);
@@ -128,9 +127,9 @@ function popupRuntime(tabId, port) {
     };
     let inspect = easyInspect[tabId];
     if (inspect) {
-        params.rules = [...inspect.rules];
-        params.hosts = [...inspect.hosts];
-        params.error = [...inspect.error];
+        params.rules = Array.from(inspect.rules);
+        params.hosts = Array.from(inspect.hosts);
+        params.error = Array.from(inspect.error);
     }
     popupPort.postMessage({ action: 'proxy_init', params });
 }
@@ -355,15 +354,16 @@ chrome.webRequest.onErrorOccurred.addListener((details) => {
     reloadTabs(tabId, url);
 }, { urls: systemURLs });
 
-function storageDispatch() {
-    easyNetwork = easyStorage.network;
-    easyHandler = new Set(easyStorage.handler);
-    easyAction = easyStorage.action;
-    easyPreset = easyStorage.preset;
-    easyReload = easyStorage.reload;
-    easyMode = easyStorage.mode;
-    easyExclude.addProxy('DIRECT', ['localhost', '127.0.0.1', ...easyStorage.exclude]);
-    easyStorage.exclude = easyExclude.getRules('DIRECT');
+function storageDispatch(json) {
+    easyStorage = json;
+    easyNetwork = json.network;
+    easyHandler = new Set(json.handler);
+    easyAction = json.action;
+    easyPreset = json.preset;
+    easyReload = json.reload;
+    easyMode = json.mode;
+    easyExclude.addProxy('DIRECT', ['localhost', '127.0.0.1'].concat(json.exclude));
+    json.exclude = easyExclude.getRules('DIRECT');
     proxyDispatch();
 }
 
@@ -374,12 +374,12 @@ if (!chrome.action) {
 chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
 
 chrome.storage.local.get(null, async (json) => {
-    easyStorage = {...systemStorage, ...json};
-    let proxies = easyStorage.proxies;
+    let storage = Object.assign({}, systemStorage, json);
+    let proxies = storage.proxies;
     for (let i = 0, l = proxies.length; i < l; i++) {
         let proxy = proxies[i];
-        easyMatch.addProxy(proxy, easyStorage[proxy]);
+        easyMatch.addProxy(proxy, storage[proxy]);
         easyTempo.addProxy(proxy);
     }
-    storageDispatch();
+    storageDispatch(storage);
 });
