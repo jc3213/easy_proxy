@@ -374,7 +374,7 @@ if (!chrome.action) {
 chrome.action.setBadgeBackgroundColor({ color: '#2940D9' });
 
 chrome.storage.local.get(null, async (json) => {
-    let storage = Object.assign({}, systemStorage, json);
+    let storage = { ...systemStorage, ...json };
     let proxies = storage.proxies;
     for (let i = 0, l = proxies.length; i < l; i++) {
         let proxy = proxies[i];
