@@ -127,7 +127,7 @@ actionPane.addEventListener('click', (event) => {
         easyHandler.add(value);
     }
     error.classList.toggle('checked');
-    easyStorage.handler = [...easyHandler];
+    easyStorage.handler = Array.from(easyHandler);
 });
 
 let openEditor = false;
@@ -193,15 +193,15 @@ editorPane.addEventListener('change', (event) => {
     }
     proxyMenu.innerHTML = profilePane.innerHTML = excludeList.innerHTML = '';
     for (let id of proxies) {
-        let rules = [...updated[id]];
+        let rules = Array.from(updated[id]);
         easyStorage[id] = rules;
         createProfiles(id, rules);
     }
     for (let ex of exclude) {
         createRules(excludeList, ex);
     }
-    easyStorage.proxies = [...proxies];
-    easyStorage.exclude = [...exclude];
+    easyStorage.proxies = Array.from(proxies);
+    easyStorage.exclude = Array.from(exclude);
     if (!proxies.has(easyStorage.preset)) {
         proxyMenu.value = easyStorage.preset = easyStorage.proxies[0];
     }
@@ -309,7 +309,7 @@ function matchAdd(id, matches, entry) {
 }
 
 function matchResort(id, matches) {
-    let resort = [...matches.children].sort((a, b) => a.title.localeCompare(b.title));
+    let resort = Array.from(matches.children).sort((a, b) => a.title.localeCompare(b.title));
     easyStorage[id].sort();
     matches.append(...resort);
     matches.scrollTop = matches.top;
