@@ -177,6 +177,7 @@ function FindProxyForURL(url, host) {
         if (!find || find !== proxy) {
             return false;
         }
+        let ruleMap = this.#ruleMap;
         ruleMap.get(proxy).delete(rule);
         delete routing[rule];
         return true;
