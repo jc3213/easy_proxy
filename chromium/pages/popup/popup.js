@@ -188,7 +188,7 @@ function proxyInit(message) {
         ruleItem(rules[i], 'wildcard');
     }
     for (let i = 0, l = hosts.length; i < l; i++) {
-        ruleItem(rules[i], 'fullhost');
+        ruleItem(hosts[i], 'fullhost');
     }
     let error = message.error;
     for (let i = 0, l = error.length; i < l; i++) {
