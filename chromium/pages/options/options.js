@@ -246,7 +246,9 @@ editorPane.addEventListener('change', (event) => {
     easyStorage.exclude = Array.from(exclude);
 
     if (!proxies.has(easyStorage.preset)) {
-        proxyMenu.value = easyStorage.preset = easyStorage.proxies[0];
+        let preset = easyStorage.proxies[0];
+        proxyMenu.value = preset;
+        easyStorage.preset = preset;
     }
 
     editorPane.style.height = editorHeight();
