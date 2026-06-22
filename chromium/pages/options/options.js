@@ -257,7 +257,7 @@ editorPane.addEventListener('change', (event) => {
 
 excludeEntry.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
-        matchAdd('exclude', excludeEntry, excludeList);
+        matchAdd('exclude', excludeList, excludeEntry);
     }
 });
 
@@ -269,7 +269,7 @@ excludePane.addEventListener('click', (event) => {
     }
 
     if (menu === 'match_add') {
-        matchAdd('exclude', excludeEntry, excludeList);
+        matchAdd('exclude', excludeList, excludeEntry);
         return;
     }
 
@@ -355,8 +355,9 @@ function profileRemove(id) {
     saveBtn.disabled = openEditor = false;
 }
 
-function matchAdd(id, entry, matches) {
+function matchAdd(id, matches, entry) {
     let match = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9]+)(?=\/|$)/);
+    entry.value = '';
 
     if (!match) {
         return;
@@ -379,17 +380,23 @@ function matchAdd(id, entry, matches) {
 function matchResort(id, matches) {
     let resort = Array.from(matches.children).sort((a, b) => a.title.localeCompare(b.title));
     easyStorage[id].sort();
+
     matches.append(...resort);
     matches.scrollTop = matches.top;
-    saveBtn.disabled = openEditor = false;
+
+    saveBtn.disabled = false;
+    openEditor = false;
 }
 
 function matchRemove(id, rule) {
     let value = rule.title;
     let rules = easyStorage[id];
+
     rules.splice(rules.indexOf(value), 1);
     rule.remove();
-    saveBtn.disabled = openEditor = false;
+
+    saveBtn.disabled = false;
+    openEditor = false;
 }
 
 function createProfiles(id, values) {
@@ -412,7 +419,7 @@ function createProfiles(id, values) {
         }
 
         if (menu === 'match_add') {
-            matchAdd(id, entry, matches);
+            matchAdd(id, matches, entry);
             return;
         }
 
@@ -441,7 +448,7 @@ function createProfiles(id, values) {
 
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
-            matchAdd(id, entry, matches);
+            matchAdd(id, matches, entry);
         }
     });
 
