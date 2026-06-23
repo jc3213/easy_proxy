@@ -255,12 +255,6 @@ editorPane.addEventListener('change', (event) => {
     saveBtn.disabled = false;
 });
 
-excludeEntry.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        matchAdd('exclude', excludeList, excludeEntry);
-    }
-});
-
 excludePane.addEventListener('click', (event) => {
     let menu = event.target.getAttribute('i18n-tips');
 
@@ -269,7 +263,7 @@ excludePane.addEventListener('click', (event) => {
     }
 
     if (menu === 'match_add') {
-        matchAdd('exclude', excludeList, excludeEntry);
+        matchAdd('exclude', excludeEntry, excludeList);
         return;
     }
 
@@ -284,6 +278,11 @@ excludePane.addEventListener('click', (event) => {
     }
 });
 
+excludeEntry.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        matchAdd('exclude', excludeEntry, excludeList);
+    }
+});
 
 function editorHeight() {
     let profileTop = profilePane.getBoundingClientRect().top;
@@ -355,7 +354,7 @@ function profileRemove(id) {
     saveBtn.disabled = openEditor = false;
 }
 
-function matchAdd(id, matches, entry) {
+function matchAdd(id, entry, matches) {
     let match = entry.value.match(/^(?:https?:\/\/|\/\/)?(\*|(?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9]+)(?=\/|$)/);
     entry.value = '';
 
@@ -419,7 +418,7 @@ function createProfiles(id, values) {
         }
 
         if (menu === 'match_add') {
-            matchAdd(id, matches, entry);
+            matchAdd(id, entry, matches);
             return;
         }
 
@@ -448,7 +447,7 @@ function createProfiles(id, values) {
 
     entry.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
-            matchAdd(id, matches, entry);
+            matchAdd(id, entry, matches);
         }
     });
 
