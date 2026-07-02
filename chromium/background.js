@@ -1,5 +1,5 @@
 const systemManifest = chrome.runtime.getManifest();
-const systemFirefox = systemManifest.browser_specific_settings;
+const systemFirefox = Boolean(systemManifest.browser_specific_settings);
 const systemURLs = ['http://*/*', 'https://*/*'];
 const systemStorage = {
     mode: 'autopac',
@@ -98,13 +98,17 @@ function proxyDispatch() {
     let value;
 
     if (easyMode === 'autopac') {
-        value = systemFirefox
-            ? { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript }
-            : { mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } };
+        if (systemFirefox) {
+            value = { proxyType: 'autoConfig', autoConfigUrl: 'data:,' + EasyProxy.pacScript };
+        } else {
+            value = { mode: 'pac_script', pacScript: { data: EasyProxy.pacScript } };
+        }
     } else if (easyMode === 'direct') {
-        value = systemFirefox
-            ? { proxyType: 'none' }
-            : { mode: 'direct' };
+        if (systemFirefox) {
+            value = { proxyType: 'none' };
+        } else {
+            value = { mode: 'direct' };
+        }
     } else {
         let proxy = easyPreset || easyStorage.proxies[0];
         let entries = proxy.split(' ');
@@ -157,7 +161,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
         if (action === 'popup_purge') {
             cacheRouting = {};
-            easyTempo.purge();
+            easyTempo.clearRules();
             proxyDispatch();
             reloadTabs(params.tabId, params.url);
             return;
@@ -175,7 +179,8 @@ chrome.runtime.onConnect.addListener((port) => {
     });
 
     port.onDisconnect.addListener(() => {
-        popupPort = popupTab = null;
+        popupPort = null;
+        popupTab = null;
     });
 });
 
@@ -219,6 +224,7 @@ function popupSubmit(params) {
         let change = changes[i];
         let type = change.type;
         let proxy = change.proxy;
+        let rule = change.rule;
         let profile;
 
         if (type === 'match') {
@@ -231,9 +237,9 @@ function popupSubmit(params) {
         }
 
         if (change.action === 'add') {
-            profile.addRule(proxy, change.rule);
+            profile.addRule(proxy, rule);
         } else {
-            profile.removeRule(proxy, change.rule);
+            profile.removeRule(proxy, rule);
         }
     }
 

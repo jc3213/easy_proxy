@@ -130,7 +130,7 @@ function FindProxyForURL(url, host) {
             }
         }
 
-        if (!rules) {
+        if (!Array.isArray(rules)) {
             ruleMap.set(proxy, new Set());
             return true;
         }
@@ -168,8 +168,10 @@ function FindProxyForURL(url, host) {
     }
 
     findProxy(host) {
+        let routing = this.#routing;
+
         for (;;) {
-            let proxy = this.#routing[host];
+            let proxy = routing[host];
 
             if (proxy) {
                 return proxy;
@@ -250,14 +252,40 @@ function FindProxyForURL(url, host) {
         return result;
     }
 
-    purgeRules() {
+    clearRules(proxy) {
         let ruleMap = this.#ruleMap;
+        let routing = this.#routing;
+        let rules = ruleMap.get(proxy);
+
+        if (rules) {
+            for (let r of rules) {
+                delete routing[r];
+            }
+
+            ruleMap.set(proxy, new Set());
+            return true;
+        }
+
+        if (proxy !== null && proxy !== undefined) {
+            return false;
+        }
 
         for (let k of ruleMap.keys()) {
             ruleMap.set(k, new Set());
         }
 
         this.#routing = {};
+        return true;
+    }
+
+    listRules() {
+        let rules = [];
+
+        for (let r of this.#ruleMap.values()) {
+            rules.push(Array.from(r));
+        }
+
+        return rules;
     }
 
     destroy() {
