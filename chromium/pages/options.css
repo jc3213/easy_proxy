@@ -1,0 +1,182 @@
+body {
+    width: 680px;
+}
+
+body.direct .x-direct > :is(select, input, label),
+body.global .x-global > :is(select, input, label) {
+    filter: var(--disabled);
+    pointer-events: none;
+}
+
+#menu, #options, #errors {
+    border-style: solid;
+    position: fixed;
+    z-index: 9;
+}
+
+#menu {
+    border-radius: 0px;
+    border-width: 0px 1px 0px 1px;
+    padding: 8px;
+    top: 0px;
+    width: 662px;
+}
+
+#menu > button:nth-last-of-type(3) {
+    margin-left: auto;
+}
+
+#options {
+    border-radius: 0px 0px 5px 5px;
+    border-width: 0px 1px 1px;
+    flex-wrap: wrap;
+    gap: 15px 5px;
+    padding: 10px;
+    top: 45px;
+    width: 658px;
+}
+
+#options > * {
+    display: inline-block;
+}
+
+#options label {
+    font-weight: bold;
+}
+
+#options button {
+    padding: 1px 5px;
+}
+
+#preset {
+    min-width: 200px;
+}
+
+#errors {
+    border-width: 1px;
+    display: inline-block;
+    position: absolute;
+    left: calc(100% + 3px);
+    width: max-content;
+    z-index: 9;
+}
+
+#errors > * {
+    padding: 3px;
+    margin: 3px;
+}
+
+#errors > ::before {
+    content: "✔️";
+    padding: 3px;
+    visibility: hidden;
+}
+
+#errors > :hover {
+    box-shadow: var(--shadows);
+}
+
+#errors > :active {
+    opacity: 0.8;
+}
+
+#errors > .checked::before {
+    visibility: visible;
+}
+
+#editor, #exclude {
+    margin-bottom: 24px;
+}
+
+#editor {
+    margin-top: 8px;
+    padding: 2px 5px;
+    position: absolute;
+    resize: none;
+    width: calc(100% - 12px);
+    z-index: 5;
+}
+
+#profile {
+    margin-top: 146px;
+}
+
+#profile input {
+    width: 33.33%;
+}
+
+#exclude input {
+    width: 50%;
+}
+
+.centered {
+    margin: auto;
+}
+
+.go-right {
+    margin-left: auto;
+}
+
+.proxy {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.flexmenu {
+    flex-wrap: wrap;
+}
+
+.flexmenu > input {
+    height: 21px;
+    margin-top: auto;
+}
+
+.flexmenu > button {
+    margin-top: auto;
+}
+
+.matches,
+.rule {
+    border-style: solid;
+    border-width: 1px;
+}
+
+.matches {
+    background-color: var(--color-item);
+    display: grid;
+    flex-basis: 100%;
+    grid-auto-rows: 25px;
+    grid-template-columns: repeat(3, 33.33%);
+    height: 200px;
+    margin: 1px 0px 24px;
+    overflow-y: auto;
+}
+
+.rule {
+    display: flex;
+    gap: 1px;
+}
+
+.rule > div {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rule > button {
+    padding: 0px;
+}
+
+.rule[title="localhost"] {
+    order: -2;
+}
+
+.rule[title="127.0.0.1"] {
+    order: -1;
+}
+
+.rule[title="127.0.0.1"] > button , .rule[title="localhost"] > button {
+    display: none;
+    pointer-events: none;
+}

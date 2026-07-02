@@ -1,0 +1,92 @@
+body {
+    margin: 4px;
+    width: max-content;
+}
+
+body > * {
+    margin: 5px 0px;
+}
+
+select {
+    width: 100%;
+}
+
+body.asleep > #menu > button:first-of-type,
+body.asleep > #extra > #proxy,
+body.direct > #menu > button:first-of-type,
+body.direct > #extra > #proxy,
+body.global > #menu > button:first-of-type {
+    filter: var(--disabled);
+    pointer-events: none;
+}
+
+body.asleep > #rules,
+body.direct > #rules,
+body.global > #rules,
+body.asleep > #extra > button,
+body.direct > #extra > button,
+body.global > #extra > button,
+#rules:not(.switch) > .fullhost:not(:is(.match, .tempo, .exclude)),
+#rules.switch > .wildcard:not(:is(.match, .tempo, .exclude)) {
+    display: none;
+}
+
+#rules {
+    flex-direction: column;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+#menu > * {
+    flex: 1;
+}
+
+.rule {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+
+.rule > :first-child {
+    padding: 3px 0px;
+    white-space: nowrap;
+}
+
+.match {
+    order: 0;
+}
+
+.match > select {
+    color: #FFFFFF;
+    background-color: #34A85D;
+}
+
+.tempo {
+    order: 1;
+}
+
+.tempo > select {
+    color: #FFFFFF;
+    background-color: #E6A92A;
+}
+
+.error {
+    order: 2;
+}
+
+.error > select {
+    color: #FFFFFF;
+    background-color: #C1272D;
+}
+
+.direct {
+    order: 3;
+}
+
+.exclude {
+    order: 4;
+}
+
+.exclude > select {
+    color: #FFFFFF;
+    background-color: #A39F8C;
+}
