@@ -143,16 +143,41 @@ chrome.runtime.onConnect.addListener((port) => {
         return;
     }
 
-    popupPort = port;
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        let tab = tabs[0];
+        let tabId = tab.id;
+
+        let params = {
+            match: easyMatch.routing,
+            tempo: easyTempo.routing,
+            exclude: easyExclude.routing,
+            rules: [],
+            hosts: [],
+            error: [],
+            proxies: easyStorage.proxies,
+            mode: easyStorage.mode,
+            preset: easyStorage.preset,
+            tabId,
+            url: tab.url
+        };
+
+        let inspect = easyInspect[tabId];
+
+        if (inspect) {
+            params.rules = Array.from(inspect.rules);
+            params.hosts = Array.from(inspect.hosts);
+            params.error = Array.from(inspect.error);
+        }
+
+        port.postMessage({ action: 'proxy_init', params });
+
+        popupTab = tabId;
+        popupPort = port;
+    });
 
     port.onMessage.addListener((message) => {
         let action = message.action;
         let params = message.params;
-
-        if (action === 'popup_runtime') {
-            popupRuntime(params);
-            return;
-        }
 
         if (action === 'popup_submit') {
             popupSubmit(params);
@@ -188,32 +213,6 @@ function popupMessage(tabId, action, params) {
     if (tabId === popupTab) {
         popupPort.postMessage({ action, params });
     }
-}
-
-function popupRuntime(tabId, port) {
-    popupTab = tabId;
-
-    let params = {
-        match: easyMatch.routing,
-        tempo: easyTempo.routing,
-        exclude: easyExclude.routing,
-        rules: [],
-        hosts: [],
-        error: [],
-        proxies: easyStorage.proxies,
-        mode: easyStorage.mode,
-        preset: easyStorage.preset
-    };
-
-    let inspect = easyInspect[tabId];
-
-    if (inspect) {
-        params.rules = Array.from(inspect.rules);
-        params.hosts = Array.from(inspect.hosts);
-        params.error = Array.from(inspect.error);
-    }
-
-    popupPort.postMessage({ action: 'proxy_init', params });
 }
 
 function popupSubmit(params) {
