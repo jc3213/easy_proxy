@@ -1,7 +1,7 @@
 {
     "name": "__MSG_extension_name__",
     "description": "__MSG_extension_description__",
-    "version": "3.3.1",
+    "version": "3.4.0",
     "manifest_version": 2,
     "permissions": [
         "proxy",
@@ -29,10 +29,10 @@
         "default_icon": {
             "24": "icons/24.png"
         },
-        "default_popup": "pages/popup/popup.html"
+        "default_popup": "pages/popup.html"
     },
     "options_ui": {
-        "page": "pages/options/options.html",
+        "page": "pages/options.html",
         "open_in_tab": true
     }
 }

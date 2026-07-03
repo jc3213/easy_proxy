@@ -238,7 +238,7 @@ function FindProxyForURL(url, host) {
         }
 
         if (proxy !== null && proxy !== undefined) {
-            return;
+            return [];
         }
 
         let result = {};
