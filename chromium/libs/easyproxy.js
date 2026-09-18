@@ -122,10 +122,10 @@ function FindProxyForURL(url, host) {
     addProxy(proxy, rules) {
         let ruleMap = this.#ruleMap;
         let routing = this.#routing;
-        let prev = ruleMap.get(proxy);
+        let oldRules = ruleMap.get(proxy);
 
-        if (prev) {
-            for (let i of prev) {
+        if (oldRules) {
+            for (let i of oldRules) {
                 delete routing[i];
             }
         }
@@ -135,13 +135,23 @@ function FindProxyForURL(url, host) {
             return true;
         }
 
-        let next = new Set(rules);
+        let newRules = new Set(rules);
 
-        for (let r of next) {
+        for (let r of newRules) {
+            let findProxy = routing[r];
+
+            if (findProxy !== undefined && findProxy !== proxy) {
+                let lastRules = ruleMap.get(findProxy);
+
+                if (lastRules) {
+                    lastRules.delete(r);
+                }
+            }
+
             routing[r] = proxy;
         }
 
-        ruleMap.set(proxy, next);
+        ruleMap.set(proxy, newRules);
         return true;
     }
 
@@ -149,7 +159,7 @@ function FindProxyForURL(url, host) {
         let ruleMap = this.#ruleMap;
         let rules = ruleMap.get(proxy);
 
-        if (!rules) {
+        if (rules === undefined) {
             return false;
         }
 
@@ -193,9 +203,9 @@ function FindProxyForURL(url, host) {
 
     addRule(proxy, rule) {
         let routing = this.#routing;
-        let find = routing[rule];
+        let findProxy = routing[rule];
 
-        if (find) {
+        if (findProxy !== undefined) {
             return false;
         }
 
@@ -214,9 +224,9 @@ function FindProxyForURL(url, host) {
 
     removeRule(proxy, rule) {
         let routing = this.#routing;
-        let find = routing[rule];
+        let findProxy = routing[rule];
 
-        if (!find || find !== proxy) {
+        if (findProxy === undefined || findProxy !== proxy) {
             return false;
         }
 
@@ -262,7 +272,7 @@ function FindProxyForURL(url, host) {
                 delete routing[r];
             }
 
-            ruleMap.set(proxy, new Set());
+            rules.clear();
             return true;
         }
 
@@ -271,7 +281,7 @@ function FindProxyForURL(url, host) {
         }
 
         for (let k of ruleMap.keys()) {
-            ruleMap.set(k, new Set());
+            ruleMap.get(k).clear();
         }
 
         this.#routing = {};
@@ -289,7 +299,7 @@ function FindProxyForURL(url, host) {
     }
 
     destroy() {
-        this.#ruleMap = new Map();
+        this.#ruleMap.clear();
         this.#routing = {};
         EasyProxy.#instances.delete(this);
         return true;
