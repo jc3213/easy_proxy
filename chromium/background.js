@@ -127,7 +127,8 @@ function proxyDispatch() {
                 value.socksVersion = scheme === 'SOCKS' ? 4 : 5;
             }
         } else {
-            let singleProxy = { scheme: entries[0].toLowerCase(), host: entries[1], port: entries[2] | 0 };
+            let proxy = entries[1].split(':');
+            let singleProxy = { scheme: entries[0].toLowerCase(), host: proxy[0], port: proxy[1] | 0 };
             value = { mode: 'fixed_servers', rules: { singleProxy, bypassList: ['localhost', '127.0.0.1'] } };
         }
     }
