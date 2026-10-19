@@ -4,12 +4,20 @@ const systemURLs = ['http://*/*', 'https://*/*'];
 const systemStorage = {
     mode: 'autopac',
     action: 'none',
-    handler: [ 'net::ERR_CONNECTION_REFUSED', 'net::ERR_CONNECTION_RESET', 'net::ERR_CONNECTION_TIMED_OUT', 'net::ERR_NAME_NOT_RESOLVED' ],
+    handler: [
+        'net::ERR_CONNECTION_REFUSED',
+        'net::ERR_CONNECTION_RESET',
+        'net::ERR_CONNECTION_TIMED_OUT',
+        'net::ERR_NAME_NOT_RESOLVED'
+    ],
     network: false,
     reload: 'none',
     preset: null,
     proxies: [],
-    exclude: ['localhost', '127.0.0.1']
+    exclude: [
+        'localhost',
+        '127.0.0.1'
+    ]
 };
 
 if (systemManifest.manifest_version === 3) {
