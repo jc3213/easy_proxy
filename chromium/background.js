@@ -281,7 +281,7 @@ function reloadTabs(tabId, url) {
 
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     if (details.frameId === 0) {
-        easyInspect[details.tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url: details.url };
+        initInspector(details.tabId, details.url);
     }
 });
 
@@ -295,13 +295,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     let inspect = easyInspect[tabId];
 
     if (!inspect || inspect.url !== url) {
-        easyInspect[tabId] = { rules: new Set(), hosts: new Set(), error: new Set(), index: 0, url };
+        initInspector(tabId, url);
     }
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
     delete easyInspect[tabId];
 });
+
+function initInspector(id, url) {
+    let host = getHostname(url);
+    let rule = EasyProxy.makeRule(host);
+    easyInspect[id] = { rules: new Set([url]), hosts: new Set([host]), error: new Set(), index: 0, url };
+}
 
 function getHostname(url) {
     let start = url.indexOf('//') + 2;
