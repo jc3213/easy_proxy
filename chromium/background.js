@@ -314,7 +314,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 function initInspector(id, url) {
     let host = getHostname(url);
     let rule = EasyProxy.makeRule(host);
-    easyInspect[id] = { rules: new Set([url]), hosts: new Set([host]), error: new Set(), index: 0, url };
+    easyInspect[id] = { rules: new Set([rule]), hosts: new Set([host]), error: new Set(), index: 0, url };
 }
 
 function getHostname(url) {
