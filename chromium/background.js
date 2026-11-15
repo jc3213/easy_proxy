@@ -241,6 +241,7 @@ function popupSubmit(params) {
         } else if (type === 'tempo') {
             profile = easyTempo;
         } else {
+            proxy = 'DIRECT';
             profile = easyExclude;
         }
 
@@ -315,6 +316,7 @@ function initInspector(id, url) {
     let host = getHostname(url);
     let rule = EasyProxy.makeRule(host);
     easyInspect[id] = { rules: new Set([rule]), hosts: new Set([host]), error: new Set(), index: 0, url };
+    popupMessage(id, 'proxy_sync', { host, rule });
 }
 
 function getHostname(url) {
