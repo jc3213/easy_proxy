@@ -141,9 +141,9 @@ function popupSubmit() {
 
         if (value !== 'direct') {
             let proxy = value === 'exclude' ? 'DIRECT' : easyPreset;
-            easyRoute[value][rule] = easyPreset;
+            easyRoute[value][rule] = proxy;
+            check.title = proxy;
             changes.push({ action: 'add', type: value, proxy, rule });
-            check.title = value === 'exclude' ? '' : easyPreset;
         }
 
         parent.classList.remove(props, 'error');
