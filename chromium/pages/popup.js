@@ -130,17 +130,19 @@ function popupSubmit() {
     for (let check of easyChanges) {
         let props = check.props;
         let value = check.value;
-        let name = check.name;
+        let rule = check.name;
         let parent = check.parentNode;
 
         if (props !== 'direct') {
-            delete easyRoute[props][name];
-            changes.push({ action: 'remove', type: props, proxy: check.title, rule: name });
+            let proxy = props === 'exclude' ? 'DIRECT' : check.title;
+            delete easyRoute[props][rule];
+            changes.push({ action: 'remove', type: props, proxy, rule });
         }
 
         if (value !== 'direct') {
-            easyRoute[value][name] = easyPreset;
-            changes.push({ action: 'add', type: value, proxy: easyPreset, rule: name });
+            let proxy = value === 'exclude' ? 'DIRECT' : easyPreset;
+            easyRoute[value][rule] = easyPreset;
+            changes.push({ action: 'add', type: value, proxy, rule });
             check.title = value === 'exclude' ? '' : easyPreset;
         }
 
