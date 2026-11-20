@@ -292,7 +292,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     if (details.frameId === 0) {
         initInspector(details.tabId, details.url);
     }
-});
+}, { url: [ { schemes: ['http', 'https'] } ] });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     let url = changeInfo.url;
