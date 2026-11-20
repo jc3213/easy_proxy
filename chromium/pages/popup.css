@@ -40,17 +40,14 @@ body.global > #extra > button,
 
 .rule {
     display: grid;
-    gap: 1px;
     grid-template-columns: 1fr auto;
 }
 
 .rule > div {
-    padding: 3px 0px;
     white-space: nowrap;
 }
 
 .rule > select {
-    padding: 1px;
     margin: 1px;
 }
 
