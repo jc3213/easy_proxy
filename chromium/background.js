@@ -292,7 +292,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     if (details.frameId === 0) {
         initInspector(details.tabId, details.url);
     }
-}, { url: [ { schemes: ['http', 'https'] } ] });
+});
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     let url = changeInfo.url;
@@ -313,6 +313,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 function initInspector(id, url) {
+    if (!url.startsWith('http')) {
+        return;
+    }
+
     let host = getHostname(url);
     let rule = EasyProxy.makeRule(host);
     easyInspect[id] = { rules: new Set([rule]), hosts: new Set([host]), error: new Set(), index: 0, url };
