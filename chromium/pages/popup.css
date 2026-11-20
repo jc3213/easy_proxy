@@ -7,10 +7,6 @@ body > * {
     margin: 5px 0px;
 }
 
-select {
-    width: 100%;
-}
-
 body.asleep > #menu > button:first-of-type,
 body.asleep > #extra > #proxy,
 body.direct > #menu > button:first-of-type,
@@ -37,18 +33,25 @@ body.global > #extra > button,
     overflow-y: auto;
 }
 
-#menu > * {
+#menu > *,
+#proxy {
     flex: 1;
 }
 
 .rule {
     display: grid;
+    gap: 1px;
     grid-template-columns: 1fr auto;
 }
 
-.rule > :first-child {
+.rule > div {
     padding: 3px 0px;
     white-space: nowrap;
+}
+
+.rule > select {
+    padding: 1px;
+    margin: 1px;
 }
 
 .match {
